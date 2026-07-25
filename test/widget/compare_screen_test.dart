@@ -126,10 +126,10 @@ void main() {
 
     expect(find.text('United Breweries'), findsOneWidget);
     expect(find.text('Toit Brewpub'), findsOneWidget);
-    expect(find.text('bottle · 650ml'), findsOneWidget);
-    expect(find.text('can · 330ml'), findsOneWidget);
-    expect(find.text('MRP: ₹110.0'), findsOneWidget);
-    expect(find.text('MRP: ₹250.0'), findsOneWidget);
+    expect(find.text('Bottle · 650 mL'), findsOneWidget);
+    expect(find.text('Can · 330 mL'), findsOneWidget);
+    expect(find.text('MRP: ₹110'), findsOneWidget);
+    expect(find.text('MRP: ₹250'), findsOneWidget);
     expect(find.text('Value score: 78 (Great value)'), findsOneWidget);
     expect(find.text('Value score: 55 (Fair value)'), findsOneWidget);
   });
@@ -153,7 +153,7 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.text('United Breweries'), findsNWidgets(2));
-    expect(find.text('bottle · 650ml'), findsNWidgets(2));
+    expect(find.text('Bottle · 650 mL'), findsNWidgets(2));
     expect(find.text('Value score: 78 (Great value)'), findsNWidgets(2));
   });
 

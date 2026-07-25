@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
@@ -145,7 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             bestSku == null
                                 ? 'No SKUs available'
                                 : 'Value score: ${bestSku.valueScore} '
-                                    '(${verdictLabel(bestSku.valueVerdict)})',
+                                    '(${bestSku.valueVerdict.displayLabel})',
                           ),
                         ],
                       ),

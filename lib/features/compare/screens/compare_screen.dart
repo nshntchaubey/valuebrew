@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
@@ -31,11 +32,13 @@ Widget buildBeerColumn(BuildContext context, Catalog catalog, Beer beer) {
       else
         ...skus.expand(
           (sku) => [
-            Text('${sku.packageType.name} · ${sku.sizeMl}ml'),
-            Text('MRP: ₹${sku.price}'),
+            Text(
+              '${sku.packageType.displayLabel} · ${sku.sizeMl.volumeLabel}',
+            ),
+            Text('MRP: ${sku.price.currencyLabel}'),
             Text(
               'Value score: ${sku.valueScore} '
-              '(${verdictLabel(sku.valueVerdict)})',
+              '(${sku.valueVerdict.displayLabel})',
             ),
             const Divider(),
           ],

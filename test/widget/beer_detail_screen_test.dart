@@ -226,8 +226,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('bottle · 650ml'), findsOneWidget);
-      expect(find.text('MRP: ₹110.0'), findsOneWidget);
+      expect(find.text('Bottle · 650 mL'), findsOneWidget);
+      expect(find.text('MRP: ₹110'), findsOneWidget);
       expect(find.text('Value score: 78 (Great value)'), findsOneWidget);
     },
   );
@@ -246,17 +246,17 @@ void main() {
     await tester.pumpAndSettle();
 
     // This beer's two SKUs are both shown, fully rendered.
-    expect(find.text('bottle · 650ml'), findsOneWidget);
-    expect(find.text('MRP: ₹110.0'), findsOneWidget);
+    expect(find.text('Bottle · 650 mL'), findsOneWidget);
+    expect(find.text('MRP: ₹110'), findsOneWidget);
     expect(find.text('Value score: 78 (Great value)'), findsOneWidget);
 
-    expect(find.text('can · 330ml'), findsOneWidget);
-    expect(find.text('MRP: ₹60.0'), findsOneWidget);
+    expect(find.text('Can · 330 mL'), findsOneWidget);
+    expect(find.text('MRP: ₹60'), findsOneWidget);
     expect(find.text('Value score: 55 (Fair value)'), findsOneWidget);
 
     // The other beer's SKU must not appear on this screen.
-    expect(find.text('can · 500ml'), findsNothing);
-    expect(find.text('MRP: ₹250.0'), findsNothing);
+    expect(find.text('Can · 500 mL'), findsNothing);
+    expect(find.text('MRP: ₹250'), findsNothing);
     expect(find.text('Value score: 20 (Overpriced for this ABV)'), findsNothing);
   });
 }

@@ -38,16 +38,3 @@ Sku? bestSkuForBeer(List<Sku> skus, String beerId) {
   }
   return best;
 }
-
-/// Plain-language label for a [ValueVerdict], matching the wording in the
-/// V1 technical architecture's Value Score algorithm.
-String verdictLabel(ValueVerdict verdict) {
-  switch (verdict) {
-    case ValueVerdict.greatValue:
-      return 'Great value';
-    case ValueVerdict.fairValue:
-      return 'Fair value';
-    case ValueVerdict.overpriced:
-      return 'Overpriced for this ABV';
-  }
-}
