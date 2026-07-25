@@ -16,7 +16,8 @@ const _catalogJson = '''
   ],
   "beers": [
     { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false },
-    { "id": "toit_porter", "name": "Toit Porter", "brewery": "Toit Brewpub", "style_id": "lager", "is_craft": true }
+    { "id": "toit_porter", "name": "Toit Porter", "brewery": "Toit Brewpub", "style_id": "lager", "is_craft": true },
+    { "id": "simba_strong", "name": "Simba Strong", "brewery": "Kals Brewing", "style_id": "lager", "is_craft": false }
   ],
   "skus": [],
   "benchmarks": []
@@ -103,6 +104,88 @@ void main() {
     );
     expect(
       find.descendant(of: detailScreen, matching: find.text('Lager')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'typing in the search field filters by name and brewery, clearing restores the full list',
+    (WidgetTester tester) async {
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kingfisher Premium'), findsOneWidget);
+      expect(find.text('Toit Porter'), findsOneWidget);
+      expect(find.text('Simba Strong'), findsOneWidget);
+
+      // Filter by a name substring, case-insensitive and with whitespace.
+      await tester.enterText(find.byType(TextField), '  KING  ');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kingfisher Premium'), findsOneWidget);
+      expect(find.text('Toit Porter'), findsNothing);
+      expect(find.text('Simba Strong'), findsNothing);
+
+      // Filter by a brewery substring instead.
+      await tester.enterText(find.byType(TextField), 'toit brewpub');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Toit Porter'), findsOneWidget);
+      expect(find.text('Kingfisher Premium'), findsNothing);
+
+      // Clearing the search restores the complete list.
+      await tester.enterText(find.byType(TextField), '');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kingfisher Premium'), findsOneWidget);
+      expect(find.text('Toit Porter'), findsOneWidget);
+      expect(find.text('Simba Strong'), findsOneWidget);
+    },
+  );
+
+  testWidgets('navigation to BeerDetailScreen continues to work from filtered results', (
+    WidgetTester tester,
+  ) async {
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'king');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kingfisher Premium'), findsOneWidget);
+    expect(find.text('Toit Porter'), findsNothing);
+
+    await tester.tap(find.text('Kingfisher Premium'));
+    await tester.pumpAndSettle();
+
+    final detailScreen = find.byType(BeerDetailScreen);
+    expect(detailScreen, findsOneWidget);
+    expect(
+      find.descendant(of: detailScreen, matching: find.text('United Breweries')),
       findsOneWidget,
     );
   });
