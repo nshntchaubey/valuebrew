@@ -1,20 +1,26 @@
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
-import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
-import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
+import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 
 /// V1 of ValueBrew's recommendation engine: ranks SKUs by similarity to a
 /// reference SKU, and finds "better value" alternatives among comparable
 /// SKUs.
 ///
+/// This engine is a pure *executor*: every weight and threshold it needs
+/// comes from its [policy], and it contains no recommendation rule of its
+/// own. This split is what lets a future recommendation profile (Budget
+/// Drinker, Craft Explorer, ...) exist purely as a new
+/// [RecommendationPolicy] implementation, with this class and its methods
+/// entirely unchanged. See [RecommendationPolicy]'s own doc comment for
+/// the full rationale, and `providers/recommendation_providers.dart` for
+/// how a future screen would obtain an instance.
+///
 /// This is pure business logic — no Flutter or Riverpod dependency in
-/// this file (see `providers/recommendation_providers.dart` for how a
-/// future screen would obtain an instance). It reads
-/// [Sku.valueScore]/[Sku.costPerMlAlcohol] as the catalog's existing
-/// precomputed fields; it never recomputes a price or value metric from
-/// scratch — the on-device Value Engine that would do that remains a
-/// separate, already deferred milestone.
+/// this file. It reads [Sku.valueScore]/[Sku.costPerMlAlcohol] as the
+/// catalog's existing precomputed fields; it never recomputes a price or
+/// value metric from scratch — the on-device Value Engine that would do
+/// that remains a separate, already deferred milestone.
 ///
 /// ### Complexity
 /// Both [similarBeers] and [betterValueAlternatives] score every other
@@ -31,56 +37,46 @@ import 'package:valuebrew/features/shared/catalog_lookups.dart';
 class RecommendationEngine {
   /// Creates a [RecommendationEngine].
   ///
-  /// [similarityScorer] defaults to a V1 weighting across style, ABV,
-  /// price, package type, and brewery (see [_defaultSimilarityScorer]) —
-  /// reasonable starting weights, not empirically tuned. Inject a
-  /// different [WeightedScorer] (different strategies, different
-  /// weights) without needing any other change to this class or its
-  /// callers.
-  RecommendationEngine({WeightedScorer? similarityScorer})
-      : similarityScorer = similarityScorer ?? _defaultSimilarityScorer;
+  /// [policy] defaults to [DefaultRecommendationPolicy]. Inject a
+  /// different [RecommendationPolicy] (different weights, different
+  /// thresholds — a different recommendation profile entirely) without
+  /// needing any other change to this class or its callers.
+  RecommendationEngine({RecommendationPolicy? policy})
+      : policy = policy ?? const DefaultRecommendationPolicy();
 
-  /// Combines individual [SimilarityStrategy] scores into the single
-  /// score [similarBeers] ranks by.
-  final WeightedScorer similarityScorer;
-
-  static final WeightedScorer _defaultSimilarityScorer = WeightedScorer({
-    const StyleMatchStrategy(): 3.0,
-    const AbvClosenessStrategy(): 2.0,
-    const PriceClosenessStrategy(): 1.5,
-    const PackageTypeMatchStrategy(): 1.0,
-    const BreweryMatchStrategy(): 0.5,
-  });
-
-  /// How close two SKUs' ABV must be, in percentage points, to count as
-  /// "a similar alcohol level" for [betterValueAlternatives]'s filtering.
-  ///
-  /// Distinct from [AbvClosenessStrategy]'s smooth `[0.0, 1.0]` scoring
-  /// (used for *ranking* in [similarBeers]) — this is a hard yes/no gate
-  /// (used for *filtering* candidates in [betterValueAlternatives]),
-  /// because "better value" needs a comparable-or-not decision, not a
-  /// degree of similarity to rank by.
-  static const double comparableAbvTolerance = 1.5;
+  /// The recommendation rules this engine executes. See
+  /// [RecommendationPolicy].
+  final RecommendationPolicy policy;
 
   /// Returns every other SKU in [catalog], ranked by similarity to
   /// [beer], most similar first.
   ///
-  /// "Similarity" is whatever [similarityScorer] computes. [beer] itself
-  /// is excluded from the result. Ties are broken by [catalog]'s SKU
-  /// order, for deterministic results.
+  /// "Similarity" is whatever [policy]'s `similarityScorer` computes.
+  /// [beer] itself is excluded from the result, as is any candidate whose
+  /// score falls below [policy]'s `minSimilarityScore`. Ties are broken
+  /// by [catalog]'s SKU order, for deterministic results.
   List<Sku> similarBeers(Sku beer, Catalog catalog) {
-    final candidates = catalog.skus.where((sku) => sku.id != beer.id).toList();
-    return _rankedDescending(
-      candidates,
-      (candidate) => similarityScorer.score(beer, candidate, catalog),
-    );
+    final scorer = policy.similarityScorer;
+
+    // Scored once per candidate up front, then looked up during sorting,
+    // rather than rescored on every comparator call.
+    final scoreById = <String, double>{
+      for (final candidate in catalog.skus)
+        if (candidate.id != beer.id) candidate.id: scorer.score(beer, candidate, catalog),
+    };
+
+    final candidates = catalog.skus
+        .where((sku) => sku.id != beer.id && scoreById[sku.id]! >= policy.minSimilarityScore)
+        .toList();
+
+    return _rankedDescending(candidates, (sku) => scoreById[sku.id]!);
   }
 
   /// Returns every SKU in [catalog] that represents a genuinely better
   /// deal than [beer]: the same style, a comparable ABV (within
-  /// [comparableAbvTolerance] of [beer]'s), and a higher `valueScore`
-  /// than [beer]'s own — ranked by `valueScore` descending (best value
-  /// first).
+  /// [policy]'s `comparableAbvTolerance` of [beer]'s), and a `valueScore`
+  /// at least [policy]'s `minValueScoreImprovement` higher than [beer]'s
+  /// own — ranked by `valueScore` descending (best value first).
   ///
   /// This is deliberately not "cheapest first": a SKU of a different
   /// style, or with a meaningfully different ABV, isn't a comparable
@@ -91,8 +87,8 @@ class RecommendationEngine {
 
     final candidates = catalog.skus.where((candidate) {
       if (candidate.id == beer.id) return false;
-      if (candidate.valueScore <= beer.valueScore) return false;
-      if ((candidate.abv - beer.abv).abs() > comparableAbvTolerance) return false;
+      if (candidate.valueScore < beer.valueScore + policy.minValueScoreImprovement) return false;
+      if ((candidate.abv - beer.abv).abs() > policy.comparableAbvTolerance) return false;
 
       final candidateBeer = resolveBeer(catalog, candidate.beerId);
       return candidateBeer != null && candidateBeer.styleId == referenceBeer.styleId;

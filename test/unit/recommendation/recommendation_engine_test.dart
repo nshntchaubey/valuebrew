@@ -4,9 +4,29 @@ import 'package:valuebrew/data/models/benchmark.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
 import 'package:valuebrew/features/recommendation/services/recommendation_engine.dart';
+
+/// A from-scratch [RecommendationPolicy] — deliberately not built on
+/// [DefaultRecommendationPolicy] — used to prove that [RecommendationEngine]
+/// works with any policy implementation, not just the default one.
+class _BreweryOnlyPolicy implements RecommendationPolicy {
+  const _BreweryOnlyPolicy();
+
+  @override
+  WeightedScorer get similarityScorer => const WeightedScorer({BreweryMatchStrategy(): 1.0});
+
+  @override
+  double get minSimilarityScore => 0.0;
+
+  @override
+  double get comparableAbvTolerance => 1.5;
+
+  @override
+  int get minValueScoreImprovement => 1;
+}
 
 Sku _sku({
   required String id,
@@ -210,8 +230,8 @@ void main() {
 
   group('dependency injection', () {
     test(
-      'a custom similarityScorer actually changes ranking — proven by flipping the '
-      'order relative to the default engine',
+      'a custom policy actually changes ranking — proven by flipping the order '
+      'relative to the default engine',
       () {
         final catalog = Catalog(
           catalogVersion: 1,
@@ -237,9 +257,10 @@ void main() {
         final reference = catalog.skus.firstWhere((s) => s.id == 'ref_sku');
 
         final defaultEngine = RecommendationEngine();
-        final breweryOnlyEngine = RecommendationEngine(
-          similarityScorer: WeightedScorer({const BreweryMatchStrategy(): 1.0}),
-        );
+        // A whole new RecommendationPolicy implementation — not a
+        // DefaultRecommendationPolicy override — accepted by the exact
+        // same, unmodified RecommendationEngine.
+        final breweryOnlyEngine = RecommendationEngine(policy: const _BreweryOnlyPolicy());
 
         final defaultRanking = defaultEngine.similarBeers(reference, catalog).map((s) => s.id);
         final breweryOnlyRanking =
@@ -249,5 +270,55 @@ void main() {
         expect(breweryOnlyRanking, ['brewery_match_sku', 'everything_else_match_sku']);
       },
     );
+
+    test('a stricter minValueScoreImprovement policy excludes a candidate the default policy includes', () {
+      final catalog = Catalog(
+        catalogVersion: 1,
+        generatedAt: DateTime(2026, 1, 1),
+        styles: const [Style(id: 'lager', name: 'Lager', description: '')],
+        beers: const [
+          Beer(id: 'kf', name: 'Kingfisher', brewery: 'United Breweries', styleId: 'lager', isCraft: false),
+          Beer(id: 'simba', name: 'Simba', brewery: 'Kals Brewing', styleId: 'lager', isCraft: false),
+        ],
+        skus: [
+          _sku(id: 'kf_650', beerId: 'kf', abv: 5.0, valueScore: 78),
+          // Only 2 points better — qualifies under the default policy
+          // (minValueScoreImprovement: 1) but not under a policy that
+          // requires at least 10.
+          _sku(id: 'simba_650', beerId: 'simba', abv: 5.0, valueScore: 80),
+        ],
+        benchmarks: const <Benchmark>[],
+      );
+      final reference = catalog.skus.firstWhere((s) => s.id == 'kf_650');
+
+      final defaultEngine = RecommendationEngine();
+      final strictEngine = RecommendationEngine(
+        policy: const DefaultRecommendationPolicy(minValueScoreImprovement: 10),
+      );
+
+      expect(
+        defaultEngine.betterValueAlternatives(reference, catalog).map((s) => s.id),
+        ['simba_650'],
+      );
+      expect(strictEngine.betterValueAlternatives(reference, catalog), isEmpty);
+    });
+  });
+
+  group('DefaultRecommendationPolicy preserves original engine behaviour', () {
+    test('minSimilarityScore of 0.0 never filters out a candidate, matching the original '
+        'unfiltered similarBeers behaviour', () {
+      const policy = DefaultRecommendationPolicy();
+      expect(policy.minSimilarityScore, 0.0);
+    });
+
+    test('minValueScoreImprovement of 1 reproduces the original strict > comparison', () {
+      const policy = DefaultRecommendationPolicy();
+      expect(policy.minValueScoreImprovement, 1);
+    });
+
+    test('comparableAbvTolerance matches the value the engine used to hardcode', () {
+      const policy = DefaultRecommendationPolicy();
+      expect(policy.comparableAbvTolerance, 1.5);
+    });
   });
 }
