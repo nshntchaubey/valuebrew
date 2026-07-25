@@ -6,6 +6,7 @@ import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/models/style.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
+import 'package:valuebrew/features/recommendation/policy/profile_policies.dart';
 import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
@@ -407,6 +408,150 @@ void main() {
     test('comparableAbvTolerance matches the value the engine used to hardcode', () {
       const policy = DefaultRecommendationPolicy();
       expect(policy.comparableAbvTolerance, 1.5);
+    });
+  });
+
+  group('recommendation profiles', () {
+    // A fixture with three distinctly-flavoured candidates relative to
+    // the reference (kf_650: lager, United Breweries, ABV 4.8, valueScore
+    // 50, cost/ml 4.0):
+    // - close_match: same style, same brewery, close ABV, same price,
+    //   mediocre value — the most *similar* option, nothing special.
+    // - bargain: same style (still an "acceptable" match), different
+    //   brewery, further ABV, much cheaper, excellent value — a genuine
+    //   bargain, not a close match.
+    // - explorer: different style, different brewery, close ABV, same
+    //   price, excellent value — a good-value option worth exploring,
+    //   not similar at all.
+    late Catalog catalog;
+    late Sku reference;
+
+    setUp(() {
+      catalog = Catalog(
+        catalogVersion: 1,
+        generatedAt: DateTime(2026, 1, 1),
+        styles: const [
+          Style(id: 'lager', name: 'Lager', description: ''),
+          Style(id: 'stout', name: 'Stout', description: ''),
+        ],
+        beers: const [
+          Beer(id: 'kf', name: 'Kingfisher', brewery: 'United Breweries', styleId: 'lager', isCraft: false),
+          Beer(id: 'close_match', name: 'Close Match', brewery: 'United Breweries', styleId: 'lager', isCraft: false),
+          Beer(id: 'bargain', name: 'Bargain Beer', brewery: 'Kals Brewing', styleId: 'lager', isCraft: false),
+          Beer(id: 'explorer', name: 'Explorer Stout', brewery: 'Arbor Brewing', styleId: 'stout', isCraft: true),
+        ],
+        skus: [
+          _sku(id: 'kf_650', beerId: 'kf', abv: 4.8, costPerMlAlcohol: 4.0, valueScore: 50),
+          _sku(id: 'close_match_sku', beerId: 'close_match', abv: 4.9, costPerMlAlcohol: 4.0, valueScore: 50),
+          _sku(id: 'bargain_sku', beerId: 'bargain', abv: 6.0, costPerMlAlcohol: 1.5, valueScore: 95),
+          _sku(id: 'explorer_sku', beerId: 'explorer', abv: 5.0, costPerMlAlcohol: 4.0, valueScore: 90),
+        ],
+        benchmarks: const <Benchmark>[],
+      );
+      reference = catalog.skus.firstWhere((s) => s.id == 'kf_650');
+    });
+
+    test('balanced ranks the closest overall match first', () {
+      final engine = RecommendationEngine(policy: const DefaultRecommendationPolicy());
+      final result = engine.similarBeers(reference, catalog);
+      expect(result.map((r) => r.sku.id), ['close_match_sku', 'bargain_sku', 'explorer_sku']);
+    });
+
+    test('bestValue ranks the genuine bargain first, ahead of the closer match', () {
+      final engine = RecommendationEngine(policy: const BestValuePolicy());
+      final result = engine.similarBeers(reference, catalog);
+      expect(result.first.sku.id, 'bargain_sku');
+      expect(result.map((r) => r.sku.id), isNot(['close_match_sku', 'bargain_sku', 'explorer_sku']));
+    });
+
+    test('similarTaste ranks the closest overall match first, same as balanced', () {
+      final engine = RecommendationEngine(policy: const SimilarTastePolicy());
+      final result = engine.similarBeers(reference, catalog);
+      expect(result.map((r) => r.sku.id), ['close_match_sku', 'bargain_sku', 'explorer_sku']);
+    });
+
+    test('discovery ranks the different-style, different-brewery option first', () {
+      final engine = RecommendationEngine(policy: const DiscoveryPolicy());
+      final result = engine.similarBeers(reference, catalog);
+      expect(result.first.sku.id, 'explorer_sku');
+      expect(result.map((r) => r.sku.id), isNot(['close_match_sku', 'bargain_sku', 'explorer_sku']));
+    });
+
+    test('every profile produces a different overall ranking for the same candidates', () {
+      final balanced = RecommendationEngine(policy: const DefaultRecommendationPolicy())
+          .similarBeers(reference, catalog)
+          .map((r) => r.sku.id)
+          .toList();
+      final bestValue = RecommendationEngine(policy: const BestValuePolicy())
+          .similarBeers(reference, catalog)
+          .map((r) => r.sku.id)
+          .toList();
+      final discovery = RecommendationEngine(policy: const DiscoveryPolicy())
+          .similarBeers(reference, catalog)
+          .map((r) => r.sku.id)
+          .toList();
+
+      expect(bestValue, isNot(balanced));
+      expect(discovery, isNot(balanced));
+      expect(discovery, isNot(bestValue));
+    });
+
+    test('bestValue explanations include excellentValue and betterPrice for the bargain', () {
+      final engine = RecommendationEngine(policy: const BestValuePolicy());
+      final result = engine.similarBeers(reference, catalog);
+      final bargain = result.firstWhere((r) => r.sku.id == 'bargain_sku');
+
+      expect(bargain.matchedReasons, contains(RecommendationReason.excellentValue));
+      expect(bargain.matchedReasons, contains(RecommendationReason.betterPrice));
+    });
+
+    test(
+      'discovery explanations include differentBrewery and newStyle for the explorer, and '
+      'never sameStyle/sameBrewery — those strategies aren\'t part of this profile at all',
+      () {
+        final engine = RecommendationEngine(policy: const DiscoveryPolicy());
+        final result = engine.similarBeers(reference, catalog);
+        final explorer = result.firstWhere((r) => r.sku.id == 'explorer_sku');
+
+        expect(explorer.matchedReasons, contains(RecommendationReason.differentBrewery));
+        expect(explorer.matchedReasons, contains(RecommendationReason.newStyle));
+        expect(explorer.matchedReasons, isNot(contains(RecommendationReason.sameStyle)));
+        expect(explorer.matchedReasons, isNot(contains(RecommendationReason.sameBrewery)));
+      },
+    );
+
+    test('balanced explanations never include profile-specific reasons like excellentValue', () {
+      final engine = RecommendationEngine(policy: const DefaultRecommendationPolicy());
+      final result = engine.similarBeers(reference, catalog);
+
+      for (final recommendation in result) {
+        expect(recommendation.matchedReasons, isNot(contains(RecommendationReason.excellentValue)));
+        expect(recommendation.matchedReasons, isNot(contains(RecommendationReason.betterPrice)));
+        expect(recommendation.matchedReasons, isNot(contains(RecommendationReason.differentBrewery)));
+        expect(recommendation.matchedReasons, isNot(contains(RecommendationReason.newStyle)));
+      }
+    });
+
+    test('ranking is deterministic: repeated calls with the same profile produce the same order', () {
+      final engine = RecommendationEngine(policy: const BestValuePolicy());
+
+      final first = engine.similarBeers(reference, catalog).map((r) => r.sku.id).toList();
+      final second = engine.similarBeers(reference, catalog).map((r) => r.sku.id).toList();
+
+      expect(first, second);
+    });
+
+    test('betterValueAlternatives is identical regardless of the active profile', () {
+      final balanced = RecommendationEngine(policy: const DefaultRecommendationPolicy())
+          .betterValueAlternatives(reference, catalog)
+          .map((r) => r.sku.id)
+          .toList();
+      final discovery = RecommendationEngine(policy: const DiscoveryPolicy())
+          .betterValueAlternatives(reference, catalog)
+          .map((r) => r.sku.id)
+          .toList();
+
+      expect(discovery, balanced);
     });
   });
 }

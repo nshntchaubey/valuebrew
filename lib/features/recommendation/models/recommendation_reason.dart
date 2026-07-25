@@ -40,6 +40,27 @@ enum RecommendationReason {
   /// dimension in [WeightedScorer]; this reason reflects that method's own
   /// business rule instead.
   betterValue,
+
+  /// Contributed by [ValueScoreStrategy] when a candidate's own
+  /// `valueScore` is high, independent of the reference SKU — used by
+  /// recommendation profiles that prioritize surfacing good deals (Best
+  /// Value, Discovery).
+  excellentValue,
+
+  /// Contributed by [CheaperPriceStrategy] when a candidate is genuinely
+  /// cheaper (in cost per ml of alcohol) than the reference SKU — used by
+  /// the Best Value profile.
+  betterPrice,
+
+  /// Contributed by [BreweryDiversityStrategy] when a candidate's brewery
+  /// differs from the reference SKU's — used by the Discovery profile,
+  /// which rewards variety rather than similarity on this dimension.
+  differentBrewery,
+
+  /// Contributed by [StyleDiversityStrategy] when a candidate's style
+  /// differs from the reference SKU's — used by the Discovery profile,
+  /// for the same reason as [differentBrewery].
+  newStyle,
 }
 
 /// User-facing display text for a [RecommendationReason], used to build a
@@ -52,5 +73,9 @@ extension RecommendationReasonFormatting on RecommendationReason {
         RecommendationReason.similarPrice => 'Similar price',
         RecommendationReason.samePackage => 'Same package',
         RecommendationReason.betterValue => 'Better value',
+        RecommendationReason.excellentValue => 'Excellent value',
+        RecommendationReason.betterPrice => 'Better price',
+        RecommendationReason.differentBrewery => 'Different brewery',
+        RecommendationReason.newStyle => 'Explore a new style',
       };
 }

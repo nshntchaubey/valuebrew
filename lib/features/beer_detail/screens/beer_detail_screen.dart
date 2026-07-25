@@ -8,6 +8,7 @@ import 'package:valuebrew/features/beer_detail/wrong_report.dart';
 import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
+import 'package:valuebrew/features/recommendation/widgets/recommendation_profile_bottom_sheet.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
@@ -184,11 +185,16 @@ class _WrongReportAction extends ConsumerWidget {
   }
 }
 
-/// Shows details for a single [Beer]: a favorite toggle in the AppBar, its
-/// name, brewery, style, every [Sku] (pack size) it comes in, a "This looks
-/// wrong" report action per SKU, and two [RecommendationEngine]-backed
-/// lists — "Similar beers" and "Better value picks" — under a shared
-/// "Similar & Better Value" heading.
+/// Shows details for a single [Beer]: a recommendation-profile selector and
+/// a favorite toggle in the AppBar, its name, brewery, style, every [Sku]
+/// (pack size) it comes in, a "This looks wrong" report action per SKU,
+/// and two [RecommendationEngine]-backed lists — "Similar beers" and
+/// "Better value picks" — under a shared "Similar & Better Value" heading.
+///
+/// "Similar beers" changes ranking and explanations depending on the
+/// active [RecommendationProfile] (see [recommendationProfileProvider]);
+/// "Better value picks" does not — see `profile_policies.dart`'s own note
+/// on why `betterValueAlternatives` is deliberately profile-independent.
 ///
 /// Deliberately minimal — no SKU selection belongs here yet, every SKU is
 /// simply listed. `valueScore`/`valueVerdict` are read directly from the
@@ -225,7 +231,20 @@ class BeerDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(beer.name),
-        actions: [_FavoriteButton(beerId: beer.id)],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.tune),
+            tooltip: 'Recommendation profile',
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => const RecommendationProfileBottomSheet(),
+              );
+            },
+          ),
+          _FavoriteButton(beerId: beer.id),
+        ],
       ),
       body: catalogAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

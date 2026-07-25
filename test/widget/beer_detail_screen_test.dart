@@ -10,6 +10,7 @@ import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';
+import 'package:valuebrew/features/recommendation/policy/recommendation_profile.dart';
 import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
@@ -889,4 +890,107 @@ void main() {
     expect(find.byIcon(Icons.favorite), findsOneWidget);
     expect(find.byIcon(Icons.favorite_border), findsNothing);
   });
+
+  testWidgets(
+    'the recommendation-profile selector lists all four profiles, checking the active one',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _recommendationsJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+
+      for (final profile in RecommendationProfile.values) {
+        expect(find.text(profile.displayName), findsOneWidget);
+      }
+
+      // Balanced is the default profile — its row alone shows a checkmark.
+      final balancedTile = find.widgetWithText(ListTile, 'Balanced');
+      expect(
+        find.descendant(of: balancedTile, matching: find.byIcon(Icons.check)),
+        findsOneWidget,
+      );
+      final bestValueTile = find.widgetWithText(ListTile, 'Best Value');
+      expect(
+        find.descendant(of: bestValueTile, matching: find.byIcon(Icons.check)),
+        findsNothing,
+      );
+    },
+  );
+
+  testWidgets(
+    'selecting a different profile immediately reorders Similar beers and closes the sheet',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _recommendationsJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      // Under the default (Balanced) profile, Foster's ranks above Craft
+      // IPA — see the Milestone 10/11 tests for the full derivation.
+      var fostersY = tester.getTopLeft(find.byKey(const ValueKey('similar:fosters_650'))).dy;
+      var craftIpaY = tester.getTopLeft(find.byKey(const ValueKey('similar:craft_ipa_330'))).dy;
+      expect(fostersY, lessThan(craftIpaY));
+
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Discovery'));
+      await tester.pumpAndSettle();
+
+      // The sheet closes itself on selection.
+      expect(find.text('Recommendation profile'), findsNothing);
+
+      // Under Discovery, Craft IPA (different style, different brewery,
+      // excellent value) now outranks Foster's (same style, same-ish
+      // value, different brewery only).
+      fostersY = tester.getTopLeft(find.byKey(const ValueKey('similar:fosters_650'))).dy;
+      craftIpaY = tester.getTopLeft(find.byKey(const ValueKey('similar:craft_ipa_330'))).dy;
+      expect(craftIpaY, lessThan(fostersY));
+    },
+  );
+
+  testWidgets(
+    'a previously-selected profile is active immediately on a fresh load, without re-selecting it',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({'recommendation_profile': 'discovery'});
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _recommendationsJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      // Discovery's ranking (Craft IPA first) is already in effect on
+      // this very first load — the persisted selection survived without
+      // the user touching the selector at all.
+      final fostersY = tester.getTopLeft(find.byKey(const ValueKey('similar:fosters_650'))).dy;
+      final craftIpaY = tester.getTopLeft(find.byKey(const ValueKey('similar:craft_ipa_330'))).dy;
+      expect(craftIpaY, lessThan(fostersY));
+
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      final discoveryTile = find.widgetWithText(ListTile, 'Discovery');
+      expect(
+        find.descendant(of: discoveryTile, matching: find.byIcon(Icons.check)),
+        findsOneWidget,
+      );
+    },
+  );
 }

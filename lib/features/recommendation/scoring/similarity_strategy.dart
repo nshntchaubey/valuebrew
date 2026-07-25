@@ -186,3 +186,119 @@ class BreweryMatchStrategy implements SimilarityStrategy {
     return beerA.brewery == beerB.brewery;
   }
 }
+
+/// Rewards how good [b]'s own `valueScore` is: `1.0` at a `valueScore` of
+/// `100`, decreasing linearly to `0.0` at `0`.
+///
+/// Unlike every strategy above, this one doesn't compare [a] and [b] to
+/// each other at all — it's a judgment about [b] alone, independent of
+/// whatever SKU is being viewed. That's a genuinely different question
+/// from "how similar is this to what I'm looking at," and exactly what a
+/// bargain-focused recommendation profile (Best Value, Discovery) needs
+/// that no closeness-based strategy expresses.
+class ValueScoreStrategy implements SimilarityStrategy {
+  const ValueScoreStrategy();
+
+  /// The minimum [score] for a candidate's value to be called out as
+  /// "excellent" — see [AbvClosenessStrategy._explainThreshold] for why
+  /// this is a fixed constant rather than a separately configurable
+  /// threshold.
+  static const double _explainThreshold = 0.75;
+
+  @override
+  String get name => 'value_score';
+
+  @override
+  double score(Sku a, Sku b, Catalog catalog) => (b.valueScore / 100).clamp(0.0, 1.0);
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      score(a, b, catalog) >= _explainThreshold ? RecommendationReason.excellentValue : null;
+}
+
+/// Rewards [b] being cheaper (in cost per ml of alcohol) than [a]: `1.0`
+/// if [b] is at least as cheap as [a], decreasing to `0.0` once [b] is
+/// [maxRelativeOverage] proportionally more expensive.
+///
+/// Deliberately asymmetric, unlike [PriceClosenessStrategy] — a
+/// bargain-focused profile cares whether a candidate is *cheaper*, not
+/// merely close in price in either direction. The two strategies answer
+/// different questions and are used by different profiles, never both at
+/// once.
+class CheaperPriceStrategy implements SimilarityStrategy {
+  const CheaperPriceStrategy({this.maxRelativeOverage = 0.75});
+
+  /// The proportional overage beyond which [b] is no longer considered
+  /// "cheaper enough" to score any credit at all.
+  final double maxRelativeOverage;
+
+  @override
+  String get name => 'cheaper_price';
+
+  @override
+  double score(Sku a, Sku b, Catalog catalog) {
+    if (a.costPerMlAlcohol <= 0) return 0.0;
+    if (b.costPerMlAlcohol <= a.costPerMlAlcohol) return 1.0;
+    final overage = (b.costPerMlAlcohol - a.costPerMlAlcohol) / a.costPerMlAlcohol;
+    if (overage >= maxRelativeOverage) return 0.0;
+    return 1.0 - (overage / maxRelativeOverage);
+  }
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) {
+    // A factual, binary claim ("cheaper" or not) rather than a
+    // worth-mentioning-closeness judgment call, so this checks the raw
+    // comparison directly instead of thresholding the smooth score above.
+    return b.costPerMlAlcohol < a.costPerMlAlcohol ? RecommendationReason.betterPrice : null;
+  }
+}
+
+/// Rewards [a] and [b]'s beers having *different* breweries — the inverse
+/// of [BreweryMatchStrategy] — for a profile that wants variety, not
+/// similarity, on this dimension (Discovery). Scores `0.0` (no diversity
+/// credit) if either beer can't be resolved, the same conservative
+/// default [BreweryMatchStrategy] uses for "can't confirm."
+class BreweryDiversityStrategy implements SimilarityStrategy {
+  const BreweryDiversityStrategy();
+
+  @override
+  String get name => 'brewery_diversity';
+
+  @override
+  double score(Sku a, Sku b, Catalog catalog) => _differentBrewery(a, b, catalog) ? 1.0 : 0.0;
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      _differentBrewery(a, b, catalog) ? RecommendationReason.differentBrewery : null;
+
+  bool _differentBrewery(Sku a, Sku b, Catalog catalog) {
+    final beerA = resolveBeer(catalog, a.beerId);
+    final beerB = resolveBeer(catalog, b.beerId);
+    if (beerA == null || beerB == null) return false;
+    return beerA.brewery != beerB.brewery;
+  }
+}
+
+/// Rewards [a] and [b]'s beers having *different* styles — the inverse of
+/// [StyleMatchStrategy] — for the same reason [BreweryDiversityStrategy]
+/// exists (Discovery).
+class StyleDiversityStrategy implements SimilarityStrategy {
+  const StyleDiversityStrategy();
+
+  @override
+  String get name => 'style_diversity';
+
+  @override
+  double score(Sku a, Sku b, Catalog catalog) => _differentStyle(a, b, catalog) ? 1.0 : 0.0;
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      _differentStyle(a, b, catalog) ? RecommendationReason.newStyle : null;
+
+  bool _differentStyle(Sku a, Sku b, Catalog catalog) {
+    final beerA = resolveBeer(catalog, a.beerId);
+    final beerB = resolveBeer(catalog, b.beerId);
+    if (beerA == null || beerB == null) return false;
+    return beerA.styleId != beerB.styleId;
+  }
+}
