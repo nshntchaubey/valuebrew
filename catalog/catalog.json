@@ -1,0 +1,37 @@
+{
+  "catalog_version": 1,
+  "generated_at": "2026-07-25T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" }
+  ],
+  "beers": [
+    { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false }
+  ],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    }
+  ],
+  "benchmarks": [
+    {
+      "style_id": "lager",
+      "avg_cost_per_ml_alcohol": 4.10,
+      "p25": 3.40,
+      "p50": 3.95,
+      "p75": 4.60,
+      "sample_size": 1
+    }
+  ]
+}

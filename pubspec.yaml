@@ -61,6 +61,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # The bundled catalog asset (see lib/core/constants/app_constants.dart
+  # and lib/data/repositories/catalog_repository.dart).
+  assets:
+    - catalog/catalog.json
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

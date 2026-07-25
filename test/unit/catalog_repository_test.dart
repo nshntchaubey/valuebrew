@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:valuebrew/core/constants/app_constants.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 
 /// A fake [CatalogRepository.loadAsset] that returns [contents] for any key.
@@ -221,5 +223,28 @@ void main() {
         expect(e.toString(), contains('assets/catalog.json'));
       }
     });
+  });
+
+  group('CatalogRepository against the real bundled asset', () {
+    TestWidgetsFlutterBinding.ensureInitialized();
+
+    test(
+      'loadCatalog loads the real catalog.json registered in pubspec.yaml, '
+      'via the real AppConstants.catalogAssetKey and rootBundle.loadString',
+      () async {
+        final repository = CatalogRepository(
+          loadAsset: rootBundle.loadString,
+          assetKey: AppConstants.catalogAssetKey,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, greaterThan(0));
+        expect(catalog.styles, isNotEmpty);
+        expect(catalog.beers, isNotEmpty);
+        expect(catalog.skus, isNotEmpty);
+        expect(catalog.benchmarks, isNotEmpty);
+      },
+    );
   });
 }
