@@ -20,6 +20,94 @@ const _catalogJson = '''
 }
 ''';
 
+const _oneSkuJson = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" }
+  ],
+  "beers": [],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    }
+  ],
+  "benchmarks": []
+}
+''';
+
+const _multipleSkusJson = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" }
+  ],
+  "beers": [],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "kf_premium_330",
+      "beer_id": "kf_premium",
+      "size_ml": 330,
+      "package_type": "can",
+      "abv": 4.8,
+      "calories": 130,
+      "price": 60,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 181.8,
+      "cost_per_ml_alcohol": 3.79,
+      "value_score": 55,
+      "value_verdict": "fair_value"
+    },
+    {
+      "id": "other_beer_sku",
+      "beer_id": "other_beer",
+      "size_ml": 500,
+      "package_type": "can",
+      "abv": 6.5,
+      "calories": 220,
+      "price": 250,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 500.0,
+      "cost_per_ml_alcohol": 7.69,
+      "value_score": 20,
+      "value_verdict": "overpriced"
+    }
+  ],
+  "benchmarks": []
+}
+''';
+
 const _kfPremium = Beer(
   id: 'kf_premium',
   name: 'Kingfisher Premium',
@@ -106,5 +194,69 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Failed to load catalog'), findsOneWidget);
+  });
+
+  testWidgets('shows a fallback message when the beer has no SKUs', (
+    WidgetTester tester,
+  ) async {
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _catalogJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('No SKUs available for this beer.'), findsOneWidget);
+    expect(find.textContaining('MRP:'), findsNothing);
+  });
+
+  testWidgets(
+    'shows package type, volume, MRP, valueScore, and valueVerdict for a single SKU',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _oneSkuJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('bottle · 650ml'), findsOneWidget);
+      expect(find.text('MRP: ₹110.0'), findsOneWidget);
+      expect(find.text('Value score: 78 (Great value)'), findsOneWidget);
+    },
+  );
+
+  testWidgets('shows every SKU belonging to the beer, and none from other beers', (
+    WidgetTester tester,
+  ) async {
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _multipleSkusJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    // This beer's two SKUs are both shown, fully rendered.
+    expect(find.text('bottle · 650ml'), findsOneWidget);
+    expect(find.text('MRP: ₹110.0'), findsOneWidget);
+    expect(find.text('Value score: 78 (Great value)'), findsOneWidget);
+
+    expect(find.text('can · 330ml'), findsOneWidget);
+    expect(find.text('MRP: ₹60.0'), findsOneWidget);
+    expect(find.text('Value score: 55 (Fair value)'), findsOneWidget);
+
+    // The other beer's SKU must not appear on this screen.
+    expect(find.text('can · 500ml'), findsNothing);
+    expect(find.text('MRP: ₹250.0'), findsNothing);
+    expect(find.text('Value score: 20 (Overpriced for this ABV)'), findsNothing);
   });
 }

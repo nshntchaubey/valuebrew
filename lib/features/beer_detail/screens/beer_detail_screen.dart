@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/models/style.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
@@ -20,12 +21,36 @@ Style? _resolveStyle(Catalog catalog, String styleId) {
   return null;
 }
 
-/// Shows details for a single [Beer]: its name, brewery, and style.
+/// Returns every [Sku] in [catalog] belonging to the beer with [beerId].
 ///
-/// Deliberately minimal — no SKU selection, pricing, or Value Score belong
-/// here yet; those are later milestones. [beer] is passed in directly by
-/// the caller (see [catalogProvider] usage below for how its [Style] is
-/// resolved).
+/// [Sku.beerId] is a plain reference, not an embedded [Beer] — this is the
+/// lookup that resolves it, scoped to this screen's single call site.
+List<Sku> _resolveSkus(Catalog catalog, String beerId) {
+  return catalog.skus.where((sku) => sku.beerId == beerId).toList();
+}
+
+/// Plain-language label for a [ValueVerdict], matching the wording in the
+/// V1 technical architecture's Value Score algorithm.
+String _verdictLabel(ValueVerdict verdict) {
+  switch (verdict) {
+    case ValueVerdict.greatValue:
+      return 'Great value';
+    case ValueVerdict.fairValue:
+      return 'Fair value';
+    case ValueVerdict.overpriced:
+      return 'Overpriced for this ABV';
+  }
+}
+
+/// Shows details for a single [Beer]: its name, brewery, style, and every
+/// [Sku] (pack size) it comes in.
+///
+/// Deliberately minimal — no SKU selection belongs here yet, every SKU is
+/// simply listed. `valueScore`/`valueVerdict` are read directly from the
+/// catalog's precomputed fields; there is no on-device recomputation (see
+/// the Value Engine milestone notes). [beer] is passed in directly by the
+/// caller (see [catalogProvider] usage below for how its [Style] and
+/// [Sku]s are resolved).
 class BeerDetailScreen extends ConsumerWidget {
   const BeerDetailScreen({required this.beer, super.key});
 
@@ -45,7 +70,8 @@ class BeerDetailScreen extends ConsumerWidget {
         ),
         data: (catalog) {
           final style = _resolveStyle(catalog, beer.styleId);
-          return Padding(
+          final skus = _resolveSkus(catalog, beer.id);
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,6 +84,21 @@ class BeerDetailScreen extends ConsumerWidget {
                 Text(beer.brewery),
                 const SizedBox(height: 8),
                 Text(style?.name ?? 'Unknown style'),
+                const SizedBox(height: 16),
+                if (skus.isEmpty)
+                  const Text('No SKUs available for this beer.')
+                else
+                  ...skus.expand(
+                    (sku) => [
+                      Text('${sku.packageType.name} · ${sku.sizeMl}ml'),
+                      Text('MRP: ₹${sku.price}'),
+                      Text(
+                        'Value score: ${sku.valueScore} '
+                        '(${_verdictLabel(sku.valueVerdict)})',
+                      ),
+                      const Divider(),
+                    ],
+                  ),
               ],
             ),
           );
