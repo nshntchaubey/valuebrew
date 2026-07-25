@@ -4,6 +4,8 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:valuebrew/core/constants/app_constants.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
+import 'package:valuebrew/data/sources/catalog_local_cache.dart';
+import 'package:valuebrew/data/sources/catalog_remote_source.dart';
 
 /// A fake [CatalogRepository.loadAsset] that returns [contents] for any key.
 Future<String> Function(String key) fixedLoader(String contents) {
@@ -13,6 +15,61 @@ Future<String> Function(String key) fixedLoader(String contents) {
 /// A fake [CatalogRepository.loadAsset] that always throws [error].
 Future<String> Function(String key) failingLoader(Object error) {
   return (key) async => throw error;
+}
+
+/// A minimal, valid catalog JSON string at the given [version].
+String _catalogJsonAtVersion(int version) => jsonEncode({
+      'catalog_version': version,
+      'generated_at': '2026-01-01T00:00:00Z',
+      'styles': <dynamic>[],
+      'beers': <dynamic>[],
+      'skus': <dynamic>[],
+      'benchmarks': <dynamic>[],
+    });
+
+/// A fake [CatalogLocalCache] with a controllable initial state and
+/// write-tracking, for testing [CatalogRepository]'s cache handling
+/// without touching real [SharedPreferences].
+class _FakeCatalogLocalCache implements CatalogLocalCache {
+  _FakeCatalogLocalCache({this.initial, this.readError});
+
+  CachedCatalog? initial;
+  Object? readError;
+  bool writeWasCalled = false;
+  String? writtenRawJson;
+  int? writtenVersion;
+
+  @override
+  Future<CachedCatalog?> read() async {
+    if (readError != null) throw readError!;
+    return initial;
+  }
+
+  @override
+  Future<void> write(String rawJson, int catalogVersion) async {
+    writeWasCalled = true;
+    writtenRawJson = rawJson;
+    writtenVersion = catalogVersion;
+    initial = CachedCatalog(rawJson: rawJson, catalogVersion: catalogVersion);
+  }
+}
+
+/// A fake [CatalogRemoteSource] with a controllable response and
+/// call-tracking, for testing [CatalogRepository]'s remote handling
+/// without any real networking.
+class _FakeCatalogRemoteSource implements CatalogRemoteSource {
+  _FakeCatalogRemoteSource({this.result, this.checkError});
+
+  RemoteCatalogCheck? result;
+  Object? checkError;
+  int? lastCheckedVersion;
+
+  @override
+  Future<RemoteCatalogCheck> checkForUpdate(int currentVersion) async {
+    lastCheckedVersion = currentVersion;
+    if (checkError != null) throw checkError!;
+    return result ?? const RemoteCatalogCheck.noUpdate();
+  }
 }
 
 const _realisticCatalogJson = '''
@@ -244,6 +301,182 @@ void main() {
         expect(catalog.beers, isNotEmpty);
         expect(catalog.skus, isNotEmpty);
         expect(catalog.benchmarks, isNotEmpty);
+      },
+    );
+  });
+
+  group('CatalogRepository bundled → cache → remote loading order', () {
+    test(
+      'bundled-only behaviour is unchanged when no cache or remote source is supplied',
+      () async {
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, 1);
+      },
+    );
+
+    test('cache miss: falls through to the bundled asset', () async {
+      final cache = _FakeCatalogLocalCache(initial: null);
+      final repository = CatalogRepository(
+        loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+        assetKey: 'assets/catalog.json',
+        localCache: cache,
+      );
+
+      final catalog = await repository.loadCatalog();
+
+      expect(catalog.catalogVersion, 1);
+    });
+
+    test('cache hit: a newer cached catalog is preferred over the bundled asset', () async {
+      final cache = _FakeCatalogLocalCache(
+        initial: CachedCatalog(rawJson: _catalogJsonAtVersion(2), catalogVersion: 2),
+      );
+      final repository = CatalogRepository(
+        loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+        assetKey: 'assets/catalog.json',
+        localCache: cache,
+      );
+
+      final catalog = await repository.loadCatalog();
+
+      expect(catalog.catalogVersion, 2);
+    });
+
+    test('a cached catalog that is not newer than the bundled asset is ignored', () async {
+      final cache = _FakeCatalogLocalCache(
+        initial: CachedCatalog(rawJson: _catalogJsonAtVersion(1), catalogVersion: 1),
+      );
+      final repository = CatalogRepository(
+        loadAsset: fixedLoader(_catalogJsonAtVersion(2)),
+        assetKey: 'assets/catalog.json',
+        localCache: cache,
+      );
+
+      final catalog = await repository.loadCatalog();
+
+      expect(catalog.catalogVersion, 2);
+    });
+
+    test('remote reports no update: the bundled/cache result is kept unchanged', () async {
+      final remote = _FakeCatalogRemoteSource(result: const RemoteCatalogCheck.noUpdate());
+      final repository = CatalogRepository(
+        loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+        assetKey: 'assets/catalog.json',
+        remoteSource: remote,
+      );
+
+      final catalog = await repository.loadCatalog();
+
+      expect(catalog.catalogVersion, 1);
+      expect(remote.lastCheckedVersion, 1);
+    });
+
+    test(
+      'remote reports an update: it is preferred and persisted to the cache',
+      () async {
+        final cache = _FakeCatalogLocalCache();
+        final remote = _FakeCatalogRemoteSource(
+          result: RemoteCatalogCheck.updateAvailable(_catalogJsonAtVersion(3)),
+        );
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          localCache: cache,
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, 3);
+        expect(cache.writeWasCalled, isTrue);
+        expect(cache.writtenVersion, 3);
+      },
+    );
+
+    test(
+      'dependency injection: a custom localCache and remoteSource are used instead '
+      'of the defaults',
+      () async {
+        final cache = _FakeCatalogLocalCache(
+          initial: CachedCatalog(rawJson: _catalogJsonAtVersion(5), catalogVersion: 5),
+        );
+        final remote = _FakeCatalogRemoteSource();
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          localCache: cache,
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        // Proves the injected fakes were actually used, not the defaults
+        // (NoopCatalogLocalCache would never have produced version 5, and
+        // the fake remote's call is directly observable).
+        expect(catalog.catalogVersion, 5);
+        expect(remote.lastCheckedVersion, 5);
+      },
+    );
+
+    test(
+      'fallback order: bundled → cache → remote, each preferred only if newer',
+      () async {
+        final cache = _FakeCatalogLocalCache(
+          initial: CachedCatalog(rawJson: _catalogJsonAtVersion(2), catalogVersion: 2),
+        );
+        final remote = _FakeCatalogRemoteSource(
+          result: RemoteCatalogCheck.updateAvailable(_catalogJsonAtVersion(3)),
+        );
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          localCache: cache,
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        // Bundled (1) is superseded by cache (2), which is in turn
+        // superseded by remote (3) — the remote source was consulted
+        // using the cache-resolved version, not the original bundled one.
+        expect(catalog.catalogVersion, 3);
+        expect(remote.lastCheckedVersion, 2);
+        expect(cache.writtenVersion, 3);
+      },
+    );
+
+    test('a failure reading the cache is ignored, falling back to the bundled asset', () async {
+      final cache = _FakeCatalogLocalCache(readError: Exception('cache read failed'));
+      final repository = CatalogRepository(
+        loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+        assetKey: 'assets/catalog.json',
+        localCache: cache,
+      );
+
+      final catalog = await repository.loadCatalog();
+
+      expect(catalog.catalogVersion, 1);
+    });
+
+    test(
+      'a failure checking the remote source is ignored, falling back to the bundled asset',
+      () async {
+        final remote = _FakeCatalogRemoteSource(checkError: Exception('remote check failed'));
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, 1);
       },
     );
   });
