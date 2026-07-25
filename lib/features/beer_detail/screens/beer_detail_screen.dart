@@ -2,45 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/catalog.dart';
-import 'package:valuebrew/data/models/sku.dart';
-import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
-
-/// Resolves [styleId] to its [Style] within [catalog], or `null` if no
-/// style with that id exists.
-///
-/// [Beer.styleId] is a plain reference, not an embedded [Style] — this is
-/// the lookup that resolves it, scoped to this screen's single call site.
-Style? _resolveStyle(Catalog catalog, String styleId) {
-  for (final style in catalog.styles) {
-    if (style.id == styleId) {
-      return style;
-    }
-  }
-  return null;
-}
-
-/// Returns every [Sku] in [catalog] belonging to the beer with [beerId].
-///
-/// [Sku.beerId] is a plain reference, not an embedded [Beer] — this is the
-/// lookup that resolves it, scoped to this screen's single call site.
-List<Sku> _resolveSkus(Catalog catalog, String beerId) {
-  return catalog.skus.where((sku) => sku.beerId == beerId).toList();
-}
-
-/// Plain-language label for a [ValueVerdict], matching the wording in the
-/// V1 technical architecture's Value Score algorithm.
-String _verdictLabel(ValueVerdict verdict) {
-  switch (verdict) {
-    case ValueVerdict.greatValue:
-      return 'Great value';
-    case ValueVerdict.fairValue:
-      return 'Fair value';
-    case ValueVerdict.overpriced:
-      return 'Overpriced for this ABV';
-  }
-}
 
 /// Shows details for a single [Beer]: its name, brewery, style, and every
 /// [Sku] (pack size) it comes in.
@@ -69,8 +32,8 @@ class BeerDetailScreen extends ConsumerWidget {
           child: Text('Failed to load catalog: $error'),
         ),
         data: (catalog) {
-          final style = _resolveStyle(catalog, beer.styleId);
-          final skus = _resolveSkus(catalog, beer.id);
+          final style = resolveStyle(catalog, beer.styleId);
+          final skus = resolveSkus(catalog, beer.id);
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -94,7 +57,7 @@ class BeerDetailScreen extends ConsumerWidget {
                       Text('MRP: ₹${sku.price}'),
                       Text(
                         'Value score: ${sku.valueScore} '
-                        '(${_verdictLabel(sku.valueVerdict)})',
+                        '(${verdictLabel(sku.valueVerdict)})',
                       ),
                       const Divider(),
                     ],

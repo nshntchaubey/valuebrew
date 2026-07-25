@@ -4,38 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
+import 'package:valuebrew/features/compare/screens/compare_screen.dart';
 import 'package:valuebrew/features/search/providers/search_providers.dart';
+import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
-
-/// Returns the [Sku] with the highest `valueScore` among those belonging
-/// to the beer with [beerId], or `null` if it has no SKUs.
-///
-/// [Sku.beerId] is a plain reference, not an embedded beer object — this
-/// is the lookup that resolves it, scoped to this screen's single call
-/// site.
-Sku? _bestSkuForBeer(List<Sku> skus, String beerId) {
-  Sku? best;
-  for (final sku in skus) {
-    if (sku.beerId != beerId) continue;
-    if (best == null || sku.valueScore > best.valueScore) {
-      best = sku;
-    }
-  }
-  return best;
-}
-
-/// Plain-language label for a [ValueVerdict], matching the wording in the
-/// V1 technical architecture's Value Score algorithm.
-String _verdictLabel(ValueVerdict verdict) {
-  switch (verdict) {
-    case ValueVerdict.greatValue:
-      return 'Great value';
-    case ValueVerdict.fairValue:
-      return 'Fair value';
-    case ValueVerdict.overpriced:
-      return 'Overpriced for this ABV';
-  }
-}
 
 /// How [HomeScreen] orders the beer list.
 enum SortMode {
@@ -48,7 +20,7 @@ enum SortMode {
 }
 
 /// Sorts [beers] by [SortMode.bestValue]: descending by each beer's
-/// highest `valueScore` (via [_bestSkuForBeer]), beers with no SKUs always
+/// highest `valueScore` (via [bestSkuForBeer]), beers with no SKUs always
 /// last, and ties (including "no SKUs" ties) broken by [beers]' original
 /// order.
 ///
@@ -57,7 +29,7 @@ enum SortMode {
 /// behaviour regardless of the underlying sort algorithm.
 List<Beer> _sortedByValue(List<Beer> beers, List<Sku> skus) {
   final bestScoreByBeerId = <String, int?>{
-    for (final beer in beers) beer.id: _bestSkuForBeer(skus, beer.id)?.valueScore,
+    for (final beer in beers) beer.id: bestSkuForBeer(skus, beer.id)?.valueScore,
   };
 
   final indexed = beers.asMap().entries.toList()
@@ -102,6 +74,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: const Text('ValueBrew'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.compare_arrows),
+            tooltip: 'Compare beers',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CompareScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -150,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemCount: orderedBeers.length,
                   itemBuilder: (context, index) {
                     final beer = orderedBeers[index];
-                    final bestSku = _bestSkuForBeer(skus, beer.id);
+                    final bestSku = bestSkuForBeer(skus, beer.id);
                     return ListTile(
                       title: Text(beer.name),
                       subtitle: Column(
@@ -161,7 +145,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             bestSku == null
                                 ? 'No SKUs available'
                                 : 'Value score: ${bestSku.valueScore} '
-                                    '(${_verdictLabel(bestSku.valueVerdict)})',
+                                    '(${verdictLabel(bestSku.valueVerdict)})',
                           ),
                         ],
                       ),
