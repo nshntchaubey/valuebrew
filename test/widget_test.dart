@@ -24,6 +24,69 @@ const _catalogJson = '''
 }
 ''';
 
+const _catalogJsonWithSkus = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" }
+  ],
+  "beers": [
+    { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false },
+    { "id": "toit_porter", "name": "Toit Porter", "brewery": "Toit Brewpub", "style_id": "lager", "is_craft": true },
+    { "id": "simba_strong", "name": "Simba Strong", "brewery": "Kals Brewing", "style_id": "lager", "is_craft": false }
+  ],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "kf_premium_330",
+      "beer_id": "kf_premium",
+      "size_ml": 330,
+      "package_type": "can",
+      "abv": 4.8,
+      "calories": 130,
+      "price": 90,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 272.7,
+      "cost_per_ml_alcohol": 5.68,
+      "value_score": 40,
+      "value_verdict": "overpriced"
+    },
+    {
+      "id": "toit_porter_330",
+      "beer_id": "toit_porter",
+      "size_ml": 330,
+      "package_type": "can",
+      "abv": 6.5,
+      "calories": 220,
+      "price": 250,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 757.6,
+      "cost_per_ml_alcohol": 11.66,
+      "value_score": 55,
+      "value_verdict": "fair_value"
+    }
+  ],
+  "benchmarks": []
+}
+''';
+
 void main() {
   testWidgets('HomeScreen shows a loading indicator, then the loaded beers', (
     WidgetTester tester,
@@ -189,4 +252,66 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'HomeScreen shows the highest-scoring SKU per beer, and a fallback for beers with none',
+    (WidgetTester tester) async {
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJsonWithSkus,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Kingfisher Premium has two SKUs (78 great_value, 40 overpriced) —
+      // the higher-scoring one must be shown, not the lower one.
+      expect(find.text('Value score: 78 (Great value)'), findsOneWidget);
+      expect(find.text('Value score: 40 (Overpriced for this ABV)'), findsNothing);
+
+      // Toit Porter has a single SKU.
+      expect(find.text('Value score: 55 (Fair value)'), findsOneWidget);
+
+      // Simba Strong has no SKUs at all — must not crash, and shows the
+      // fallback instead.
+      expect(find.text('No SKUs available'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'navigation to BeerDetailScreen still works when rows show a value summary',
+    (WidgetTester tester) async {
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJsonWithSkus,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Kingfisher Premium'));
+      await tester.pumpAndSettle();
+
+      final detailScreen = find.byType(BeerDetailScreen);
+      expect(detailScreen, findsOneWidget);
+      expect(
+        find.descendant(of: detailScreen, matching: find.text('United Breweries')),
+        findsOneWidget,
+      );
+    },
+  );
 }
