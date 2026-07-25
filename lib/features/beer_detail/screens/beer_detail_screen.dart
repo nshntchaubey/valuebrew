@@ -4,48 +4,61 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/features/beer_detail/wrong_report.dart';
+import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
-/// Returns every beer in [catalog] sharing [beer]'s style (excluding
-/// [beer] itself) that has at least one SKU, ranked by that beer's best
-/// `valueScore` descending. Ties are broken by [catalog.beers]' original
-/// order.
+/// Runs [compute] and returns its result, or an empty list if it throws.
 ///
-/// Beers with no SKUs are excluded entirely — there is no value score to
-/// rank or display for them, so they aren't a meaningful "better value"
-/// suggestion. This intentionally differs from [HomeScreen]'s sort, which
-/// keeps no-SKU beers (placed last) since Home lists every beer
-/// regardless of value data; this section only ever suggests beers that
-/// actually have a value comparison to offer, so the two aren't the same
-/// operation despite the visual similarity — see the Design Decisions
-/// note on why this wasn't merged with Home's sorting logic.
+/// [RecommendationEngine] is trusted, tested business logic, but a screen
+/// should never let a recommendation failure take down the whole page —
+/// the rest of [BeerDetailScreen] (name, SKUs, "This looks wrong") is
+/// useful on its own even if recommendations can't be produced.
+List<Sku> _safeRecommendations(List<Sku> Function() compute) {
+  try {
+    return compute();
+  } catch (_) {
+    return const [];
+  }
+}
+
+/// Builds the row for a single recommended [sku] (its resolved beer's name
+/// and brewery, plus [sku]'s own value score), or `null` if [sku]'s beer
+/// can't be resolved in [catalog] — which shouldn't happen for a
+/// consistent catalog, but isn't worth crashing over if it ever does.
 ///
-/// Sorting on `(score, originalIndex)` pairs, rather than relying on
-/// [List.sort]'s own stability, is what guarantees the tie-breaking
-/// behaviour regardless of the underlying sort algorithm.
-List<Beer> _similarBeers(Catalog catalog, Beer beer) {
-  final candidates = catalog.beers
-      .where((candidate) => candidate.styleId == beer.styleId && candidate.id != beer.id)
-      .toList();
+/// [sectionKey] distinguishes which of the two recommendation sections
+/// this tile belongs to (e.g. `'similar'` vs `'better_value'`). The same
+/// SKU can legitimately qualify for both sections at once, so this is
+/// purely a testability hook — it has no visual effect — letting tests
+/// target a specific section's tile for a given SKU unambiguously.
+///
+/// Tapping the row pushes a new [BeerDetailScreen] for that beer, same as
+/// the rest of this screen's navigation.
+Widget? _recommendationTile(BuildContext context, Catalog catalog, Sku sku, String sectionKey) {
+  final candidateBeer = resolveBeer(catalog, sku.beerId);
+  if (candidateBeer == null) return null;
 
-  final bestScoreByBeerId = <String, int?>{
-    for (final candidate in candidates)
-      candidate.id: bestSkuForBeer(catalog.skus, candidate.id)?.valueScore,
-  };
-
-  final withSkus = candidates.where((c) => bestScoreByBeerId[c.id] != null).toList();
-
-  final indexed = withSkus.asMap().entries.toList()
-    ..sort((a, b) {
-      final scoreComparison =
-          bestScoreByBeerId[b.value.id]!.compareTo(bestScoreByBeerId[a.value.id]!);
-      if (scoreComparison != 0) return scoreComparison;
-      return a.key.compareTo(b.key);
-    });
-
-  return [for (final entry in indexed) entry.value];
+  return ListTile(
+    key: ValueKey('$sectionKey:${sku.id}'),
+    contentPadding: EdgeInsets.zero,
+    title: Text(candidateBeer.name),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(candidateBeer.brewery),
+        Text('Value score: ${sku.valueScore} (${sku.valueVerdict.displayLabel})'),
+      ],
+    ),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => BeerDetailScreen(beer: candidateBeer)),
+      );
+    },
+  );
 }
 
 /// A small "This looks wrong" action for a single (beer, SKU) pair.
@@ -134,15 +147,30 @@ class _WrongReportAction extends ConsumerWidget {
 
 /// Shows details for a single [Beer]: its name, brewery, style, every
 /// [Sku] (pack size) it comes in, a "This looks wrong" report action per
-/// SKU, and a ranked "Similar & Better Value" list of other beers in the
-/// same style.
+/// SKU, and two [RecommendationEngine]-backed lists — "Similar beers" and
+/// "Better value picks" — under a shared "Similar & Better Value" heading.
 ///
 /// Deliberately minimal — no SKU selection belongs here yet, every SKU is
 /// simply listed. `valueScore`/`valueVerdict` are read directly from the
 /// catalog's precomputed fields; there is no on-device recomputation (see
 /// the Value Engine milestone notes). [beer] is passed in directly by the
-/// caller (see [catalogProvider] usage below for how its [Style], [Sku]s,
-/// and similar beers are resolved).
+/// caller (see [catalogProvider] usage below for how its [Style] and
+/// [Sku]s are resolved, and [recommendationEngineProvider] for how its
+/// recommendations are produced).
+///
+/// This screen has no beer-level SKU selection, so its highest-`valueScore`
+/// SKU (via [bestSkuForBeer]) stands in as the reference SKU passed to
+/// [RecommendationEngine] — the same SKU this screen already used to rank
+/// candidates before this milestone. If a beer has no SKUs at all, there is
+/// no reference SKU and both recommendation lists are simply empty.
+///
+/// [RecommendationEngine] is SKU-level and only excludes the exact
+/// reference SKU it was given, not every SKU belonging to the same beer
+/// (see its own tests) — so this screen filters out any recommended SKU
+/// whose `beerId` matches [beer]'s own, since a beer with more than one SKU
+/// would otherwise be recommended to itself. This is this screen's own
+/// beer-level adaptation of a SKU-level result, not a change to
+/// [RecommendationEngine]'s behaviour.
 class BeerDetailScreen extends ConsumerWidget {
   const BeerDetailScreen({required this.beer, super.key});
 
@@ -152,6 +180,7 @@ class BeerDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final catalogAsync = ref.watch(catalogProvider);
+    final engine = ref.watch(recommendationEngineProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(beer.name)),
@@ -163,7 +192,25 @@ class BeerDetailScreen extends ConsumerWidget {
         data: (catalog) {
           final style = resolveStyle(catalog, beer.styleId);
           final skus = resolveSkus(catalog, beer.id);
-          final similarBeers = _similarBeers(catalog, beer);
+          final referenceSku = bestSkuForBeer(catalog.skus, beer.id);
+
+          // RecommendationEngine only excludes the exact reference SKU, not
+          // every SKU of its beer (it's deliberately SKU-level — see its own
+          // tests). This screen is beer-level, so a beer with more than one
+          // SKU would otherwise recommend itself; filtering out any result
+          // sharing beer.id is this screen's own adaptation, not a change to
+          // the engine's behaviour.
+          final similarBeers = referenceSku == null
+              ? const <Sku>[]
+              : _safeRecommendations(() => engine.similarBeers(referenceSku, catalog))
+                  .where((sku) => sku.beerId != beer.id)
+                  .toList();
+          final betterValueAlternatives = referenceSku == null
+              ? const <Sku>[]
+              : _safeRecommendations(() => engine.betterValueAlternatives(referenceSku, catalog))
+                  .where((sku) => sku.beerId != beer.id)
+                  .toList();
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -202,34 +249,29 @@ class BeerDetailScreen extends ConsumerWidget {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
+                Text(
+                  'Similar beers',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
                 if (similarBeers.isEmpty)
                   const Text('No similar beers available.')
                 else
-                  ...similarBeers.map((candidate) {
-                    final candidateSku = bestSkuForBeer(catalog.skus, candidate.id)!;
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(candidate.name),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(candidate.brewery),
-                          Text(
-                            'Value score: ${candidateSku.valueScore} '
-                            '(${candidateSku.valueVerdict.displayLabel})',
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BeerDetailScreen(beer: candidate),
-                          ),
-                        );
-                      },
-                    );
-                  }),
+                  ...similarBeers
+                      .map((sku) => _recommendationTile(context, catalog, sku, 'similar'))
+                      .whereType<Widget>(),
+                const SizedBox(height: 16),
+                Text(
+                  'Better value picks',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                if (betterValueAlternatives.isEmpty)
+                  const Text('No better value alternatives available.')
+                else
+                  ...betterValueAlternatives
+                      .map((sku) => _recommendationTile(context, catalog, sku, 'better_value'))
+                      .whereType<Widget>(),
               ],
             ),
           );

@@ -4,8 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:valuebrew/data/models/beer.dart';
+import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
+import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';
+import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
+import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
+import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
+import 'package:valuebrew/features/recommendation/services/recommendation_engine.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
 const _catalogJson = '''
@@ -109,7 +116,26 @@ const _multipleSkusJson = '''
 }
 ''';
 
-const _similarBeersJson = '''
+/// Built so the two recommendation sections have distinct, hand-verifiable
+/// expected contents:
+///
+/// - `fosters_650`: same style, identical ABV/cost/package as the
+///   reference, different brewery, and a higher valueScore. Qualifies for
+///   both "Similar beers" (highest similarity: matches everything but
+///   brewery) and "Better value picks" (comparable ABV, genuinely better
+///   value).
+/// - `weak_lager_650`: same style, but ABV far enough apart (diff 4.1) to
+///   fail `betterValueAlternatives`' ABV-comparability gate — appears only
+///   in "Similar beers" (ranked below fosters: same price/style, but a
+///   zero ABV-closeness score and a different package type).
+/// - `craft_ipa_330`: a different style entirely, with a higher raw
+///   valueScore than the reference — proves `betterValueAlternatives`
+///   correctly excludes it (style gate) even though a naive "just sort by
+///   valueScore" approach would have included it. Appears in "Similar
+///   beers" too, ranked last (only ABV and cost happen to match).
+/// - `no_sku_lager`: a same-style beer with no SKU at all — must never
+///   appear in either section.
+const _recommendationsJson = '''
 {
   "catalog_version": 1,
   "generated_at": "2026-01-01T00:00:00Z",
@@ -119,11 +145,10 @@ const _similarBeersJson = '''
   ],
   "beers": [
     { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false },
-    { "id": "toit_porter", "name": "Toit Porter", "brewery": "Toit Brewpub", "style_id": "lager", "is_craft": true },
-    { "id": "simba_strong", "name": "Simba Strong", "brewery": "Kals Brewing", "style_id": "lager", "is_craft": false },
+    { "id": "fosters", "name": "Foster's", "brewery": "CUB", "style_id": "lager", "is_craft": false },
     { "id": "weak_lager", "name": "Weak Lager", "brewery": "Some Brewery", "style_id": "lager", "is_craft": false },
-    { "id": "no_sku_lager", "name": "No Sku Lager", "brewery": "Ghost Brewery", "style_id": "lager", "is_craft": false },
-    { "id": "craft_ipa", "name": "Craft IPA", "brewery": "Arbor Brewing", "style_id": "ipa", "is_craft": true }
+    { "id": "craft_ipa", "name": "Craft IPA", "brewery": "Arbor Brewing", "style_id": "ipa", "is_craft": true },
+    { "id": "no_sku_lager", "name": "No Sku Lager", "brewery": "Ghost Brewery", "style_id": "lager", "is_craft": false }
   ],
   "skus": [
     {
@@ -137,68 +162,53 @@ const _similarBeersJson = '''
       "price_last_checked": "2026-07-20",
       "price_source": "test",
       "cost_per_litre": 169.2,
-      "cost_per_ml_alcohol": 3.52,
+      "cost_per_ml_alcohol": 4.0,
       "value_score": 50,
       "value_verdict": "fair_value"
     },
     {
-      "id": "toit_porter_330",
-      "beer_id": "toit_porter",
-      "size_ml": 330,
-      "package_type": "can",
-      "abv": 6.5,
-      "calories": 220,
-      "price": 250,
+      "id": "fosters_650",
+      "beer_id": "fosters",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 130,
       "price_last_checked": "2026-07-18",
       "price_source": "test",
-      "cost_per_litre": 757.6,
-      "cost_per_ml_alcohol": 11.66,
-      "value_score": 78,
-      "value_verdict": "great_value"
-    },
-    {
-      "id": "simba_strong_500",
-      "beer_id": "simba_strong",
-      "size_ml": 500,
-      "package_type": "can",
-      "abv": 8.0,
-      "calories": 300,
-      "price": 150,
-      "price_last_checked": "2026-07-18",
-      "price_source": "test",
-      "cost_per_litre": 300.0,
-      "cost_per_ml_alcohol": 3.75,
-      "value_score": 78,
+      "cost_per_litre": 200.0,
+      "cost_per_ml_alcohol": 4.0,
+      "value_score": 90,
       "value_verdict": "great_value"
     },
     {
       "id": "weak_lager_650",
       "beer_id": "weak_lager",
       "size_ml": 650,
-      "package_type": "bottle",
-      "abv": 4.5,
+      "package_type": "can",
+      "abv": 8.9,
       "calories": 260,
       "price": 140,
       "price_last_checked": "2026-07-18",
       "price_source": "test",
       "cost_per_litre": 215.4,
-      "cost_per_ml_alcohol": 4.78,
-      "value_score": 30,
+      "cost_per_ml_alcohol": 4.0,
+      "value_score": 20,
       "value_verdict": "overpriced"
     },
     {
       "id": "craft_ipa_330",
       "beer_id": "craft_ipa",
       "size_ml": 330,
-      "package_type": "bottle",
-      "abv": 6.0,
+      "package_type": "can",
+      "abv": 4.8,
       "calories": 210,
       "price": 300,
       "price_last_checked": "2026-07-18",
       "price_source": "test",
       "cost_per_litre": 909.1,
-      "cost_per_ml_alcohol": 15.15,
-      "value_score": 90,
+      "cost_per_ml_alcohol": 4.0,
+      "value_score": 95,
       "value_verdict": "great_value"
     }
   ],
@@ -214,9 +224,26 @@ const _kfPremium = Beer(
   isCraft: false,
 );
 
-Widget _wrap(Widget child, {required CatalogRepository repository}) {
+/// A [RecommendationEngine] whose methods always throw — used to prove
+/// that a recommendation failure can't crash [BeerDetailScreen].
+class _ThrowingRecommendationEngine extends RecommendationEngine {
+  @override
+  List<Sku> similarBeers(Sku beer, Catalog catalog) => throw StateError('boom');
+
+  @override
+  List<Sku> betterValueAlternatives(Sku beer, Catalog catalog) => throw StateError('boom');
+}
+
+Widget _wrap(
+  Widget child, {
+  required CatalogRepository repository,
+  List<Override> extraOverrides = const [],
+}) {
   return ProviderScope(
-    overrides: [catalogRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      catalogRepositoryProvider.overrideWithValue(repository),
+      ...extraOverrides,
+    ],
     child: MaterialApp(home: child),
   );
 }
@@ -362,29 +389,11 @@ void main() {
     expect(find.text('Value score: 20 (Overpriced for this ABV)'), findsNothing);
   });
 
-  testWidgets('shows the empty-state message when there are no similar beers', (
-    WidgetTester tester,
-  ) async {
-    final repository = CatalogRepository(
-      loadAsset: (key) async => _catalogJson,
-      assetKey: 'fake_key',
-    );
-
-    await tester.pumpWidget(
-      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Similar & Better Value'), findsOneWidget);
-    expect(find.text('No similar beers available.'), findsOneWidget);
-  });
-
   testWidgets(
-    'shows similar beers ranked by value score, excluding the current beer, '
-    'other styles, and beers with no SKUs',
+    'shows the empty-state message in both recommendation sections when the beer has no SKUs',
     (WidgetTester tester) async {
       final repository = CatalogRepository(
-        loadAsset: (key) async => _similarBeersJson,
+        loadAsset: (key) async => _catalogJson,
         assetKey: 'fake_key',
       );
 
@@ -393,42 +402,110 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Same-style beers with SKUs are shown, correctly ranked.
-      expect(find.text('Toit Porter'), findsOneWidget);
-      expect(find.text('Toit Brewpub'), findsOneWidget);
-      expect(find.text('Simba Strong'), findsOneWidget);
-      expect(find.text('Kals Brewing'), findsOneWidget);
-      expect(find.text('Weak Lager'), findsOneWidget);
-
-      // The viewed beer itself must not appear in its own similar list.
-      // (Its name still appears twice as-is: once in the AppBar title,
-      // once as the screen's own heading — never a third time in the
-      // similar-beers section below.)
-      expect(find.text('Kingfisher Premium'), findsNWidgets(2));
-
-      // A beer in a different style must not appear.
-      expect(find.text('Craft IPA'), findsNothing);
-
-      // A same-style beer with no SKUs must not appear — there is no
-      // value score to display or rank it by.
-      expect(find.text('No Sku Lager'), findsNothing);
-
-      // Toit Porter and Simba Strong tie at 78; catalog order (Toit
-      // Porter listed first) must be preserved. Weak Lager (30) ranks
-      // last among the three.
-      final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
-      final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
-      final weakY = tester.getTopLeft(find.text('Weak Lager')).dy;
-      expect(toitY, lessThan(simbaY));
-      expect(simbaY, lessThan(weakY));
+      expect(find.text('Similar & Better Value'), findsOneWidget);
+      expect(find.text('Similar beers'), findsOneWidget);
+      expect(find.text('No similar beers available.'), findsOneWidget);
+      expect(find.text('Better value picks'), findsOneWidget);
+      expect(find.text('No better value alternatives available.'), findsOneWidget);
     },
   );
 
-  testWidgets('tapping a similar beer pushes a new BeerDetailScreen for it', (
+  testWidgets(
+    'shows the empty-state message in both recommendation sections when nothing else qualifies',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _oneSkuJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('No similar beers available.'), findsOneWidget);
+      expect(find.text('No better value alternatives available.'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Similar beers is ranked by RecommendationEngine.similarBeers, excluding the '
+    'current beer and beers with no SKUs',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _recommendationsJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      // All three other SKUs appear in Similar beers — similarBeers has no
+      // style filter, just a similarity ranking. (Foster's also separately
+      // qualifies for Better value picks — see the next test — so its name
+      // legitimately appears twice on screen; the 'similar:' key below
+      // targets only its Similar-beers tile.)
+      final fostersSimilarTile = find.byKey(const ValueKey('similar:fosters_650'));
+      final weakSimilarTile = find.byKey(const ValueKey('similar:weak_lager_650'));
+      final craftSimilarTile = find.byKey(const ValueKey('similar:craft_ipa_330'));
+      expect(fostersSimilarTile, findsOneWidget);
+      expect(weakSimilarTile, findsOneWidget);
+      expect(craftSimilarTile, findsOneWidget);
+
+      // The viewed beer itself must not appear in its own similar list.
+      expect(find.text('Kingfisher Premium'), findsNWidgets(2));
+
+      // A same-style beer with no SKU must never appear.
+      expect(find.text('No Sku Lager'), findsNothing);
+
+      // fosters (score 0.9375) > weak_lager (0.5625) > craft_ipa (0.4375) —
+      // see the fixture's doc comment for the full weighted-score derivation.
+      final fostersY = tester.getTopLeft(fostersSimilarTile).dy;
+      final weakY = tester.getTopLeft(weakSimilarTile).dy;
+      final craftY = tester.getTopLeft(craftSimilarTile).dy;
+      expect(fostersY, lessThan(weakY));
+      expect(weakY, lessThan(craftY));
+    },
+  );
+
+  testWidgets(
+    'Better value picks only shows RecommendationEngine.betterValueAlternatives\' '
+    'results: same style, comparable ABV, and a genuinely higher valueScore',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _recommendationsJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      // Only fosters qualifies: same style, comparable ABV, higher value.
+      final betterValueSection = find.text('Better value picks');
+      expect(betterValueSection, findsOneWidget);
+      expect(find.byKey(const ValueKey('better_value:fosters_650')), findsOneWidget);
+
+      // weak_lager has a comparable style but too different an ABV; craft_ipa
+      // has a higher raw valueScore but a different style — a naive
+      // "sort every beer by valueScore" would have wrongly included one or
+      // both, which this test rules out by confirming neither has a tile in
+      // the Better value picks section specifically (both legitimately do
+      // have a tile in Similar beers — see the previous test).
+      expect(find.byKey(const ValueKey('better_value:weak_lager_650')), findsNothing);
+      expect(find.byKey(const ValueKey('better_value:craft_ipa_330')), findsNothing);
+      expect(find.text('No better value alternatives available.'), findsNothing);
+    },
+  );
+
+  testWidgets('tapping a recommendation pushes a new BeerDetailScreen for it', (
     WidgetTester tester,
   ) async {
     final repository = CatalogRepository(
-      loadAsset: (key) async => _similarBeersJson,
+      loadAsset: (key) async => _recommendationsJson,
       assetKey: 'fake_key',
     );
 
@@ -437,17 +514,88 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final toitRow = find.widgetWithText(ListTile, 'Toit Porter');
-    await tester.tap(toitRow);
+    final fostersRow = find.byKey(const ValueKey('similar:fosters_650'));
+    await tester.tap(fostersRow);
     await tester.pumpAndSettle();
 
     // The pushed screen's AppBar title and content uniquely identify it as
-    // Toit Porter's own BeerDetailScreen (its own brewery and value score,
-    // not Kingfisher Premium's).
-    expect(find.widgetWithText(AppBar, 'Toit Porter'), findsOneWidget);
-    expect(find.text('Toit Brewpub'), findsOneWidget);
-    expect(find.text('Value score: 78 (Great value)'), findsWidgets);
+    // Foster's own BeerDetailScreen (its own brewery and value score, not
+    // Kingfisher Premium's).
+    expect(find.widgetWithText(AppBar, "Foster's"), findsOneWidget);
+    expect(find.text('CUB'), findsOneWidget);
+    expect(find.text('Value score: 90 (Great value)'), findsWidgets);
   });
+
+  testWidgets(
+    'a different RecommendationPolicy (via Riverpod) changes what Similar beers shows — '
+    'proving the screen actually delegates to RecommendationEngine rather than its own logic',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _recommendationsJson,
+        assetKey: 'fake_key',
+      );
+
+      // Brewery match only: none of the three candidates share Kingfisher
+      // Premium's brewery, so every similarity score is 0.0 — a completely
+      // different ranking outcome (all tied) from the default policy's.
+      const breweryOnlyPolicy = DefaultRecommendationPolicy(
+        similarityScorer: WeightedScorer({BreweryMatchStrategy(): 1.0}),
+      );
+
+      await tester.pumpWidget(
+        _wrap(
+          const BeerDetailScreen(beer: _kfPremium),
+          repository: repository,
+          extraOverrides: [
+            recommendationPolicyProvider.overrideWithValue(breweryOnlyPolicy),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // All three still appear in Similar beers (no candidate shares a
+      // brewery with the reference, so every score is exactly 0.0 — still
+      // >= the default 0.0 threshold, so nothing is filtered out), but this
+      // is driven entirely by the overridden policy's WeightedScorer, not
+      // any logic inside BeerDetailScreen.
+      expect(find.byKey(const ValueKey('similar:fosters_650')), findsOneWidget);
+      expect(find.byKey(const ValueKey('similar:weak_lager_650')), findsOneWidget);
+      expect(find.byKey(const ValueKey('similar:craft_ipa_330')), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'a recommendation failure leaves the rest of the screen intact and shows empty '
+    'recommendation sections instead of crashing',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _oneSkuJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(
+          const BeerDetailScreen(beer: _kfPremium),
+          repository: repository,
+          extraOverrides: [
+            recommendationEngineProvider.overrideWithValue(_ThrowingRecommendationEngine()),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // No uncaught exception reached the widget tree.
+      expect(tester.takeException(), isNull);
+
+      // The rest of the screen still renders normally.
+      expect(find.text('Kingfisher Premium'), findsWidgets);
+      expect(find.text('Bottle · 650 mL'), findsOneWidget);
+
+      // Both recommendation sections gracefully fall back to empty.
+      expect(find.text('No similar beers available.'), findsOneWidget);
+      expect(find.text('No better value alternatives available.'), findsOneWidget);
+    },
+  );
 
   testWidgets('shows a "This looks wrong" action for each SKU', (
     WidgetTester tester,
