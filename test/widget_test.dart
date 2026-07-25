@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
+import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/main.dart';
 
@@ -71,5 +72,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Failed to load catalog'), findsOneWidget);
+  });
+
+  testWidgets('tapping a beer navigates to BeerDetailScreen showing its details', (
+    WidgetTester tester,
+  ) async {
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Kingfisher Premium'));
+    await tester.pumpAndSettle();
+
+    final detailScreen = find.byType(BeerDetailScreen);
+    expect(detailScreen, findsOneWidget);
+    expect(
+      find.descendant(of: detailScreen, matching: find.text('United Breweries')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: detailScreen, matching: find.text('Lager')),
+      findsOneWidget,
+    );
   });
 }

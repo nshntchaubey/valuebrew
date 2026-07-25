@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
 /// The app's entry-point screen: a plain list of every beer in the loaded
-/// catalog.
+/// catalog. Tapping a beer navigates to its [BeerDetailScreen].
 ///
 /// Deliberately minimal — this screen exists to prove the data flow from
-/// [catalogProvider] through to the UI. No search, filters, navigation, or
-/// custom beer-card presentation belongs here yet; those are later
-/// milestones.
+/// [catalogProvider] through to the UI. No search, filters, or custom
+/// beer-card presentation belongs here yet; those are later milestones.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -36,6 +36,14 @@ class HomeScreen extends ConsumerWidget {
               return ListTile(
                 title: Text(beer.name),
                 subtitle: Text(beer.brewery),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => BeerDetailScreen(beer: beer),
+                    ),
+                  );
+                },
               );
             },
           );
