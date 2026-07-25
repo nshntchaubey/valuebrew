@@ -1,4 +1,4 @@
-package com.example.valuebrew
+package com.nishantchaubey.valuebrew
 
 import io.flutter.embedding.android.FlutterActivity
 

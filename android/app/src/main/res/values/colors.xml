@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches Colors.amber.shade800 (0xFFFF8F00), the app theme's seed
+         color in lib/app.dart — used as the adaptive icon and splash
+         screen background so the launcher icon, splash, and in-app theme
+         all read as one brand. -->
+    <color name="ic_launcher_background">#FF8F00</color>
+</resources>

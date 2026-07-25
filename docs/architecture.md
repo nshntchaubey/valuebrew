@@ -1,6 +1,6 @@
 # ValueBrew Architecture
 
-*Last updated against the codebase as of the Favorites milestone (296 passing tests, `flutter analyze` clean).*
+*Last updated against the codebase as of the production-readiness milestone (467 passing tests, `flutter analyze` clean).*
 
 This document explains **why** ValueBrew is built the way it is — not how Flutter works, and not a line-by-line walkthrough. It's written for whoever needs to make a non-trivial change here without re-deriving the reasoning from scratch: future me, a new engineer, a reviewer, or a contributor.
 
@@ -68,7 +68,7 @@ The one nuance worth calling out explicitly: **`RecommendationEngine` is not "be
 ```
 lib/
   core/
-    constants/     — app-wide constants (currently: the bundled catalog asset key)
+    constants/     — app-wide constants (catalog asset key, remote catalog URL, timeout)
     utils/         — pure functions: fuzzy string matching, display formatting
   data/
     models/        — immutable value objects mirroring the catalog JSON schema
@@ -78,12 +78,16 @@ lib/
     beer_detail/   — BeerDetailScreen; wrong-report submission
     compare/       — side-by-side beer comparison
     favorites/     — favorites repository, provider, screen
-    home/          — the app's entry screen (search + sort + list)
+    filtering/     — FilteringEngine, FilterState, the filter bottom sheet
+    home/          — the app's entry screen (search + filter + sort + list)
     recommendation/ — the recommendation engine stack (see below)
     search/        — search query + fuzzy-matched results provider
     shared/        — catalog lookups, the catalog provider, shared widgets
+    sorting/       — SortingEngine, SortOption, the sort bottom sheet
   app.dart, main.dart
 ```
+
+(Filtering and sorting followed the same pattern `recommendation/` established — a small, self-contained engine plus its own `models/`/`providers/`/`services/`/`widgets/` — after this document was first written; the split described below still applies to each of them.)
 
 Two things about this structure are worth explaining rather than leaving implicit:
 

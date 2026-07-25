@@ -1,0 +1,8 @@
+# Copy this file to android/key.properties and fill in real values to sign
+# release builds with a real key instead of the debug key. Never commit
+# key.properties or the keystore file itself — both are already gitignored
+# (see android/.gitignore). Full instructions: docs/RELEASE_SIGNING.md.
+storePassword=REPLACE_ME
+keyPassword=REPLACE_ME
+keyAlias=valuebrew
+storeFile=/absolute/or/relative/path/to/valuebrew-release.jks
