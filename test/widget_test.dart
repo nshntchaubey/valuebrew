@@ -152,6 +152,54 @@ const _catalogJsonForSorting = '''
 }
 ''';
 
+const _catalogJsonForFiltering = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" },
+    { "id": "stout", "name": "Stout", "description": "Dark, roasted" }
+  ],
+  "beers": [
+    { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false },
+    { "id": "toit_porter", "name": "Toit Porter", "brewery": "Toit Brewpub", "style_id": "stout", "is_craft": true }
+  ],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "toit_porter_330",
+      "beer_id": "toit_porter",
+      "size_ml": 330,
+      "package_type": "can",
+      "abv": 6.5,
+      "calories": 220,
+      "price": 250,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 757.6,
+      "cost_per_ml_alcohol": 11.66,
+      "value_score": 55,
+      "value_verdict": "fair_value"
+    }
+  ],
+  "benchmarks": []
+}
+''';
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -615,4 +663,120 @@ void main() {
 
     expect(find.text('Favorites'), findsOneWidget);
   });
+
+  testWidgets('selecting a style in the filter sheet narrows the visible beer list', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJsonForFiltering,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kingfisher Premium'), findsOneWidget);
+    expect(find.text('Toit Porter'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.filter_list));
+    await tester.pumpAndSettle();
+
+    final styleDropdown = find.byType(DropdownButton<String?>).at(0);
+    await tester.tap(styleDropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Stout').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Toit Porter'), findsOneWidget);
+    expect(find.text('Kingfisher Premium'), findsNothing);
+    expect(find.text('1 filter active'), findsOneWidget);
+  });
+
+  testWidgets('the Clear action on the active-filters indicator restores the full list', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJsonForFiltering,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.filter_list));
+    await tester.pumpAndSettle();
+    final styleDropdown = find.byType(DropdownButton<String?>).at(0);
+    await tester.tap(styleDropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Stout').last);
+    await tester.pumpAndSettle();
+
+    // Dismiss the modal bottom sheet (tapping its scrim) so the
+    // underlying screen's own "Clear" action becomes tappable.
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kingfisher Premium'), findsNothing);
+
+    await tester.tap(find.widgetWithText(TextButton, 'Clear'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Kingfisher Premium'), findsOneWidget);
+    expect(find.text('Toit Porter'), findsOneWidget);
+    expect(find.textContaining('filter active'), findsNothing);
+  });
+
+  testWidgets(
+    'shows a friendly empty state when the active filters match no beer, with a working '
+    'clear-filters action',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJsonForFiltering,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.filter_list));
+      await tester.pumpAndSettle();
+
+      // A minimum value score of 100 clears every SKU-scored beer in this
+      // fixture (78 and 55), leaving nothing.
+      final slider = find.byType(Slider).last;
+      await tester.drag(slider, const Offset(1000, 0));
+      await tester.pumpAndSettle();
+
+      // Dismiss the modal bottom sheet so the underlying empty state's own
+      // "Clear filters" button is the only one, and is tappable.
+      await tester.tapAt(const Offset(10, 10));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No beers match your filters.'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Clear filters'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kingfisher Premium'), findsOneWidget);
+      expect(find.text('Toit Porter'), findsOneWidget);
+    },
+  );
 }

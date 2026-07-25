@@ -6,6 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/favorites/screens/favorites_screen.dart';
+import 'package:valuebrew/features/filtering/models/filter_state.dart';
+import 'package:valuebrew/features/filtering/providers/filtering_providers.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
 const _catalogJson = '''
@@ -56,9 +58,16 @@ const _catalogJson = '''
 }
 ''';
 
-Widget _wrap(Widget child, {required CatalogRepository repository}) {
+Widget _wrap(
+  Widget child, {
+  required CatalogRepository repository,
+  List<Override> extraOverrides = const [],
+}) {
   return ProviderScope(
-    overrides: [catalogRepositoryProvider.overrideWithValue(repository)],
+    overrides: [
+      catalogRepositoryProvider.overrideWithValue(repository),
+      ...extraOverrides,
+    ],
     child: MaterialApp(home: child),
   );
 }
@@ -147,4 +156,64 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
+
+  testWidgets(
+    'respects the app-wide filterStateProvider — the same FilteringEngine HomeScreen uses',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({
+        'favorite_beer_ids': ['kf_premium', 'toit_porter'],
+      });
+
+      await tester.pumpWidget(
+        _wrap(
+          const FavoritesScreen(),
+          repository: repository,
+          extraOverrides: [
+            filterStateProvider.overrideWith((ref) => FilterState.none.withMinValueScore(70)),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // kf_premium (value score 78) clears the threshold; toit_porter
+      // (55) does not — exactly what FilteringEngine's own unit tests
+      // already prove for this rule, now observed through the screen.
+      expect(find.text('Kingfisher Premium'), findsOneWidget);
+      expect(find.text('Toit Porter'), findsNothing);
+      expect(find.text('1 filter active'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'shows "No beers match your filters" (not the no-favorites message) when favorites exist '
+    'but the active filters exclude all of them, and Clear restores them',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({
+        'favorite_beer_ids': ['kf_premium'],
+      });
+
+      await tester.pumpWidget(
+        _wrap(
+          const FavoritesScreen(),
+          repository: repository,
+          extraOverrides: [
+            filterStateProvider.overrideWith((ref) => FilterState.none.withMinValueScore(100)),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('No beers match your filters.'), findsOneWidget);
+      expect(
+        find.text('No favorite beers yet.\n\nTap the heart on any beer to save it.'),
+        findsNothing,
+      );
+
+      await tester.tap(find.widgetWithText(TextButton, 'Clear filters'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kingfisher Premium'), findsOneWidget);
+      expect(find.text('No beers match your filters.'), findsNothing);
+    },
+  );
 }

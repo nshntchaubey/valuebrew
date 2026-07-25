@@ -6,6 +6,10 @@ import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/features/compare/screens/compare_screen.dart';
 import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
 import 'package:valuebrew/features/favorites/screens/favorites_screen.dart';
+import 'package:valuebrew/features/filtering/models/filter_state.dart';
+import 'package:valuebrew/features/filtering/providers/filtering_providers.dart';
+import 'package:valuebrew/features/filtering/widgets/active_filters_indicator.dart';
+import 'package:valuebrew/features/filtering/widgets/filter_bottom_sheet.dart';
 import 'package:valuebrew/features/search/providers/search_providers.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
@@ -49,14 +53,17 @@ List<Beer> _sortedByValue(List<Beer> beers, List<Sku> skus) {
   return [for (final entry in indexed) entry.value];
 }
 
-/// The app's entry-point screen: a search field, a sort control, and a
-/// list of matching beers from the loaded catalog, each showing its best
-/// available value. Tapping a beer navigates to its [BeerDetailScreen].
+/// The app's entry-point screen: a search field, a filter action, a sort
+/// control, and a list of matching beers from the loaded catalog, each
+/// showing its best available value. Tapping a beer navigates to its
+/// [BeerDetailScreen].
 ///
-/// Deliberately minimal — this screen exists to prove the data flow from
-/// [searchResultsProvider] through to the UI. No filters beyond name/
-/// brewery search, sort modes beyond [SortMode], or custom beer-card
-/// presentation, belong here yet; those are later milestones.
+/// The visible list is [filteredHomeBeersProvider]'s output — search text
+/// and active filters (style, brewery, ABV, price, package type, minimum
+/// value score, via [FilteringEngine]) both narrow it before this screen
+/// ever sees it; sorting is the only ordering decision this screen still
+/// makes itself. No custom beer-card presentation belongs here yet; that's
+/// a later milestone.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -69,7 +76,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final resultsAsync = ref.watch(searchResultsProvider);
+    final resultsAsync = ref.watch(filteredHomeBeersProvider);
     final skus = ref.watch(catalogProvider).valueOrNull?.skus ?? const <Sku>[];
     final favoriteIds = ref.watch(favoriteBeerIdsProvider);
 
@@ -78,6 +85,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: const Text('ValueBrew'),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Filter beers',
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (context) => const FilterBottomSheet(),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.favorite),
             tooltip: 'Favorites',
@@ -132,6 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
             ),
           ),
+          const ActiveFiltersIndicator(),
           const SizedBox(height: 8),
           Expanded(
             child: resultsAsync.when(
@@ -143,6 +162,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final orderedBeers = _sortMode == SortMode.bestValue
                     ? _sortedByValue(beers, skus)
                     : beers;
+
+                if (orderedBeers.isEmpty && ref.watch(filterStateProvider).isActive) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('No beers match your filters.'),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () =>
+                                ref.read(filterStateProvider.notifier).state = FilterState.none,
+                            child: const Text('Clear filters'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 return ListView.builder(
                   itemCount: orderedBeers.length,
                   itemBuilder: (context, index) {
