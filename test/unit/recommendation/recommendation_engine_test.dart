@@ -4,6 +4,8 @@ import 'package:valuebrew/data/models/benchmark.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
@@ -53,40 +55,103 @@ Sku _sku({
   );
 }
 
+/// Fixture shared by the "similarBeers" ranking test and the explanation
+/// tests below: a reference SKU plus three candidates engineered so their
+/// [WeightedScorer.explain] output is hand-verifiable —
+/// - `best_sku`: identical style/ABV/price/package, same brewery — matches
+///   every dimension.
+/// - `mid_sku`: same style, ABV and price close enough to mention (scores
+///   0.75 and ~0.667, both over the 0.5 explain threshold), different
+///   package and brewery.
+/// - `worst_sku`: different style, ABV and price far enough apart to score
+///   0.0 on both, different package and brewery — matches nothing at all.
+Catalog _similarityFixtureCatalog() {
+  return Catalog(
+    catalogVersion: 1,
+    generatedAt: DateTime(2026, 1, 1),
+    styles: const [
+      Style(id: 'lager', name: 'Lager', description: ''),
+      Style(id: 'ipa', name: 'IPA', description: ''),
+    ],
+    beers: const [
+      Beer(id: 'ref', name: 'Reference', brewery: 'Brewery A', styleId: 'lager', isCraft: false),
+      Beer(id: 'best', name: 'Best Match', brewery: 'Brewery A', styleId: 'lager', isCraft: false),
+      Beer(id: 'mid', name: 'Middle Match', brewery: 'Brewery B', styleId: 'lager', isCraft: false),
+      Beer(id: 'worst', name: 'Worst Match', brewery: 'Brewery C', styleId: 'ipa', isCraft: true),
+    ],
+    skus: [
+      _sku(id: 'ref_sku', beerId: 'ref', abv: 5.0, costPerMlAlcohol: 4.0, packageType: PackageType.bottle),
+      _sku(id: 'best_sku', beerId: 'best', abv: 5.0, costPerMlAlcohol: 4.0, packageType: PackageType.bottle),
+      _sku(id: 'mid_sku', beerId: 'mid', abv: 6.0, costPerMlAlcohol: 5.0, packageType: PackageType.can),
+      _sku(id: 'worst_sku', beerId: 'worst', abv: 10.0, costPerMlAlcohol: 20.0, packageType: PackageType.pint),
+    ],
+    benchmarks: const <Benchmark>[],
+  );
+}
+
 void main() {
   final engine = RecommendationEngine();
 
   group('similarBeers', () {
     test('excludes the reference SKU and ranks the rest by similarity, most similar first', () {
-      final catalog = Catalog(
-        catalogVersion: 1,
-        generatedAt: DateTime(2026, 1, 1),
-        styles: const [
-          Style(id: 'lager', name: 'Lager', description: ''),
-          Style(id: 'ipa', name: 'IPA', description: ''),
-        ],
-        beers: const [
-          Beer(id: 'ref', name: 'Reference', brewery: 'Brewery A', styleId: 'lager', isCraft: false),
-          Beer(id: 'best', name: 'Best Match', brewery: 'Brewery A', styleId: 'lager', isCraft: false),
-          Beer(id: 'mid', name: 'Middle Match', brewery: 'Brewery B', styleId: 'lager', isCraft: false),
-          Beer(id: 'worst', name: 'Worst Match', brewery: 'Brewery C', styleId: 'ipa', isCraft: true),
-        ],
-        skus: [
-          _sku(id: 'ref_sku', beerId: 'ref', abv: 5.0, costPerMlAlcohol: 4.0, packageType: PackageType.bottle),
-          // Identical on every dimension the default scorer weighs.
-          _sku(id: 'best_sku', beerId: 'best', abv: 5.0, costPerMlAlcohol: 4.0, packageType: PackageType.bottle),
-          // Same style, somewhat close ABV/price, different package/brewery.
-          _sku(id: 'mid_sku', beerId: 'mid', abv: 6.0, costPerMlAlcohol: 5.0, packageType: PackageType.can),
-          // Different style, far ABV/price, different package/brewery.
-          _sku(id: 'worst_sku', beerId: 'worst', abv: 10.0, costPerMlAlcohol: 20.0, packageType: PackageType.pint),
-        ],
-        benchmarks: const <Benchmark>[],
-      );
+      final catalog = _similarityFixtureCatalog();
 
       final reference = catalog.skus.firstWhere((s) => s.id == 'ref_sku');
       final result = engine.similarBeers(reference, catalog);
 
-      expect(result.map((s) => s.id), ['best_sku', 'mid_sku', 'worst_sku']);
+      expect(result.map((r) => r.sku.id), ['best_sku', 'mid_sku', 'worst_sku']);
+      expect(result.every((r) => r.type == RecommendationType.similar), isTrue);
+    });
+
+    test(
+      'matchedReasons reflects exactly which strategies found each candidate similar enough '
+      'to mention — proving explanations match scoring, not a separate set of rules',
+      () {
+        final catalog = _similarityFixtureCatalog();
+        final reference = catalog.skus.firstWhere((s) => s.id == 'ref_sku');
+        final result = engine.similarBeers(reference, catalog);
+
+        final reasonsById = {for (final r in result) r.sku.id: r.matchedReasons};
+
+        // Matches every dimension: style, ABV, price, package, and brewery.
+        expect(
+          reasonsById['best_sku'],
+          [
+            RecommendationReason.sameStyle,
+            RecommendationReason.similarAbv,
+            RecommendationReason.similarPrice,
+            RecommendationReason.samePackage,
+            RecommendationReason.sameBrewery,
+          ],
+        );
+
+        // Same style, ABV/price close enough to mention, but a different
+        // package and brewery.
+        expect(
+          reasonsById['mid_sku'],
+          [
+            RecommendationReason.sameStyle,
+            RecommendationReason.similarAbv,
+            RecommendationReason.similarPrice,
+          ],
+        );
+
+        // Matches nothing — a valid, if unexplained, recommendation.
+        expect(reasonsById['worst_sku'], isEmpty);
+      },
+    );
+
+    test('overallScore equals the policy\'s WeightedScorer score for that candidate', () {
+      final catalog = _similarityFixtureCatalog();
+      final reference = catalog.skus.firstWhere((s) => s.id == 'ref_sku');
+      final result = engine.similarBeers(reference, catalog);
+
+      final bestSku = catalog.skus.firstWhere((s) => s.id == 'best_sku');
+      final expectedScore =
+          const DefaultRecommendationPolicy().similarityScorer.score(reference, bestSku, catalog);
+
+      final bestRecommendation = result.firstWhere((r) => r.sku.id == 'best_sku');
+      expect(bestRecommendation.overallScore, expectedScore);
     });
 
     test('returns an empty list when the catalog has no other SKUs', () {
@@ -119,7 +184,7 @@ void main() {
       final reference = catalog.skus.firstWhere((s) => s.id == 'ref_650');
       final result = engine.similarBeers(reference, catalog);
 
-      expect(result.map((s) => s.id), ['ref_330']);
+      expect(result.map((r) => r.sku.id), ['ref_330']);
     });
   });
 
@@ -166,34 +231,57 @@ void main() {
       () {
         final result = engine.betterValueAlternatives(reference, catalog);
 
-        expect(result.map((s) => s.id), ['fosters_650', 'budweiser_650']);
+        expect(result.map((r) => r.sku.id), ['fosters_650', 'budweiser_650']);
       },
     );
 
     test('excludes a same-style, comparable-ABV SKU that is not actually better value', () {
       final result = engine.betterValueAlternatives(reference, catalog);
 
-      expect(result.map((s) => s.id), isNot(contains('kf_330')));
+      expect(result.map((r) => r.sku.id), isNot(contains('kf_330')));
     });
 
     test('excludes a higher-value SKU whose ABV is too different to be comparable', () {
       final result = engine.betterValueAlternatives(reference, catalog);
 
-      expect(result.map((s) => s.id), isNot(contains('simba_500')));
+      expect(result.map((r) => r.sku.id), isNot(contains('simba_500')));
     });
 
     test('excludes a higher-value, comparable-ABV SKU of a different style', () {
       final result = engine.betterValueAlternatives(reference, catalog);
 
-      expect(result.map((s) => s.id), isNot(contains('arbor_330')));
+      expect(result.map((r) => r.sku.id), isNot(contains('arbor_330')));
     });
 
     test('ranks qualifying alternatives by valueScore descending', () {
       final result = engine.betterValueAlternatives(reference, catalog);
 
-      expect(result.first.id, 'fosters_650');
-      expect(result.first.valueScore, greaterThan(result.last.valueScore));
+      expect(result.first.sku.id, 'fosters_650');
+      expect(result.first.sku.valueScore, greaterThan(result.last.sku.valueScore));
     });
+
+    test(
+      'every result is tagged betterValue type, with a fixed matchedReasons set and '
+      'overallScore equal to its own valueScore — reflecting the gate that already '
+      'guaranteed same style, comparable ABV, and better value, not a separate re-check',
+      () {
+        final result = engine.betterValueAlternatives(reference, catalog);
+
+        expect(result, isNotEmpty);
+        for (final recommendation in result) {
+          expect(recommendation.type, RecommendationType.betterValue);
+          expect(
+            recommendation.matchedReasons,
+            [
+              RecommendationReason.sameStyle,
+              RecommendationReason.similarAbv,
+              RecommendationReason.betterValue,
+            ],
+          );
+          expect(recommendation.overallScore, recommendation.sku.valueScore.toDouble());
+        }
+      },
+    );
 
     test('does not simply sort by cheapest — a same-style, comparable-ABV SKU with a lower '
         'valueScore never appears, regardless of its raw price', () {
@@ -202,7 +290,7 @@ void main() {
       // kf_330 shares style and a comparable ABV with the reference, but its
       // valueScore (60) is lower — a naive "cheapest first" sort would need
       // to actively exclude it, which this assertion confirms happens.
-      expect(result.any((s) => s.id == 'kf_330'), isFalse);
+      expect(result.any((r) => r.sku.id == 'kf_330'), isFalse);
     });
 
     test('returns an empty list when the reference SKU\'s beer cannot be resolved', () {
@@ -262,9 +350,9 @@ void main() {
         // same, unmodified RecommendationEngine.
         final breweryOnlyEngine = RecommendationEngine(policy: const _BreweryOnlyPolicy());
 
-        final defaultRanking = defaultEngine.similarBeers(reference, catalog).map((s) => s.id);
+        final defaultRanking = defaultEngine.similarBeers(reference, catalog).map((r) => r.sku.id);
         final breweryOnlyRanking =
-            breweryOnlyEngine.similarBeers(reference, catalog).map((s) => s.id);
+            breweryOnlyEngine.similarBeers(reference, catalog).map((r) => r.sku.id);
 
         expect(defaultRanking, ['everything_else_match_sku', 'brewery_match_sku']);
         expect(breweryOnlyRanking, ['brewery_match_sku', 'everything_else_match_sku']);
@@ -297,7 +385,7 @@ void main() {
       );
 
       expect(
-        defaultEngine.betterValueAlternatives(reference, catalog).map((s) => s.id),
+        defaultEngine.betterValueAlternatives(reference, catalog).map((r) => r.sku.id),
         ['simba_650'],
       );
       expect(strictEngine.betterValueAlternatives(reference, catalog), isEmpty);

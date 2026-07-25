@@ -8,6 +8,7 @@ import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';
 import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
@@ -216,6 +217,59 @@ const _recommendationsJson = '''
 }
 ''';
 
+/// A reference SKU plus one candidate engineered to match nothing at all:
+/// different style, ABV and cost far enough apart to score 0.0 on both, and
+/// a different package type. Used to prove a [Recommendation] with no
+/// [Recommendation.matchedReasons] still renders — just without a reason
+/// subtitle.
+const _noMatchedReasonsJson = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" },
+    { "id": "ipa", "name": "IPA", "description": "Hop-forward, bitter" }
+  ],
+  "beers": [
+    { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false },
+    { "id": "no_match", "name": "No Match Beer", "brewery": "Unrelated Brewery", "style_id": "ipa", "is_craft": true }
+  ],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 4.0,
+      "value_score": 50,
+      "value_verdict": "fair_value"
+    },
+    {
+      "id": "no_match_650",
+      "beer_id": "no_match",
+      "size_ml": 650,
+      "package_type": "pint",
+      "abv": 15.0,
+      "calories": 400,
+      "price": 500,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 800.0,
+      "cost_per_ml_alcohol": 60.0,
+      "value_score": 10,
+      "value_verdict": "overpriced"
+    }
+  ],
+  "benchmarks": []
+}
+''';
+
 const _kfPremium = Beer(
   id: 'kf_premium',
   name: 'Kingfisher Premium',
@@ -228,10 +282,11 @@ const _kfPremium = Beer(
 /// that a recommendation failure can't crash [BeerDetailScreen].
 class _ThrowingRecommendationEngine extends RecommendationEngine {
   @override
-  List<Sku> similarBeers(Sku beer, Catalog catalog) => throw StateError('boom');
+  List<Recommendation> similarBeers(Sku beer, Catalog catalog) => throw StateError('boom');
 
   @override
-  List<Sku> betterValueAlternatives(Sku beer, Catalog catalog) => throw StateError('boom');
+  List<Recommendation> betterValueAlternatives(Sku beer, Catalog catalog) =>
+      throw StateError('boom');
 }
 
 Widget _wrap(
@@ -498,6 +553,85 @@ void main() {
       expect(find.byKey(const ValueKey('better_value:weak_lager_650')), findsNothing);
       expect(find.byKey(const ValueKey('better_value:craft_ipa_330')), findsNothing);
       expect(find.text('No better value alternatives available.'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'each recommendation tile shows a reason subtitle matching its matchedReasons, in order',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _recommendationsJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      // Foster's matches style, ABV, price, and package (not brewery) in
+      // Similar beers — see the fixture's values above.
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('similar:fosters_650')),
+          matching: find.text('Same style • Similar ABV • Similar price • Same package'),
+        ),
+        findsOneWidget,
+      );
+
+      // Weak Lager's ABV is too far from the reference to score as
+      // "similar" (only style and price match).
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('similar:weak_lager_650')),
+          matching: find.text('Same style • Similar price'),
+        ),
+        findsOneWidget,
+      );
+
+      // Foster's Better value picks tile is explained by the engine's own
+      // value-improvement gate, not by WeightedScorer at all.
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('better_value:fosters_650')),
+          matching: find.text('Same style • Similar ABV • Better value'),
+        ),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets(
+    'a recommendation with no matchedReasons renders without a reason subtitle, '
+    'not a placeholder or an error',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _noMatchedReasonsJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      final tile = find.byKey(const ValueKey('similar:no_match_650'));
+      expect(tile, findsOneWidget);
+
+      // The rest of the tile still renders normally.
+      expect(
+        find.descendant(of: tile, matching: find.text('No Match Beer')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: tile, matching: find.text('Unrelated Brewery')),
+        findsOneWidget,
+      );
+
+      // Exactly 3 Text widgets: the ListTile's title, and the subtitle's
+      // brewery + value score lines — no fourth (reason) line, since
+      // nothing matched.
+      expect(find.descendant(of: tile, matching: find.byType(Text)).evaluate().length, 3);
     },
   );
 

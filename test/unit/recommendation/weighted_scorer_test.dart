@@ -2,18 +2,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:valuebrew/data/models/benchmark.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
 
 class _ConstantStrategy implements SimilarityStrategy {
-  const _ConstantStrategy(this.name, this.value);
+  const _ConstantStrategy(this.name, this.value, {this.reason});
 
   @override
   final String name;
   final double value;
+  final RecommendationReason? reason;
 
   @override
   double score(Sku a, Sku b, Catalog catalog) => value;
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) => reason;
 }
 
 void main() {
@@ -77,5 +82,45 @@ void main() {
     final scorer = WeightedScorer({const _ConstantStrategy('a', 1.0): 0.0});
 
     expect(scorer.score(sku, sku, catalog), 0.0);
+  });
+
+  group('explain', () {
+    test('collects every non-null reason from its strategies, in weight-map order', () {
+      final scorer = WeightedScorer({
+        const _ConstantStrategy('a', 1.0, reason: RecommendationReason.sameStyle): 1.0,
+        const _ConstantStrategy('b', 0.0, reason: RecommendationReason.sameBrewery): 1.0,
+        const _ConstantStrategy('c', 1.0, reason: RecommendationReason.samePackage): 1.0,
+      });
+
+      expect(
+        scorer.explain(sku, sku, catalog),
+        [
+          RecommendationReason.sameStyle,
+          RecommendationReason.sameBrewery,
+          RecommendationReason.samePackage,
+        ],
+      );
+    });
+
+    test('a strategy contributing no reason is simply omitted, not a gap or an error', () {
+      final scorer = WeightedScorer({
+        const _ConstantStrategy('a', 1.0, reason: RecommendationReason.sameStyle): 1.0,
+        const _ConstantStrategy('b', 0.0): 1.0,
+      });
+
+      expect(scorer.explain(sku, sku, catalog), [RecommendationReason.sameStyle]);
+    });
+
+    test('no strategy contributing a reason returns an empty list', () {
+      final scorer = WeightedScorer({const _ConstantStrategy('a', 1.0): 1.0});
+
+      expect(scorer.explain(sku, sku, catalog), isEmpty);
+    });
+
+    test('an empty weight map explains with an empty list', () {
+      const scorer = WeightedScorer({});
+
+      expect(scorer.explain(sku, sku, catalog), isEmpty);
+    });
   });
 }

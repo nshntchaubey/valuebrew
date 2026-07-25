@@ -1,5 +1,6 @@
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 
 /// Combines multiple [SimilarityStrategy]s into a single similarity score
@@ -36,5 +37,19 @@ class WeightedScorer {
 
     if (totalWeight <= 0) return 0.0;
     return weightedSum / totalWeight;
+  }
+
+  /// Returns every [RecommendationReason] contributed by [weights]'
+  /// strategies for [a] vs [b], in the order they appear in [weights].
+  ///
+  /// This is a natural by-product of the same comparisons [score] makes —
+  /// each strategy's `explain` reuses the exact comparison its own `score`
+  /// uses (see `similarity_strategy.dart`) — not a separate set of rules
+  /// layered on top. Can be empty if no strategy found [a] and [b] similar
+  /// enough on its dimension to be worth mentioning.
+  List<RecommendationReason> explain(Sku a, Sku b, Catalog catalog) {
+    return [
+      for (final strategy in weights.keys) ?strategy.explain(a, b, catalog),
+    ];
   }
 }

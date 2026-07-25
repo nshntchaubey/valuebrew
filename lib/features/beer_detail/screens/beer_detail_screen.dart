@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
-import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/features/beer_detail/wrong_report.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
@@ -16,7 +16,7 @@ import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 /// should never let a recommendation failure take down the whole page —
 /// the rest of [BeerDetailScreen] (name, SKUs, "This looks wrong") is
 /// useful on its own even if recommendations can't be produced.
-List<Sku> _safeRecommendations(List<Sku> Function() compute) {
+List<Recommendation> _safeRecommendations(List<Recommendation> Function() compute) {
   try {
     return compute();
   } catch (_) {
@@ -24,10 +24,17 @@ List<Sku> _safeRecommendations(List<Sku> Function() compute) {
   }
 }
 
-/// Builds the row for a single recommended [sku] (its resolved beer's name
-/// and brewery, plus [sku]'s own value score), or `null` if [sku]'s beer
-/// can't be resolved in [catalog] — which shouldn't happen for a
-/// consistent catalog, but isn't worth crashing over if it ever does.
+/// Builds the row for a single [recommendation] (its resolved beer's name
+/// and brewery, its SKU's own value score, and — if it has one —
+/// [Recommendation.reasonSummary] as a small explanatory line), or `null`
+/// if the recommendation's SKU's beer can't be resolved in [catalog] —
+/// which shouldn't happen for a consistent catalog, but isn't worth
+/// crashing over if it ever does.
+///
+/// A [Recommendation] with no [Recommendation.matchedReasons] (e.g. a
+/// low-scoring similarity match that crossed no strategy's "worth
+/// mentioning" bar) simply omits that line — still a valid recommendation,
+/// just an unexplained one.
 ///
 /// [sectionKey] distinguishes which of the two recommendation sections
 /// this tile belongs to (e.g. `'similar'` vs `'better_value'`). The same
@@ -37,9 +44,17 @@ List<Sku> _safeRecommendations(List<Sku> Function() compute) {
 ///
 /// Tapping the row pushes a new [BeerDetailScreen] for that beer, same as
 /// the rest of this screen's navigation.
-Widget? _recommendationTile(BuildContext context, Catalog catalog, Sku sku, String sectionKey) {
+Widget? _recommendationTile(
+  BuildContext context,
+  Catalog catalog,
+  Recommendation recommendation,
+  String sectionKey,
+) {
+  final sku = recommendation.sku;
   final candidateBeer = resolveBeer(catalog, sku.beerId);
   if (candidateBeer == null) return null;
+
+  final reasonSummary = recommendation.reasonSummary;
 
   return ListTile(
     key: ValueKey('$sectionKey:${sku.id}'),
@@ -50,6 +65,8 @@ Widget? _recommendationTile(BuildContext context, Catalog catalog, Sku sku, Stri
       children: [
         Text(candidateBeer.brewery),
         Text('Value score: ${sku.valueScore} (${sku.valueVerdict.displayLabel})'),
+        if (reasonSummary != null)
+          Text(reasonSummary, style: Theme.of(context).textTheme.bodySmall),
       ],
     ),
     onTap: () {
@@ -201,14 +218,14 @@ class BeerDetailScreen extends ConsumerWidget {
           // sharing beer.id is this screen's own adaptation, not a change to
           // the engine's behaviour.
           final similarBeers = referenceSku == null
-              ? const <Sku>[]
+              ? const <Recommendation>[]
               : _safeRecommendations(() => engine.similarBeers(referenceSku, catalog))
-                  .where((sku) => sku.beerId != beer.id)
+                  .where((recommendation) => recommendation.sku.beerId != beer.id)
                   .toList();
           final betterValueAlternatives = referenceSku == null
-              ? const <Sku>[]
+              ? const <Recommendation>[]
               : _safeRecommendations(() => engine.betterValueAlternatives(referenceSku, catalog))
-                  .where((sku) => sku.beerId != beer.id)
+                  .where((recommendation) => recommendation.sku.beerId != beer.id)
                   .toList();
 
           return SingleChildScrollView(
@@ -258,7 +275,7 @@ class BeerDetailScreen extends ConsumerWidget {
                   const Text('No similar beers available.')
                 else
                   ...similarBeers
-                      .map((sku) => _recommendationTile(context, catalog, sku, 'similar'))
+                      .map((recommendation) => _recommendationTile(context, catalog, recommendation, 'similar'))
                       .whereType<Widget>(),
                 const SizedBox(height: 16),
                 Text(
@@ -270,7 +287,10 @@ class BeerDetailScreen extends ConsumerWidget {
                   const Text('No better value alternatives available.')
                 else
                   ...betterValueAlternatives
-                      .map((sku) => _recommendationTile(context, catalog, sku, 'better_value'))
+                      .map(
+                        (recommendation) =>
+                            _recommendationTile(context, catalog, recommendation, 'better_value'),
+                      )
                       .whereType<Widget>(),
               ],
             ),

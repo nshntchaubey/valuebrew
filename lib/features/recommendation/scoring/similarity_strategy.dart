@@ -1,5 +1,6 @@
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 
 /// A single, composable dimension of similarity between two SKUs.
@@ -11,6 +12,13 @@ import 'package:valuebrew/features/shared/catalog_lookups.dart';
 /// score. This is what keeps adding a new scoring dimension a matter of
 /// writing one new class and adding it to a weight map — never touching
 /// an existing strategy, and never a giant switch statement.
+///
+/// Each strategy also [explain]s itself: whether the same comparison
+/// [score] made is strong enough to be worth telling a user about, as a
+/// [RecommendationReason]. This reuses each strategy's own comparison (via
+/// a private helper shared with [score]) rather than re-deriving it — the
+/// explanation is a by-product of scoring, not a second, separately
+/// maintained set of rules.
 ///
 /// V1 has no data source for beer-flavour attributes like IBU, bitterness,
 /// sweetness, or body — none of those fields exist anywhere in the
@@ -29,6 +37,11 @@ abstract class SimilarityStrategy {
   /// [catalog] is available for any cross-referencing a strategy needs
   /// (e.g. resolving each SKU's beer to compare styles).
   double score(Sku a, Sku b, Catalog catalog);
+
+  /// Returns the [RecommendationReason] this strategy contributes when [a]
+  /// and [b] are similar enough on this dimension to be worth explaining
+  /// to a user, or `null` if not.
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog);
 }
 
 /// Scores `1.0` if [a] and [b]'s beers share the same style, `0.0`
@@ -40,11 +53,17 @@ class StyleMatchStrategy implements SimilarityStrategy {
   String get name => 'style_match';
 
   @override
-  double score(Sku a, Sku b, Catalog catalog) {
+  double score(Sku a, Sku b, Catalog catalog) => _stylesMatch(a, b, catalog) ? 1.0 : 0.0;
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      _stylesMatch(a, b, catalog) ? RecommendationReason.sameStyle : null;
+
+  bool _stylesMatch(Sku a, Sku b, Catalog catalog) {
     final beerA = resolveBeer(catalog, a.beerId);
     final beerB = resolveBeer(catalog, b.beerId);
-    if (beerA == null || beerB == null) return 0.0;
-    return beerA.styleId == beerB.styleId ? 1.0 : 0.0;
+    if (beerA == null || beerB == null) return false;
+    return beerA.styleId == beerB.styleId;
   }
 }
 
@@ -58,11 +77,23 @@ class AbvClosenessStrategy implements SimilarityStrategy {
   /// considered to have no similarity on this dimension at all.
   final double maxDifference;
 
+  /// The minimum [score] for two SKUs' ABV to be considered "similar
+  /// enough" to mention to a user — half of [maxDifference]'s worth of
+  /// closeness, a simple, self-consistent bar rather than a separately
+  /// configurable threshold.
+  static const double _explainThreshold = 0.5;
+
   @override
   String get name => 'abv_closeness';
 
   @override
-  double score(Sku a, Sku b, Catalog catalog) {
+  double score(Sku a, Sku b, Catalog catalog) => _closeness(a, b);
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      _closeness(a, b) >= _explainThreshold ? RecommendationReason.similarAbv : null;
+
+  double _closeness(Sku a, Sku b) {
     final difference = (a.abv - b.abv).abs();
     if (difference >= maxDifference) return 0.0;
     return 1.0 - (difference / maxDifference);
@@ -85,11 +116,23 @@ class PriceClosenessStrategy implements SimilarityStrategy {
   /// similarity on this dimension at all.
   final double maxRelativeDifference;
 
+  /// The minimum [score] for two SKUs' cost to be considered "similar
+  /// enough" to mention to a user — see
+  /// [AbvClosenessStrategy._explainThreshold] for why this is a fixed
+  /// proportion rather than a separately configurable threshold.
+  static const double _explainThreshold = 0.5;
+
   @override
   String get name => 'price_closeness';
 
   @override
-  double score(Sku a, Sku b, Catalog catalog) {
+  double score(Sku a, Sku b, Catalog catalog) => _closeness(a, b);
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      _closeness(a, b) >= _explainThreshold ? RecommendationReason.similarPrice : null;
+
+  double _closeness(Sku a, Sku b) {
     final lower = a.costPerMlAlcohol < b.costPerMlAlcohol
         ? a.costPerMlAlcohol
         : b.costPerMlAlcohol;
@@ -112,9 +155,13 @@ class PackageTypeMatchStrategy implements SimilarityStrategy {
   String get name => 'package_type_match';
 
   @override
-  double score(Sku a, Sku b, Catalog catalog) {
-    return a.packageType == b.packageType ? 1.0 : 0.0;
-  }
+  double score(Sku a, Sku b, Catalog catalog) => _packagesMatch(a, b) ? 1.0 : 0.0;
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      _packagesMatch(a, b) ? RecommendationReason.samePackage : null;
+
+  bool _packagesMatch(Sku a, Sku b) => a.packageType == b.packageType;
 }
 
 /// Scores `1.0` if [a] and [b]'s beers share the same brewery, `0.0`
@@ -126,10 +173,16 @@ class BreweryMatchStrategy implements SimilarityStrategy {
   String get name => 'brewery_match';
 
   @override
-  double score(Sku a, Sku b, Catalog catalog) {
+  double score(Sku a, Sku b, Catalog catalog) => _breweriesMatch(a, b, catalog) ? 1.0 : 0.0;
+
+  @override
+  RecommendationReason? explain(Sku a, Sku b, Catalog catalog) =>
+      _breweriesMatch(a, b, catalog) ? RecommendationReason.sameBrewery : null;
+
+  bool _breweriesMatch(Sku a, Sku b, Catalog catalog) {
     final beerA = resolveBeer(catalog, a.beerId);
     final beerB = resolveBeer(catalog, b.beerId);
-    if (beerA == null || beerB == null) return 0.0;
-    return beerA.brewery == beerB.brewery ? 1.0 : 0.0;
+    if (beerA == null || beerB == null) return false;
+    return beerA.brewery == beerB.brewery;
   }
 }

@@ -4,6 +4,7 @@ import 'package:valuebrew/data/models/benchmark.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 
 Sku _sku({
@@ -85,6 +86,18 @@ void main() {
       final b = _sku(id: 'b', beerId: 'nonexistent_beer');
       expect(strategy.score(a, b, catalog), 0.0);
     });
+
+    test('explains sameStyle when both SKUs\' beers share a style', () {
+      final a = _sku(id: 'a', beerId: 'kf');
+      final b = _sku(id: 'b', beerId: 'simba');
+      expect(strategy.explain(a, b, catalog), RecommendationReason.sameStyle);
+    });
+
+    test('explains null when the beers have different styles', () {
+      final a = _sku(id: 'a', beerId: 'kf');
+      final b = _sku(id: 'b', beerId: 'arbor');
+      expect(strategy.explain(a, b, catalog), isNull);
+    });
   });
 
   group('AbvClosenessStrategy', () {
@@ -107,6 +120,26 @@ void main() {
       final a = _sku(id: 'a', beerId: 'kf', abv: 4.0);
       final b = _sku(id: 'b', beerId: 'simba', abv: 9.0);
       expect(strategy.score(a, b, catalog), 0.0);
+    });
+
+    test('explains similarAbv at exactly the 0.5 explain threshold', () {
+      final a = _sku(id: 'a', beerId: 'kf', abv: 5.0);
+      final b = _sku(id: 'b', beerId: 'simba', abv: 7.0);
+      // Difference of 2.0 out of a max of 4.0 → score 0.5, at the threshold.
+      expect(strategy.explain(a, b, catalog), RecommendationReason.similarAbv);
+    });
+
+    test('explains null when the score is below the 0.5 explain threshold', () {
+      final a = _sku(id: 'a', beerId: 'kf', abv: 5.0);
+      final b = _sku(id: 'b', beerId: 'simba', abv: 8.0);
+      // Difference of 3.0 out of a max of 4.0 → score 0.25, below threshold.
+      expect(strategy.explain(a, b, catalog), isNull);
+    });
+
+    test('explains null at or beyond the max difference', () {
+      final a = _sku(id: 'a', beerId: 'kf', abv: 4.0);
+      final b = _sku(id: 'b', beerId: 'simba', abv: 9.0);
+      expect(strategy.explain(a, b, catalog), isNull);
     });
   });
 
@@ -135,6 +168,26 @@ void main() {
       final b = _sku(id: 'b', beerId: 'simba', costPerMlAlcohol: 20.0);
       expect(strategy.score(a, b, catalog), 0.0);
     });
+
+    test('explains similarPrice when the score is above the 0.5 explain threshold', () {
+      final a = _sku(id: 'a', beerId: 'kf', costPerMlAlcohol: 4.0);
+      final b = _sku(id: 'b', beerId: 'simba', costPerMlAlcohol: 4.4);
+      // relativeDifference = 0.1, score = 1 - 0.1/0.75 ≈ 0.867.
+      expect(strategy.explain(a, b, catalog), RecommendationReason.similarPrice);
+    });
+
+    test('explains null when the score is below the 0.5 explain threshold', () {
+      final a = _sku(id: 'a', beerId: 'kf', costPerMlAlcohol: 4.0);
+      final b = _sku(id: 'b', beerId: 'simba', costPerMlAlcohol: 6.0);
+      // relativeDifference = 0.5, score = 1 - 0.5/0.75 ≈ 0.333.
+      expect(strategy.explain(a, b, catalog), isNull);
+    });
+
+    test('explains null at or beyond the max relative difference', () {
+      final a = _sku(id: 'a', beerId: 'kf', costPerMlAlcohol: 4.0);
+      final b = _sku(id: 'b', beerId: 'simba', costPerMlAlcohol: 20.0);
+      expect(strategy.explain(a, b, catalog), isNull);
+    });
   });
 
   group('PackageTypeMatchStrategy', () {
@@ -151,6 +204,18 @@ void main() {
       final b = _sku(id: 'b', beerId: 'simba', packageType: PackageType.bottle);
       expect(strategy.score(a, b, catalog), 0.0);
     });
+
+    test('explains samePackage for the same package type', () {
+      final a = _sku(id: 'a', beerId: 'kf', packageType: PackageType.can);
+      final b = _sku(id: 'b', beerId: 'simba', packageType: PackageType.can);
+      expect(strategy.explain(a, b, catalog), RecommendationReason.samePackage);
+    });
+
+    test('explains null for different package types', () {
+      final a = _sku(id: 'a', beerId: 'kf', packageType: PackageType.can);
+      final b = _sku(id: 'b', beerId: 'simba', packageType: PackageType.bottle);
+      expect(strategy.explain(a, b, catalog), isNull);
+    });
   });
 
   group('BreweryMatchStrategy', () {
@@ -166,6 +231,18 @@ void main() {
       final a = _sku(id: 'a', beerId: 'kf');
       final b = _sku(id: 'b', beerId: 'arbor');
       expect(strategy.score(a, b, catalog), 0.0);
+    });
+
+    test('explains sameBrewery when both SKUs\' beers share a brewery', () {
+      final a = _sku(id: 'a', beerId: 'kf');
+      final b = _sku(id: 'b', beerId: 'simba');
+      expect(strategy.explain(a, b, catalog), RecommendationReason.sameBrewery);
+    });
+
+    test('explains null for different breweries', () {
+      final a = _sku(id: 'a', beerId: 'kf');
+      final b = _sku(id: 'b', beerId: 'arbor');
+      expect(strategy.explain(a, b, catalog), isNull);
     });
   });
 }
