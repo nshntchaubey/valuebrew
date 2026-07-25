@@ -42,6 +42,20 @@ this block with actual images, e.g.:
   remotely-hosted version on launch, with a silent, crash-free fallback
   to whatever's already available if the network doesn't cooperate.
 
+## Screenshots
+
+| Home | Beer Details |
+|------|--------------|
+| ![](assets/screenshots/home.png) | ![](assets/screenshots/beer-detail.png) |
+
+| Compare | Recommendation Profiles |
+|----------|-------------------------|
+| ![](assets/screenshots/compare.png) | ![](assets/screenshots/profiles.png) |
+
+| Filters | Sorting |
+|---------|---------|
+| ![](assets/screenshots/filters.png) | ![](assets/screenshots/sorting.png) |
+
 ## Technology Stack
 
 | Layer | Choice |
