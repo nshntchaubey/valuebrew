@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:valuebrew/core/constants/app_spacing.dart';
 import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/features/beer_detail/wrong_report.dart';
 import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';
+import 'package:valuebrew/features/recommendation/policy/recommendation_profile.dart';
 import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
 import 'package:valuebrew/features/recommendation/widgets/recommendation_profile_bottom_sheet.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/shared/widgets/error_state_view.dart';
+import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
 
 /// Runs [compute] and returns its result, or an empty list if it throws.
 ///
@@ -24,6 +28,39 @@ List<Recommendation> _safeRecommendations(List<Recommendation> Function() comput
   } catch (_) {
     return const [];
   }
+}
+
+/// A placeholder roughly matching this screen's real layout — name,
+/// brewery, style, a SKU block, and a recommendations heading — shown
+/// while the catalog loads, instead of a generic centered spinner.
+Widget _beerDetailSkeleton() {
+  return SingleChildScrollView(
+    padding: const EdgeInsets.all(AppSpacing.md),
+    child: const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SkeletonBox(width: 200, height: 24),
+        SizedBox(height: AppSpacing.sm),
+        SkeletonBox(width: 140),
+        SizedBox(height: AppSpacing.sm),
+        SkeletonBox(width: 100),
+        SizedBox(height: AppSpacing.md),
+        SkeletonBox(width: 160),
+        SizedBox(height: AppSpacing.xs),
+        SkeletonBox(width: 80),
+        SizedBox(height: AppSpacing.xs),
+        SkeletonBox(width: 180),
+        SizedBox(height: AppSpacing.md),
+        Divider(),
+        SizedBox(height: AppSpacing.md),
+        SkeletonBox(width: 220, height: 20),
+        SizedBox(height: AppSpacing.sm),
+        SkeletonBox(width: 160),
+        SizedBox(height: AppSpacing.xs),
+        SkeletonBox(width: 100),
+      ],
+    ),
+  );
 }
 
 /// Builds the row for a single [recommendation] (its resolved beer's name
@@ -43,6 +80,9 @@ List<Recommendation> _safeRecommendations(List<Recommendation> Function() comput
 /// SKU can legitimately qualify for both sections at once, so this is
 /// purely a testability hook — it has no visual effect — letting tests
 /// target a specific section's tile for a given SKU unambiguously.
+/// [sectionIcon] is a small, purely decorative visual cue for which
+/// section a tile belongs to (excluded from semantics, since the section
+/// heading above it already announces that).
 ///
 /// Tapping the row pushes a new [BeerDetailScreen] for that beer, same as
 /// the rest of this screen's navigation.
@@ -51,6 +91,7 @@ Widget? _recommendationTile(
   Catalog catalog,
   Recommendation recommendation,
   String sectionKey,
+  IconData sectionIcon,
 ) {
   final sku = recommendation.sku;
   final candidateBeer = resolveBeer(catalog, sku.beerId);
@@ -61,6 +102,18 @@ Widget? _recommendationTile(
   return ListTile(
     key: ValueKey('$sectionKey:${sku.id}'),
     contentPadding: EdgeInsets.zero,
+    leading: Semantics(
+      excludeSemantics: true,
+      child: CircleAvatar(
+        radius: 18,
+        backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+        child: Icon(
+          sectionIcon,
+          size: 18,
+          color: Theme.of(context).colorScheme.onSecondaryContainer,
+        ),
+      ),
+    ),
     title: Text(candidateBeer.name),
     subtitle: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,9 +134,11 @@ Widget? _recommendationTile(
 }
 
 /// The AppBar favorite toggle: an outline heart when [beerId] isn't
-/// favorited, a filled one when it is — standard Material icons, no
-/// custom animation. Reads and writes [favoriteBeerIdsProvider] directly;
-/// it's the only place on this screen favorite status can be changed.
+/// favorited, a filled one when it is — standard Material icons, animated
+/// with a subtle scale pop on toggle via [AnimatedSwitcher] (no animation
+/// package, just a built-in widget). Reads and writes
+/// [favoriteBeerIdsProvider] directly; it's the only place on this screen
+/// favorite status can be changed.
 class _FavoriteButton extends ConsumerWidget {
   const _FavoriteButton({required this.beerId});
 
@@ -94,7 +149,15 @@ class _FavoriteButton extends ConsumerWidget {
     final isFavorite = ref.watch(favoriteBeerIdsProvider).contains(beerId);
 
     return IconButton(
-      icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        transitionBuilder: (child, animation) =>
+            ScaleTransition(scale: animation, child: child),
+        child: Icon(
+          isFavorite ? Icons.favorite : Icons.favorite_border,
+          key: ValueKey(isFavorite),
+        ),
+      ),
       tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
       onPressed: () => ref.read(favoriteBeerIdsProvider.notifier).toggle(beerId),
     );
@@ -195,6 +258,9 @@ class _WrongReportAction extends ConsumerWidget {
 /// active [RecommendationProfile] (see [recommendationProfileProvider]);
 /// "Better value picks" does not — see `profile_policies.dart`'s own note
 /// on why `betterValueAlternatives` is deliberately profile-independent.
+/// Both sections cross-fade (via [AnimatedSwitcher], keyed on the active
+/// profile) when a profile change reorders or re-explains them, rather
+/// than snapping to the new content instantly.
 ///
 /// Deliberately minimal — no SKU selection belongs here yet, every SKU is
 /// simply listed. `valueScore`/`valueVerdict` are read directly from the
@@ -227,6 +293,7 @@ class BeerDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final catalogAsync = ref.watch(catalogProvider);
     final engine = ref.watch(recommendationEngineProvider);
+    final activeProfile = ref.watch(recommendationProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -247,9 +314,10 @@ class BeerDetailScreen extends ConsumerWidget {
         ],
       ),
       body: catalogAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stackTrace) => Center(
-          child: Text('Failed to load catalog: $error'),
+        loading: () => _beerDetailSkeleton(),
+        error: (error, stackTrace) => ErrorStateView(
+          message: "Couldn't load the beer catalog.",
+          onRetry: () => ref.invalidate(catalogProvider),
         ),
         data: (catalog) {
           final style = resolveStyle(catalog, beer.styleId);
@@ -274,7 +342,7 @@ class BeerDetailScreen extends ConsumerWidget {
                   .toList();
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(AppSpacing.md),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -282,11 +350,11 @@ class BeerDetailScreen extends ConsumerWidget {
                   beer.name,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(beer.brewery),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(style?.name ?? 'Unknown style'),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 if (skus.isEmpty)
                   const Text('No SKUs available for this beer.')
                 else
@@ -305,38 +373,61 @@ class BeerDetailScreen extends ConsumerWidget {
                       const Divider(),
                     ],
                   ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   'Similar & Better Value',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSpacing.sm),
                 Text(
                   'Similar beers',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
-                const SizedBox(height: 8),
-                if (similarBeers.isEmpty)
-                  const Text('No similar beers available.')
-                else
-                  ...similarBeers
-                      .map((recommendation) => _recommendationTile(context, catalog, recommendation, 'similar'))
-                      .whereType<Widget>(),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.sm),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Column(
+                    key: ValueKey('similar-${activeProfile.name}'),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: similarBeers.isEmpty
+                        ? const [Text('No similar beers available.')]
+                        : similarBeers
+                            .map(
+                              (recommendation) => _recommendationTile(
+                                context,
+                                catalog,
+                                recommendation,
+                                'similar',
+                                Icons.compare_arrows,
+                              ),
+                            )
+                            .whereType<Widget>()
+                            .toList(),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
                 Text(
                   'Better value picks',
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
-                const SizedBox(height: 8),
-                if (betterValueAlternatives.isEmpty)
-                  const Text('No better value alternatives available.')
-                else
-                  ...betterValueAlternatives
-                      .map(
-                        (recommendation) =>
-                            _recommendationTile(context, catalog, recommendation, 'better_value'),
-                      )
-                      .whereType<Widget>(),
+                const SizedBox(height: AppSpacing.sm),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: betterValueAlternatives.isEmpty
+                      ? const [Text('No better value alternatives available.')]
+                      : betterValueAlternatives
+                          .map(
+                            (recommendation) => _recommendationTile(
+                              context,
+                              catalog,
+                              recommendation,
+                              'better_value',
+                              Icons.savings_outlined,
+                            ),
+                          )
+                          .whereType<Widget>()
+                          .toList(),
+                ),
               ],
             ),
           );

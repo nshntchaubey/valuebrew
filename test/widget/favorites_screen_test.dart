@@ -9,6 +9,7 @@ import 'package:valuebrew/features/favorites/screens/favorites_screen.dart';
 import 'package:valuebrew/features/filtering/models/filter_state.dart';
 import 'package:valuebrew/features/filtering/providers/filtering_providers.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
 import 'package:valuebrew/features/sorting/models/sort_option.dart';
 import 'package:valuebrew/features/sorting/providers/sorting_providers.dart';
 
@@ -88,8 +89,9 @@ void main() {
     await tester.pumpWidget(_wrap(const FavoritesScreen(), repository: repository));
     await tester.pumpAndSettle();
 
+    expect(find.text('No favorites yet'), findsOneWidget);
     expect(
-      find.text('No favorite beers yet.\n\nTap the heart on any beer to save it.'),
+      find.text('Save beers you enjoy to build your personal collection.'),
       findsOneWidget,
     );
   });
@@ -107,10 +109,7 @@ void main() {
     expect(find.text('Kingfisher Premium'), findsOneWidget);
     expect(find.text('Toit Porter'), findsOneWidget);
     expect(find.text('Simba Strong'), findsNothing);
-    expect(
-      find.text('No favorite beers yet.\n\nTap the heart on any beer to save it.'),
-      findsNothing,
-    );
+    expect(find.text('No favorites yet'), findsNothing);
   });
 
   testWidgets('tapping a favorited beer opens its BeerDetailScreen', (
@@ -156,7 +155,7 @@ void main() {
 
     await tester.pumpWidget(_wrap(const FavoritesScreen(), repository: repository));
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(SkeletonBox), findsWidgets);
   });
 
   testWidgets(
@@ -205,17 +204,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('No beers match your filters.'), findsOneWidget);
-      expect(
-        find.text('No favorite beers yet.\n\nTap the heart on any beer to save it.'),
-        findsNothing,
-      );
+      expect(find.text('No beers match your filters'), findsOneWidget);
+      expect(find.text('No favorites yet'), findsNothing);
 
       await tester.tap(find.widgetWithText(TextButton, 'Clear filters'));
       await tester.pumpAndSettle();
 
       expect(find.text('Kingfisher Premium'), findsOneWidget);
-      expect(find.text('No beers match your filters.'), findsNothing);
+      expect(find.text('No beers match your filters'), findsNothing);
     },
   );
 

@@ -7,6 +7,9 @@ import 'package:valuebrew/features/filtering/providers/filtering_providers.dart'
 import 'package:valuebrew/features/filtering/widgets/active_filters_indicator.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/shared/widgets/beer_list_tile.dart';
+import 'package:valuebrew/features/shared/widgets/empty_state_view.dart';
+import 'package:valuebrew/features/shared/widgets/error_state_view.dart';
+import 'package:valuebrew/features/shared/widgets/skeleton_list.dart';
 import 'package:valuebrew/features/sorting/providers/sorting_providers.dart';
 import 'package:valuebrew/features/sorting/widgets/active_sort_indicator.dart';
 
@@ -45,40 +48,29 @@ class FavoritesScreen extends ConsumerWidget {
           const ActiveSortIndicator(),
           Expanded(
             child: sortedAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(
-                child: Text('Failed to load catalog: $error'),
+              loading: () => const BeerListSkeleton(),
+              error: (error, stackTrace) => ErrorStateView(
+                message: "Couldn't load your favorites.",
+                onRetry: () => ref.invalidate(catalogProvider),
               ),
               data: (favoriteBeers) {
                 if (favoriteIds.isEmpty) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24),
-                      child: Text(
-                        'No favorite beers yet.\n\n'
-                        'Tap the heart on any beer to save it.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
+                  return const EmptyStateView(
+                    icon: Icons.favorite_border,
+                    title: 'No favorites yet',
+                    message: 'Save beers you enjoy to build your personal collection.',
                   );
                 }
 
                 if (favoriteBeers.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('No beers match your filters.'),
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () => ref.read(filterStateProvider.notifier).state =
-                                FilterState.none,
-                            child: const Text('Clear filters'),
-                          ),
-                        ],
-                      ),
+                  return EmptyStateView(
+                    icon: Icons.filter_alt_off_outlined,
+                    title: 'No beers match your filters',
+                    message: 'Try adjusting or clearing your filters.',
+                    action: TextButton(
+                      onPressed: () =>
+                          ref.read(filterStateProvider.notifier).state = FilterState.none,
+                      child: const Text('Clear filters'),
                     ),
                   );
                 }

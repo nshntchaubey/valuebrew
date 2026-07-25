@@ -9,6 +9,8 @@ import 'package:valuebrew/features/filtering/models/filter_state.dart';
 import 'package:valuebrew/features/filtering/models/price_range.dart';
 import 'package:valuebrew/features/filtering/providers/filtering_providers.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/shared/widgets/bottom_sheet_header.dart';
+import 'package:valuebrew/features/shared/widgets/error_state_view.dart';
 
 /// Returns every distinct brewery name in [beers], sorted alphabetically.
 ///
@@ -51,124 +53,128 @@ class FilterBottomSheet extends ConsumerWidget {
           height: 200,
           child: Center(child: CircularProgressIndicator()),
         ),
-        error: (error, stackTrace) => SizedBox(
+        error: (error, stackTrace) => const SizedBox(
           height: 200,
-          child: Center(child: Text('Failed to load catalog: $error')),
+          child: ErrorStateView(message: "Couldn't load the beer catalog."),
         ),
         data: (catalog) {
           final breweries = _distinctBreweries(catalog.beers);
 
           return Padding(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 16,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            ),
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Filters', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 16),
-                  const Text('Style'),
-                  DropdownButton<String?>(
-                    isExpanded: true,
-                    value: filters.styleId,
-                    hint: const Text('Any style'),
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('Any style')),
-                      for (final style in catalog.styles)
-                        DropdownMenuItem(value: style.id, child: Text(style.name)),
-                    ],
-                    onChanged: (value) => notifier.state = filters.withStyle(value),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('Brewery'),
-                  DropdownButton<String?>(
-                    isExpanded: true,
-                    value: filters.brewery,
-                    hint: const Text('Any brewery'),
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('Any brewery')),
-                      for (final brewery in breweries)
-                        DropdownMenuItem(value: brewery, child: Text(brewery)),
-                    ],
-                    onChanged: (value) => notifier.state = filters.withBrewery(value),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('Package type'),
-                  DropdownButton<PackageType?>(
-                    isExpanded: true,
-                    value: filters.packageType,
-                    hint: const Text('Any package'),
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('Any package')),
-                      for (final packageType in PackageType.values)
-                        DropdownMenuItem(
-                          value: packageType,
-                          child: Text(packageType.displayLabel),
+                  const BottomSheetHeader(title: 'Filters'),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('Style'),
+                        DropdownButton<String?>(
+                          isExpanded: true,
+                          value: filters.styleId,
+                          hint: const Text('Any style'),
+                          items: [
+                            const DropdownMenuItem(value: null, child: Text('Any style')),
+                            for (final style in catalog.styles)
+                              DropdownMenuItem(value: style.id, child: Text(style.name)),
+                          ],
+                          onChanged: (value) => notifier.state = filters.withStyle(value),
                         ),
-                    ],
-                    onChanged: (value) => notifier.state = filters.withPackageType(value),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'ABV: ${(filters.abvRange?.min ?? 0).toStringAsFixed(1)}% – '
-                    '${(filters.abvRange?.max ?? _maxAbv).toStringAsFixed(1)}%',
-                  ),
-                  RangeSlider(
-                    min: 0,
-                    max: _maxAbv,
-                    divisions: 30,
-                    values: RangeValues(
-                      filters.abvRange?.min ?? 0,
-                      filters.abvRange?.max ?? _maxAbv,
-                    ),
-                    onChanged: (values) {
-                      notifier.state = filters.withAbvRange(
-                        AbvRange(min: values.start, max: values.end),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Price: ${(filters.priceRange?.min ?? 0).toStringAsFixed(0)} – '
-                    '${(filters.priceRange?.max ?? _maxPrice).toStringAsFixed(0)}',
-                  ),
-                  RangeSlider(
-                    min: 0,
-                    max: _maxPrice,
-                    divisions: 20,
-                    values: RangeValues(
-                      filters.priceRange?.min ?? 0,
-                      filters.priceRange?.max ?? _maxPrice,
-                    ),
-                    onChanged: (values) {
-                      notifier.state = filters.withPriceRange(
-                        PriceRange(min: values.start, max: values.end),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  Text('Minimum value score: ${filters.minValueScore ?? 0}'),
-                  Slider(
-                    min: 0,
-                    max: 100,
-                    divisions: 20,
-                    value: (filters.minValueScore ?? 0).toDouble(),
-                    onChanged: (value) {
-                      final rounded = value.round();
-                      notifier.state = filters.withMinValueScore(rounded == 0 ? null : rounded);
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => notifier.state = FilterState.none,
-                      child: const Text('Clear filters'),
+                        const SizedBox(height: 16),
+                        const Text('Brewery'),
+                        DropdownButton<String?>(
+                          isExpanded: true,
+                          value: filters.brewery,
+                          hint: const Text('Any brewery'),
+                          items: [
+                            const DropdownMenuItem(value: null, child: Text('Any brewery')),
+                            for (final brewery in breweries)
+                              DropdownMenuItem(value: brewery, child: Text(brewery)),
+                          ],
+                          onChanged: (value) => notifier.state = filters.withBrewery(value),
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('Package type'),
+                        DropdownButton<PackageType?>(
+                          isExpanded: true,
+                          value: filters.packageType,
+                          hint: const Text('Any package'),
+                          items: [
+                            const DropdownMenuItem(value: null, child: Text('Any package')),
+                            for (final packageType in PackageType.values)
+                              DropdownMenuItem(
+                                value: packageType,
+                                child: Text(packageType.displayLabel),
+                              ),
+                          ],
+                          onChanged: (value) => notifier.state = filters.withPackageType(value),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'ABV: ${(filters.abvRange?.min ?? 0).toStringAsFixed(1)}% – '
+                          '${(filters.abvRange?.max ?? _maxAbv).toStringAsFixed(1)}%',
+                        ),
+                        RangeSlider(
+                          min: 0,
+                          max: _maxAbv,
+                          divisions: 30,
+                          values: RangeValues(
+                            filters.abvRange?.min ?? 0,
+                            filters.abvRange?.max ?? _maxAbv,
+                          ),
+                          onChanged: (values) {
+                            notifier.state = filters.withAbvRange(
+                              AbvRange(min: values.start, max: values.end),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Price: ${(filters.priceRange?.min ?? 0).toStringAsFixed(0)} – '
+                          '${(filters.priceRange?.max ?? _maxPrice).toStringAsFixed(0)}',
+                        ),
+                        RangeSlider(
+                          min: 0,
+                          max: _maxPrice,
+                          divisions: 20,
+                          values: RangeValues(
+                            filters.priceRange?.min ?? 0,
+                            filters.priceRange?.max ?? _maxPrice,
+                          ),
+                          onChanged: (values) {
+                            notifier.state = filters.withPriceRange(
+                              PriceRange(min: values.start, max: values.end),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Text('Minimum value score: ${filters.minValueScore ?? 0}'),
+                        Slider(
+                          min: 0,
+                          max: 100,
+                          divisions: 20,
+                          value: (filters.minValueScore ?? 0).toDouble(),
+                          onChanged: (value) {
+                            final rounded = value.round();
+                            notifier.state =
+                                filters.withMinValueScore(rounded == 0 ? null : rounded);
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () => notifier.state = FilterState.none,
+                            child: const Text('Clear filters'),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

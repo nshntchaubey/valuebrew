@@ -16,6 +16,7 @@ import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.da
 import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';
 import 'package:valuebrew/features/recommendation/services/recommendation_engine.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
 
 const _catalogJson = '''
 {
@@ -321,7 +322,7 @@ void main() {
       _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(SkeletonBox), findsWidgets);
   });
 
   testWidgets('shows beer name, brewery, and the resolved style name', (
@@ -378,7 +379,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Failed to load catalog'), findsOneWidget);
+    expect(find.text("Couldn't load the beer catalog."), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
+    expect(find.textContaining('Exception'), findsNothing);
   });
 
   testWidgets('shows a fallback message when the beer has no SKUs', (

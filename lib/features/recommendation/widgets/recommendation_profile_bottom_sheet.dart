@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/features/recommendation/policy/recommendation_profile.dart';
 import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
+import 'package:valuebrew/features/shared/widgets/bottom_sheet_header.dart';
 
 /// Lets the user pick a [RecommendationProfile] — shown in a modal bottom
 /// sheet from `BeerDetailScreen`'s AppBar action.
@@ -25,13 +26,7 @@ class RecommendationProfileBottomSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                'Recommendation profile',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
+            const BottomSheetHeader(title: 'Recommendation profile'),
             for (final profile in RecommendationProfile.values)
               ListTile(
                 title: Text(profile.displayName),

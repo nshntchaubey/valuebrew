@@ -19,7 +19,12 @@ import 'package:valuebrew/features/shared/catalog_lookups.dart';
 ///
 /// The trailing heart is a plain, non-interactive [Icon] — this screen's
 /// row isn't where favorite status is toggled (that's `BeerDetailScreen`'s
-/// AppBar action); it only ever indicates status here.
+/// AppBar action); it only ever indicates status here. Wrapped in
+/// [Semantics] so a screen reader announces favorite status even though
+/// nothing here is independently tappable, and in [AnimatedSwitcher] so
+/// toggling a favorite elsewhere gives this row's heart the same subtle
+/// pop `BeerDetailScreen`'s favorite button has, rather than an instant,
+/// jarring swap.
 Widget buildBeerListTile(
   BuildContext context,
   Beer beer,
@@ -42,10 +47,19 @@ Widget buildBeerListTile(
         ),
       ],
     ),
-    trailing: Icon(
-      isFavorite ? Icons.favorite : Icons.favorite_border,
-      size: 20,
-      color: isFavorite ? Colors.red : null,
+    trailing: Semantics(
+      label: isFavorite ? 'Favorited' : 'Not favorited',
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        transitionBuilder: (child, animation) =>
+            ScaleTransition(scale: animation, child: child),
+        child: Icon(
+          isFavorite ? Icons.favorite : Icons.favorite_border,
+          key: ValueKey(isFavorite),
+          size: 20,
+          color: isFavorite ? Colors.red : null,
+        ),
+      ),
     ),
     onTap: () {
       Navigator.push(

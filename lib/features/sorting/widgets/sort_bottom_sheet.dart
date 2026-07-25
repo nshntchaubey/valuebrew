@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:valuebrew/features/shared/widgets/bottom_sheet_header.dart';
 import 'package:valuebrew/features/sorting/models/sort_option.dart';
 import 'package:valuebrew/features/sorting/providers/sorting_providers.dart';
 
@@ -25,10 +26,7 @@ class SortBottomSheet extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text('Sort by', style: Theme.of(context).textTheme.titleMedium),
-            ),
+            const BottomSheetHeader(title: 'Sort by'),
             for (final option in SortOption.values)
               ListTile(
                 title: Text(option.displayLabel),

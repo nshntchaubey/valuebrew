@@ -8,6 +8,7 @@ import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/compare/screens/compare_screen.dart';
 import 'package:valuebrew/features/home/screens/home_screen.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
 
 const _catalogJson = '''
 {
@@ -92,7 +93,7 @@ void main() {
       _wrap(const CompareScreen(), repository: repository),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(SkeletonBox), findsWidgets);
   });
 
   testWidgets('shows prompts to select both beers before any are chosen', (
@@ -197,7 +198,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Failed to load catalog'), findsOneWidget);
+    expect(find.text("Couldn't load the beer catalog."), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
   });
 
   testWidgets('CompareScreen is reachable from HomeScreen via the AppBar action', (

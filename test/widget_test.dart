@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
 import 'package:valuebrew/main.dart';
 
 const _catalogJson = '''
@@ -231,7 +232,7 @@ void main() {
       ),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(SkeletonBox), findsWidgets);
 
     await tester.pumpAndSettle();
 
@@ -261,8 +262,65 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Failed to load catalog'), findsOneWidget);
+    expect(find.text("Couldn't load the beer catalog."), findsOneWidget);
+    expect(find.text('Retry'), findsOneWidget);
   });
+
+  testWidgets('tapping Retry after a load failure reloads the catalog successfully', (
+    WidgetTester tester,
+  ) async {
+    var shouldFail = true;
+    final repository = CatalogRepository(
+      loadAsset: (key) async {
+        if (shouldFail) throw Exception('boom');
+        return _catalogJson;
+      },
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [catalogRepositoryProvider.overrideWithValue(repository)],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text("Couldn't load the beer catalog."), findsOneWidget);
+
+    shouldFail = false;
+    await tester.tap(find.text('Retry'));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Couldn't load the beer catalog."), findsNothing);
+    expect(find.text('Kingfisher Premium'), findsOneWidget);
+  });
+
+  testWidgets(
+    'shows a "No beers found" empty state when search matches nothing and no filter is active',
+    (WidgetTester tester) async {
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField), 'no beer matches this query at all');
+      await tester.pumpAndSettle();
+
+      expect(find.text('No beers found'), findsOneWidget);
+      expect(find.text('Try a different search term.'), findsOneWidget);
+      // Distinct from the filter-driven empty state, since no filter is active.
+      expect(find.text('No beers match your filters'), findsNothing);
+    },
+  );
 
   testWidgets('tapping a beer navigates to BeerDetailScreen showing its details', (
     WidgetTester tester,
@@ -648,6 +706,8 @@ void main() {
   testWidgets(
     'each beer row shows a filled heart if favorited, an outline heart otherwise',
     (WidgetTester tester) async {
+      final semanticsHandle = tester.ensureSemantics();
+
       SharedPreferences.setMockInitialValues({
         'favorite_beer_ids': ['kf_premium'],
       });
@@ -677,6 +737,16 @@ void main() {
         find.descendant(of: unfavoritedTile, matching: find.byIcon(Icons.favorite_border)),
         findsOneWidget,
       );
+
+      // A screen reader announces favorite status even though the heart
+      // itself isn't independently tappable on this row. "Favorited"
+      // (capital F) never matches "Not favorited" (lowercase f), so this
+      // distinguishes the one favorited beer from the two that aren't,
+      // in this fixture's three-beer catalog.
+      expect(find.bySemanticsLabel(RegExp('Favorited')), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp('Not favorited')), findsNWidgets(2));
+
+      semanticsHandle.dispose();
     },
   );
 
@@ -813,7 +883,7 @@ void main() {
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
 
-      expect(find.text('No beers match your filters.'), findsOneWidget);
+      expect(find.text('No beers match your filters'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(TextButton, 'Clear filters'));
       await tester.pumpAndSettle();

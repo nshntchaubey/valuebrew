@@ -12,6 +12,9 @@ import 'package:valuebrew/features/filtering/widgets/filter_bottom_sheet.dart';
 import 'package:valuebrew/features/search/providers/search_providers.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/shared/widgets/beer_list_tile.dart';
+import 'package:valuebrew/features/shared/widgets/empty_state_view.dart';
+import 'package:valuebrew/features/shared/widgets/error_state_view.dart';
+import 'package:valuebrew/features/shared/widgets/skeleton_list.dart';
 import 'package:valuebrew/features/sorting/providers/sorting_providers.dart';
 import 'package:valuebrew/features/sorting/widgets/active_sort_indicator.dart';
 import 'package:valuebrew/features/sorting/widgets/sort_bottom_sheet.dart';
@@ -35,11 +38,12 @@ class HomeScreen extends ConsumerWidget {
     final resultsAsync = ref.watch(sortedHomeBeersProvider);
     final skus = ref.watch(catalogProvider).valueOrNull?.skus ?? const <Sku>[];
     final favoriteIds = ref.watch(favoriteBeerIdsProvider);
+    final filters = ref.watch(filterStateProvider);
+    final sortOption = ref.watch(sortOptionProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('ValueBrew'),
-        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
@@ -103,42 +107,55 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           Expanded(
             child: resultsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(
-                child: Text('Failed to load catalog: $error'),
+              loading: () => const BeerListSkeleton(),
+              error: (error, stackTrace) => ErrorStateView(
+                message: "Couldn't load the beer catalog.",
+                onRetry: () => ref.invalidate(catalogProvider),
               ),
               data: (beers) {
-                if (beers.isEmpty && ref.watch(filterStateProvider).isActive) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('No beers match your filters.'),
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () =>
-                                ref.read(filterStateProvider.notifier).state = FilterState.none,
-                            child: const Text('Clear filters'),
-                          ),
-                        ],
-                      ),
+                Widget content;
+
+                if (beers.isEmpty && filters.isActive) {
+                  content = EmptyStateView(
+                    icon: Icons.filter_alt_off_outlined,
+                    title: 'No beers match your filters',
+                    message: 'Try adjusting or clearing your filters.',
+                    action: TextButton(
+                      onPressed: () =>
+                          ref.read(filterStateProvider.notifier).state = FilterState.none,
+                      child: const Text('Clear filters'),
                     ),
+                  );
+                } else if (beers.isEmpty) {
+                  content = const EmptyStateView(
+                    icon: Icons.search_off,
+                    title: 'No beers found',
+                    message: 'Try a different search term.',
+                  );
+                } else {
+                  content = ListView.builder(
+                    itemCount: beers.length,
+                    itemBuilder: (context, index) {
+                      final beer = beers[index];
+                      return buildBeerListTile(
+                        context,
+                        beer,
+                        skus,
+                        isFavorite: favoriteIds.contains(beer.id),
+                      );
+                    },
                   );
                 }
 
-                return ListView.builder(
-                  itemCount: beers.length,
-                  itemBuilder: (context, index) {
-                    final beer = beers[index];
-                    return buildBeerListTile(
-                      context,
-                      beer,
-                      skus,
-                      isFavorite: favoriteIds.contains(beer.id),
-                    );
-                  },
+                // A subtle cross-fade whenever the filter or sort choice
+                // changes the list, keyed on both so unrelated rebuilds
+                // (e.g. a favorite toggled elsewhere) don't retrigger it.
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: KeyedSubtree(
+                    key: ValueKey('${filters.hashCode}-${sortOption.name}-${beers.isEmpty}'),
+                    child: content,
+                  ),
                 );
               },
             ),
