@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:valuebrew/core/constants/app_constants.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/data/sources/catalog_local_cache.dart';
@@ -468,6 +469,84 @@ void main() {
       'a failure checking the remote source is ignored, falling back to the bundled asset',
       () async {
         final remote = _FakeCatalogRemoteSource(checkError: Exception('remote check failed'));
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, 1);
+      },
+    );
+  });
+
+  group('CatalogRepository with the real HttpCatalogRemoteSource', () {
+    test(
+      'a successful HTTP fetch with a newer version is preferred over the bundled asset',
+      () async {
+        final remote = HttpCatalogRemoteSource(
+          httpGet: (url) async => http.Response(_catalogJsonAtVersion(9), 200),
+        );
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, 9);
+      },
+    );
+
+    test(
+      'a timed-out HTTP fetch falls back to the bundled asset, with no exception',
+      () async {
+        final remote = HttpCatalogRemoteSource(
+          timeout: const Duration(milliseconds: 10),
+          httpGet: (url) async {
+            await Future.delayed(const Duration(milliseconds: 100));
+            return http.Response(_catalogJsonAtVersion(9), 200);
+          },
+        );
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, 1);
+      },
+    );
+
+    test(
+      'an HTTP failure response falls back to the bundled asset, with no exception',
+      () async {
+        final remote = HttpCatalogRemoteSource(
+          httpGet: (url) async => http.Response('Service Unavailable', 503),
+        );
+        final repository = CatalogRepository(
+          loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
+          assetKey: 'assets/catalog.json',
+          remoteSource: remote,
+        );
+
+        final catalog = await repository.loadCatalog();
+
+        expect(catalog.catalogVersion, 1);
+      },
+    );
+
+    test(
+      'a malformed remote JSON body falls back to the bundled asset, with no exception',
+      () async {
+        final remote = HttpCatalogRemoteSource(
+          httpGet: (url) async => http.Response('{ not valid json', 200),
+        );
         final repository = CatalogRepository(
           loadAsset: fixedLoader(_catalogJsonAtVersion(1)),
           assetKey: 'assets/catalog.json',

@@ -230,7 +230,7 @@ No provider is ever constructed inside a widget's `build()` — every dependency
 
 Three independent local persistence concerns exist today; there is no backend and no networking (the V1 scope explicitly excludes both).
 
-**Catalog** — a three-tier fallback: (a) the bundled asset (`catalog/catalog.json`) is the guaranteed baseline and the only layer whose failure actually stops loading; (b) a `SharedPreferencesCatalogLocalCache` holds a previously-fetched remote catalog, used only if its `catalog_version` is newer than what's already loaded; (c) a `CatalogRemoteSource` (currently `StubCatalogRemoteSource`, which never reports an update) is checked last. A failure reading the cache or the remote source is always silently ignored — the catalog fallback chain is designed so a flaky network or corrupted cache entry never blocks the app from showing the bundled data.
+**Catalog** — a three-tier fallback: (a) the bundled asset (`catalog/catalog.json`) is the guaranteed baseline and the only layer whose failure actually stops loading; (b) a `SharedPreferencesCatalogLocalCache` holds a previously-fetched remote catalog, used only if its `catalog_version` is newer than what's already loaded; (c) a `CatalogRemoteSource` — `HttpCatalogRemoteSource` in production, fetching `AppConstants.remoteCatalogUrl` with a configurable timeout — is checked last. A failure reading the cache or the remote source (network unavailable, timeout, a non-200 response, or an unparseable/malformed body) is always silently ignored — the catalog fallback chain is designed so a flaky network or corrupted cache entry never blocks the app from showing the bundled data.
 
 **Favorites** — a `Set<String>` of `Beer.id` values only, under one `SharedPreferences` key (`favorite_beer_ids`). **Only IDs are stored, never whole `Beer` objects**, for the same reason every other reference in this codebase's data model is an ID rather than an embedded object (`Sku.beerId`, `Beer.styleId`): the catalog is the single source of truth for a beer's name, brewery, and style. Persisting a full `Beer` snapshot would duplicate that data and let it drift out of sync the moment the catalog updates (a renamed beer, a corrected brewery) — the ID is a stable reference that's always re-resolved against whatever catalog is currently loaded.
 
@@ -287,7 +287,6 @@ None of the following are implemented. Each is described in terms of where it pl
 - **Recommendation Profiles** (Budget Drinker, Craft Explorer, Session Beers, …) — implement `RecommendationPolicy` and override `recommendationPolicyProvider`. Zero changes to `RecommendationEngine`, `WeightedScorer`, or any screen. This is the extension point the policy layer was built for.
 - **Personalization ("Because you liked…")** — `favoriteBeerIdsProvider` already exposes exactly the signal this needs (a `Set` of favorited beer IDs). A personalization-aware policy, or a new `SimilarityStrategy`/`RecommendationReason` recognizing "matches a beer you've favorited," could read it without any change to how favorites are persisted.
 - **Cloud Sync** — `FavoritesRepository` is already an interface with one local implementation. A remote-backed implementation slots in behind `favoritesRepositoryProvider`; `FavoritesNotifier` and every screen consuming `favoriteBeerIdsProvider` need no changes.
-- **Remote Catalog** — `CatalogRemoteSource` is already an abstract interface with a no-op `StubCatalogRemoteSource` default. A real implementation (a CDN fetch compared by `catalog_version`) plugs into `CatalogRepository`'s existing bundled → cache → remote fallback chain unchanged.
 - **Filtering** (by style, ABV, price range, etc.) — would live as a new provider composing `catalogProvider` (and, if combined with search, `searchResultsProvider`), the same way `searchResultsProvider` itself composes `catalogProvider` + `searchQueryProvider` today.
 - **Food Pairing** — once pairing data exists in the catalog schema, this is a new `RecommendationReason` value plus one new `SimilarityStrategy` implementation. The strategy interface was explicitly designed (see its own doc comments) so adding a dimension never requires touching an existing strategy or `WeightedScorer`.
 - **Recently Viewed** — structurally identical to Favorites (an ordered set of beer IDs, a repository, a provider). The Favorites implementation is a direct template, down to the "persist IDs only" decision.
@@ -303,7 +302,6 @@ Genuine, current limitations — not hypothetical future problems.
 - **`RecommendationReason` is qualitative only.** It's a flat enum with a fixed display label per value ("Similar ABV") — it doesn't carry the underlying numbers (e.g. "4.8% vs 5.0%"). Fine for today's scope, but a real simplification if richer explanations are ever wanted.
 - **The `0.5` "worth mentioning" explain threshold is an untuned constant**, duplicated as a private constant in both `AbvClosenessStrategy` and `PriceClosenessStrategy`, with no product research behind the specific number and no policy-level override.
 - **`BeerDetailScreen` repeats its same-beer-SKU filter twice** (once for each recommendation section) rather than factoring it into one helper — small, but a real, literal duplication of one line.
-- **No test exercises the full bundled → cache → remote fallback chain end-to-end** as one combined scenario; each layer (`CatalogRepository`, `CatalogLocalCache`, `CatalogRemoteSource`) is unit-tested independently, but their interaction isn't covered by an integration-style test.
 
 ---
 
@@ -313,10 +311,9 @@ Ordered by what the codebase has already been explicitly built to support but ha
 
 1. **A first real recommendation profile** — the most natural next milestone, since `RecommendationPolicy` exists specifically to make this a low-risk, additive change.
 2. **Personalization using Favorites** — the signal now exists; the next step is deciding how it should influence scoring or explanations.
-3. **Remote catalog updates** — `CatalogRemoteSource`'s interface is built; wiring a real CDN-backed implementation in is infrastructure work, not architecture work.
-4. **Filtering / sorting on Home** — a natural extension of the existing search-provider composition pattern.
-5. **Food pairing as a recommendation dimension** — blocked only on catalog schema/data, not on architecture.
-6. **Recently Viewed** — a close structural cousin of Favorites.
+3. **Filtering / sorting on Home** — a natural extension of the existing search-provider composition pattern.
+4. **Food pairing as a recommendation dimension** — blocked only on catalog schema/data, not on architecture.
+5. **Recently Viewed** — a close structural cousin of Favorites.
 
 ---
 
