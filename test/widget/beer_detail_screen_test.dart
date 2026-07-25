@@ -108,6 +108,103 @@ const _multipleSkusJson = '''
 }
 ''';
 
+const _similarBeersJson = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" },
+    { "id": "ipa", "name": "IPA", "description": "Hop-forward, bitter" }
+  ],
+  "beers": [
+    { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false },
+    { "id": "toit_porter", "name": "Toit Porter", "brewery": "Toit Brewpub", "style_id": "lager", "is_craft": true },
+    { "id": "simba_strong", "name": "Simba Strong", "brewery": "Kals Brewing", "style_id": "lager", "is_craft": false },
+    { "id": "weak_lager", "name": "Weak Lager", "brewery": "Some Brewery", "style_id": "lager", "is_craft": false },
+    { "id": "no_sku_lager", "name": "No Sku Lager", "brewery": "Ghost Brewery", "style_id": "lager", "is_craft": false },
+    { "id": "craft_ipa", "name": "Craft IPA", "brewery": "Arbor Brewing", "style_id": "ipa", "is_craft": true }
+  ],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 50,
+      "value_verdict": "fair_value"
+    },
+    {
+      "id": "toit_porter_330",
+      "beer_id": "toit_porter",
+      "size_ml": 330,
+      "package_type": "can",
+      "abv": 6.5,
+      "calories": 220,
+      "price": 250,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 757.6,
+      "cost_per_ml_alcohol": 11.66,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "simba_strong_500",
+      "beer_id": "simba_strong",
+      "size_ml": 500,
+      "package_type": "can",
+      "abv": 8.0,
+      "calories": 300,
+      "price": 150,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 300.0,
+      "cost_per_ml_alcohol": 3.75,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "weak_lager_650",
+      "beer_id": "weak_lager",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.5,
+      "calories": 260,
+      "price": 140,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 215.4,
+      "cost_per_ml_alcohol": 4.78,
+      "value_score": 30,
+      "value_verdict": "overpriced"
+    },
+    {
+      "id": "craft_ipa_330",
+      "beer_id": "craft_ipa",
+      "size_ml": 330,
+      "package_type": "bottle",
+      "abv": 6.0,
+      "calories": 210,
+      "price": 300,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 909.1,
+      "cost_per_ml_alcohol": 15.15,
+      "value_score": 90,
+      "value_verdict": "great_value"
+    }
+  ],
+  "benchmarks": []
+}
+''';
+
 const _kfPremium = Beer(
   id: 'kf_premium',
   name: 'Kingfisher Premium',
@@ -258,5 +355,92 @@ void main() {
     expect(find.text('Can · 500 mL'), findsNothing);
     expect(find.text('MRP: ₹250'), findsNothing);
     expect(find.text('Value score: 20 (Overpriced for this ABV)'), findsNothing);
+  });
+
+  testWidgets('shows the empty-state message when there are no similar beers', (
+    WidgetTester tester,
+  ) async {
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _catalogJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Similar & Better Value'), findsOneWidget);
+    expect(find.text('No similar beers available.'), findsOneWidget);
+  });
+
+  testWidgets(
+    'shows similar beers ranked by value score, excluding the current beer, '
+    'other styles, and beers with no SKUs',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _similarBeersJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      // Same-style beers with SKUs are shown, correctly ranked.
+      expect(find.text('Toit Porter'), findsOneWidget);
+      expect(find.text('Toit Brewpub'), findsOneWidget);
+      expect(find.text('Simba Strong'), findsOneWidget);
+      expect(find.text('Kals Brewing'), findsOneWidget);
+      expect(find.text('Weak Lager'), findsOneWidget);
+
+      // The viewed beer itself must not appear in its own similar list.
+      // (Its name still appears twice as-is: once in the AppBar title,
+      // once as the screen's own heading — never a third time in the
+      // similar-beers section below.)
+      expect(find.text('Kingfisher Premium'), findsNWidgets(2));
+
+      // A beer in a different style must not appear.
+      expect(find.text('Craft IPA'), findsNothing);
+
+      // A same-style beer with no SKUs must not appear — there is no
+      // value score to display or rank it by.
+      expect(find.text('No Sku Lager'), findsNothing);
+
+      // Toit Porter and Simba Strong tie at 78; catalog order (Toit
+      // Porter listed first) must be preserved. Weak Lager (30) ranks
+      // last among the three.
+      final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
+      final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
+      final weakY = tester.getTopLeft(find.text('Weak Lager')).dy;
+      expect(toitY, lessThan(simbaY));
+      expect(simbaY, lessThan(weakY));
+    },
+  );
+
+  testWidgets('tapping a similar beer pushes a new BeerDetailScreen for it', (
+    WidgetTester tester,
+  ) async {
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _similarBeersJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    final toitRow = find.widgetWithText(ListTile, 'Toit Porter');
+    await tester.tap(toitRow);
+    await tester.pumpAndSettle();
+
+    // The pushed screen's AppBar title and content uniquely identify it as
+    // Toit Porter's own BeerDetailScreen (its own brewery and value score,
+    // not Kingfisher Premium's).
+    expect(find.widgetWithText(AppBar, 'Toit Porter'), findsOneWidget);
+    expect(find.text('Toit Brewpub'), findsOneWidget);
+    expect(find.text('Value score: 78 (Great value)'), findsWidgets);
   });
 }
