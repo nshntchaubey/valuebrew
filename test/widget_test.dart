@@ -87,6 +87,70 @@ const _catalogJsonWithSkus = '''
 }
 ''';
 
+const _catalogJsonForSorting = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" }
+  ],
+  "beers": [
+    { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false },
+    { "id": "simba_strong", "name": "Simba Strong", "brewery": "Kals Brewing", "style_id": "lager", "is_craft": false },
+    { "id": "toit_porter", "name": "Toit Porter", "brewery": "Toit Brewpub", "style_id": "lager", "is_craft": true },
+    { "id": "mystery_beer", "name": "Mystery Beer", "brewery": "Secret Craft Ltd", "style_id": "lager", "is_craft": false }
+  ],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "simba_strong_500",
+      "beer_id": "simba_strong",
+      "size_ml": 500,
+      "package_type": "can",
+      "abv": 8.0,
+      "calories": 300,
+      "price": 150,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 300.0,
+      "cost_per_ml_alcohol": 3.75,
+      "value_score": 55,
+      "value_verdict": "fair_value"
+    },
+    {
+      "id": "toit_porter_330",
+      "beer_id": "toit_porter",
+      "size_ml": 330,
+      "package_type": "can",
+      "abv": 6.5,
+      "calories": 220,
+      "price": 250,
+      "price_last_checked": "2026-07-18",
+      "price_source": "test",
+      "cost_per_litre": 757.6,
+      "cost_per_ml_alcohol": 11.66,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    }
+  ],
+  "benchmarks": []
+}
+''';
+
 void main() {
   testWidgets('HomeScreen shows a loading indicator, then the loaded beers', (
     WidgetTester tester,
@@ -314,4 +378,174 @@ void main() {
       );
     },
   );
+
+  testWidgets('HomeScreen shows beers in catalog order by default', (
+    WidgetTester tester,
+  ) async {
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJsonForSorting,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Catalog order: Kingfisher Premium, Simba Strong, Toit Porter, Mystery Beer.
+    final kfY = tester.getTopLeft(find.text('Kingfisher Premium')).dy;
+    final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
+    final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
+    final mysteryY = tester.getTopLeft(find.text('Mystery Beer')).dy;
+
+    expect(kfY, lessThan(simbaY));
+    expect(simbaY, lessThan(toitY));
+    expect(toitY, lessThan(mysteryY));
+  });
+
+  testWidgets(
+    'selecting Best value sorts by highest valueScore descending, ties by catalog order, no-SKU beers last',
+    (WidgetTester tester) async {
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJsonForSorting,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Best value'));
+      await tester.pumpAndSettle();
+
+      // kf_premium and toit_porter both score 78 — kf_premium comes first
+      // in the catalog, so it must stay first despite simba_strong (55)
+      // sitting between them in catalog order. simba_strong (55) comes
+      // next, and mystery_beer (no SKUs) is always last.
+      final kfY = tester.getTopLeft(find.text('Kingfisher Premium')).dy;
+      final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
+      final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
+      final mysteryY = tester.getTopLeft(find.text('Mystery Beer')).dy;
+
+      expect(kfY, lessThan(toitY));
+      expect(toitY, lessThan(simbaY));
+      expect(simbaY, lessThan(mysteryY));
+    },
+  );
+
+  testWidgets('switching back to Catalog order restores the original order', (
+    WidgetTester tester,
+  ) async {
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJsonForSorting,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Best value'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Catalog order'));
+    await tester.pumpAndSettle();
+
+    final kfY = tester.getTopLeft(find.text('Kingfisher Premium')).dy;
+    final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
+    final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
+    final mysteryY = tester.getTopLeft(find.text('Mystery Beer')).dy;
+
+    expect(kfY, lessThan(simbaY));
+    expect(simbaY, lessThan(toitY));
+    expect(toitY, lessThan(mysteryY));
+  });
+
+  testWidgets(
+    'search followed by Best value sorting applies only to the filtered subset',
+    (WidgetTester tester) async {
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJsonForSorting,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // "o" matches Toit Porter and Simba Strong by name, but not
+      // Kingfisher Premium or Mystery Beer.
+      await tester.enterText(find.byType(TextField), 'o');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Toit Porter'), findsOneWidget);
+      expect(find.text('Simba Strong'), findsOneWidget);
+      expect(find.text('Kingfisher Premium'), findsNothing);
+      expect(find.text('Mystery Beer'), findsNothing);
+
+      await tester.tap(find.text('Best value'));
+      await tester.pumpAndSettle();
+
+      // Toit Porter (78) must outrank Simba Strong (55) within the
+      // filtered subset — Kingfisher Premium, excluded by the search, must
+      // not affect this ordering.
+      final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
+      final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
+      expect(toitY, lessThan(simbaY));
+    },
+  );
+
+  testWidgets('navigation to BeerDetailScreen works after switching to Best value sort', (
+    WidgetTester tester,
+  ) async {
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJsonForSorting,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Best value'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Kingfisher Premium'));
+    await tester.pumpAndSettle();
+
+    final detailScreen = find.byType(BeerDetailScreen);
+    expect(detailScreen, findsOneWidget);
+    expect(
+      find.descendant(of: detailScreen, matching: find.text('United Breweries')),
+      findsOneWidget,
+    );
+  });
 }
