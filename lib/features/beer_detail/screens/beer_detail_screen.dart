@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/features/beer_detail/wrong_report.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
@@ -47,9 +48,94 @@ List<Beer> _similarBeers(Catalog catalog, Beer beer) {
   return [for (final entry in indexed) entry.value];
 }
 
+/// A small "This looks wrong" action for a single (beer, SKU) pair.
+///
+/// Shows a confirmation dialog on tap, submits a [WrongReport] via
+/// [wrongReportStoreProvider] if confirmed, then shows a success
+/// acknowledgement. Once submitted, replaces itself with a "Reported"
+/// label for the rest of the app session (see [reportedItemsProvider]),
+/// preventing duplicate submissions for the same SKU.
+///
+/// Used once per SKU shown on [BeerDetailScreen] — a beer with multiple
+/// SKUs has multiple independent instances of this widget, which is
+/// exactly why it's a small dedicated widget rather than inlined.
+class _WrongReportAction extends ConsumerWidget {
+  const _WrongReportAction({required this.beerId, required this.skuId});
+
+  final String beerId;
+  final String skuId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final key = wrongReportKey(beerId, skuId);
+    final alreadyReported = ref.watch(reportedItemsProvider).contains(key);
+
+    if (alreadyReported) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: Text(
+          'Reported',
+          style: TextStyle(fontStyle: FontStyle.italic),
+        ),
+      );
+    }
+
+    return TextButton.icon(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        alignment: Alignment.centerLeft,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      icon: const Icon(Icons.flag_outlined, size: 16),
+      label: const Text('This looks wrong'),
+      onPressed: () => _handleTap(context, ref, key),
+    );
+  }
+
+  Future<void> _handleTap(BuildContext context, WidgetRef ref, String key) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report this listing?'),
+        content: const Text(
+          'Reporting incorrect info helps us improve catalog accuracy.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Report'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    await ref.read(wrongReportStoreProvider).submit(
+          WrongReport(beerId: beerId, skuId: skuId, timestamp: DateTime.now()),
+        );
+
+    ref.read(reportedItemsProvider.notifier).update((state) => {...state, key});
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Thanks — this has been reported.'),
+        ),
+      );
+    }
+  }
+}
+
 /// Shows details for a single [Beer]: its name, brewery, style, every
-/// [Sku] (pack size) it comes in, and a ranked "Similar & Better Value"
-/// list of other beers in the same style.
+/// [Sku] (pack size) it comes in, a "This looks wrong" report action per
+/// SKU, and a ranked "Similar & Better Value" list of other beers in the
+/// same style.
 ///
 /// Deliberately minimal — no SKU selection belongs here yet, every SKU is
 /// simply listed. `valueScore`/`valueVerdict` are read directly from the
@@ -106,6 +192,7 @@ class BeerDetailScreen extends ConsumerWidget {
                         'Value score: ${sku.valueScore} '
                         '(${sku.valueVerdict.displayLabel})',
                       ),
+                      _WrongReportAction(beerId: beer.id, skuId: sku.id),
                       const Divider(),
                     ],
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
@@ -221,6 +222,10 @@ Widget _wrap(Widget child, {required CatalogRepository repository}) {
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('shows a loading indicator before the catalog resolves', (
     WidgetTester tester,
   ) async {
@@ -443,4 +448,104 @@ void main() {
     expect(find.text('Toit Brewpub'), findsOneWidget);
     expect(find.text('Value score: 78 (Great value)'), findsWidgets);
   });
+
+  testWidgets('shows a "This looks wrong" action for each SKU', (
+    WidgetTester tester,
+  ) async {
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _multipleSkusJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    // Kingfisher Premium has two of its own SKUs in this fixture.
+    expect(find.text('This looks wrong'), findsNWidgets(2));
+  });
+
+  testWidgets('tapping "This looks wrong" shows a confirmation dialog', (
+    WidgetTester tester,
+  ) async {
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _oneSkuJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('This looks wrong'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Report this listing?'), findsOneWidget);
+    expect(find.textContaining('catalog accuracy'), findsOneWidget);
+    expect(find.text('Cancel'), findsOneWidget);
+    expect(find.text('Report'), findsOneWidget);
+  });
+
+  testWidgets('canceling the dialog does not submit a report', (
+    WidgetTester tester,
+  ) async {
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _oneSkuJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('This looks wrong'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(find.text('This looks wrong'), findsOneWidget);
+    expect(find.text('Reported'), findsNothing);
+
+    final prefs = await SharedPreferences.getInstance();
+    expect(prefs.getStringList('wrong_reports'), anyOf(isNull, isEmpty));
+  });
+
+  testWidgets(
+    'confirming submits the report, shows a success acknowledgement, and '
+    'prevents a duplicate submission for the same SKU',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _oneSkuJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('This looks wrong'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Report'));
+      await tester.pumpAndSettle();
+
+      // Success acknowledgement.
+      expect(find.text('Thanks — this has been reported.'), findsOneWidget);
+
+      // Persisted locally.
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getStringList('wrong_reports'), hasLength(1));
+
+      // Duplicate prevention: the action is replaced by a static
+      // "Reported" label, with no tappable "This looks wrong" left for
+      // this SKU.
+      expect(find.text('Reported'), findsOneWidget);
+      expect(find.text('This looks wrong'), findsNothing);
+    },
+  );
 }
