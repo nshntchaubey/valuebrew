@@ -9,6 +9,8 @@ import 'package:valuebrew/features/favorites/screens/favorites_screen.dart';
 import 'package:valuebrew/features/filtering/models/filter_state.dart';
 import 'package:valuebrew/features/filtering/providers/filtering_providers.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/sorting/models/sort_option.dart';
+import 'package:valuebrew/features/sorting/providers/sorting_providers.dart';
 
 const _catalogJson = '''
 {
@@ -216,4 +218,43 @@ void main() {
       expect(find.text('No beers match your filters.'), findsNothing);
     },
   );
+
+  testWidgets(
+    'respects the app-wide sortOptionProvider — the same SortingEngine HomeScreen uses',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({
+        'favorite_beer_ids': ['toit_porter', 'kf_premium'],
+      });
+
+      await tester.pumpWidget(
+        _wrap(
+          const FavoritesScreen(),
+          repository: repository,
+          extraOverrides: [
+            sortOptionProvider.overrideWith((ref) => SortOption.priceLowToHigh),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // toit_porter is favorited first but costs more (₹250) than
+      // kf_premium (₹110) — priceLowToHigh must still rank kf_premium
+      // first, exactly what SortingEngine's own unit tests already prove.
+      final kfY = tester.getTopLeft(find.text('Kingfisher Premium')).dy;
+      final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
+      expect(kfY, lessThan(toitY));
+      expect(find.text('Sorted by: Price (Low to High)'), findsOneWidget);
+    },
+  );
+
+  testWidgets('shows "Sorted by: Relevance" by default', (WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({
+      'favorite_beer_ids': ['kf_premium'],
+    });
+
+    await tester.pumpWidget(_wrap(const FavoritesScreen(), repository: repository));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sorted by: Relevance'), findsOneWidget);
+  });
 }

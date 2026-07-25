@@ -200,6 +200,15 @@ const _catalogJsonForFiltering = '''
 }
 ''';
 
+/// Opens the Sort bottom sheet from the AppBar and selects [label] — the
+/// sheet closes itself on selection.
+Future<void> _selectSortOption(WidgetTester tester, String label) async {
+  await tester.tap(find.byIcon(Icons.sort));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -479,8 +488,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Best value'));
-      await tester.pumpAndSettle();
+      await _selectSortOption(tester, 'Best Value');
 
       // kf_premium and toit_porter both score 78 — kf_premium comes first
       // in the catalog, so it must stay first despite simba_strong (55)
@@ -497,7 +505,7 @@ void main() {
     },
   );
 
-  testWidgets('switching back to Catalog order restores the original order', (
+  testWidgets('switching back to Relevance restores the original (catalog) order', (
     WidgetTester tester,
   ) async {
     final fakeRepository = CatalogRepository(
@@ -515,10 +523,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Best value'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Catalog order'));
-    await tester.pumpAndSettle();
+    await _selectSortOption(tester, 'Best Value');
+    await _selectSortOption(tester, 'Relevance');
 
     final kfY = tester.getTopLeft(find.text('Kingfisher Premium')).dy;
     final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
@@ -558,8 +564,7 @@ void main() {
       expect(find.text('Kingfisher Premium'), findsNothing);
       expect(find.text('Mystery Beer'), findsNothing);
 
-      await tester.tap(find.text('Best value'));
-      await tester.pumpAndSettle();
+      await _selectSortOption(tester, 'Best Value');
 
       // Toit Porter (78) must outrank Simba Strong (55) within the
       // filtered subset — Kingfisher Premium, excluded by the search, must
@@ -588,8 +593,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Best value'));
-    await tester.pumpAndSettle();
+    await _selectSortOption(tester, 'Best Value');
 
     await tester.tap(find.text('Kingfisher Premium'));
     await tester.pumpAndSettle();
@@ -601,6 +605,45 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'the active-sort indicator updates, and Name (A to Z) orders alphabetically',
+    (WidgetTester tester) async {
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJsonForSorting,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sorted by: Relevance'), findsOneWidget);
+
+      await _selectSortOption(tester, 'Name (A to Z)');
+
+      expect(find.text('Sorted by: Name (A to Z)'), findsOneWidget);
+      expect(find.text('Sorted by: Relevance'), findsNothing);
+
+      // Catalog order is Kingfisher Premium, Simba Strong, Toit Porter,
+      // Mystery Beer — alphabetically it's Kingfisher, Mystery, Simba,
+      // Toit.
+      final kfY = tester.getTopLeft(find.text('Kingfisher Premium')).dy;
+      final mysteryY = tester.getTopLeft(find.text('Mystery Beer')).dy;
+      final simbaY = tester.getTopLeft(find.text('Simba Strong')).dy;
+      final toitY = tester.getTopLeft(find.text('Toit Porter')).dy;
+
+      expect(kfY, lessThan(mysteryY));
+      expect(mysteryY, lessThan(simbaY));
+      expect(simbaY, lessThan(toitY));
+    },
+  );
 
   testWidgets(
     'each beer row shows a filled heart if favorited, an outline heart otherwise',

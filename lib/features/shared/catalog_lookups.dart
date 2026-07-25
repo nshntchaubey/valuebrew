@@ -53,3 +53,21 @@ Sku? bestSkuForBeer(List<Sku> skus, String beerId) {
   }
   return best;
 }
+
+/// Returns the [Sku] with the lowest `price` among [skus] belonging to the
+/// beer with [beerId], or `null` if it has none.
+///
+/// Distinct from [bestSkuForBeer] on purpose: `valueScore` and raw `price`
+/// are different axes (`valueScore` is a style-relative percentile of
+/// cost-per-ml-alcohol, not the sticker price) — a beer's cheapest SKU is
+/// not necessarily its best-value one.
+Sku? cheapestSkuForBeer(List<Sku> skus, String beerId) {
+  Sku? cheapest;
+  for (final sku in skus) {
+    if (sku.beerId != beerId) continue;
+    if (cheapest == null || sku.price < cheapest.price) {
+      cheapest = sku;
+    }
+  }
+  return cheapest;
+}
