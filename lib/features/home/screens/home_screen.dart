@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/sku.dart';
-import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/compare/screens/compare_screen.dart';
+import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
+import 'package:valuebrew/features/favorites/screens/favorites_screen.dart';
 import 'package:valuebrew/features/search/providers/search_providers.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
+import 'package:valuebrew/features/shared/widgets/beer_list_tile.dart';
 
 /// How [HomeScreen] orders the beer list.
 enum SortMode {
@@ -70,12 +71,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final resultsAsync = ref.watch(searchResultsProvider);
     final skus = ref.watch(catalogProvider).valueOrNull?.skus ?? const <Sku>[];
+    final favoriteIds = ref.watch(favoriteBeerIdsProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('ValueBrew'),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite),
+            tooltip: 'Favorites',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FavoritesScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.compare_arrows),
             tooltip: 'Compare beers',
@@ -135,29 +147,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemCount: orderedBeers.length,
                   itemBuilder: (context, index) {
                     final beer = orderedBeers[index];
-                    final bestSku = bestSkuForBeer(skus, beer.id);
-                    return ListTile(
-                      title: Text(beer.name),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(beer.brewery),
-                          Text(
-                            bestSku == null
-                                ? 'No SKUs available'
-                                : 'Value score: ${bestSku.valueScore} '
-                                    '(${bestSku.valueVerdict.displayLabel})',
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BeerDetailScreen(beer: beer),
-                          ),
-                        );
-                      },
+                    return buildBeerListTile(
+                      context,
+                      beer,
+                      skus,
+                      isFavorite: favoriteIds.contains(beer.id),
                     );
                   },
                 );

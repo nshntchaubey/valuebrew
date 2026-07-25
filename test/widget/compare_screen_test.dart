@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
@@ -75,6 +76,10 @@ Future<void> _selectBeer(
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('shows a loading indicator before the catalog resolves', (
     WidgetTester tester,
   ) async {

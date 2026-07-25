@@ -830,4 +830,63 @@ void main() {
       expect(find.text('This looks wrong'), findsNothing);
     },
   );
+
+  testWidgets(
+    'the AppBar favorite button toggles between outline and filled heart, and persists the change',
+    (WidgetTester tester) async {
+      final repository = CatalogRepository(
+        loadAsset: (key) async => _oneSkuJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+      );
+      await tester.pumpAndSettle();
+
+      // Not favorited yet.
+      expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+      expect(find.byIcon(Icons.favorite), findsNothing);
+
+      await tester.tap(find.byIcon(Icons.favorite_border));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.favorite), findsOneWidget);
+      expect(find.byIcon(Icons.favorite_border), findsNothing);
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getStringList('favorite_beer_ids'), contains('kf_premium'));
+
+      // Tapping again un-favorites it.
+      await tester.tap(find.byIcon(Icons.favorite));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+      expect(find.byIcon(Icons.favorite), findsNothing);
+      expect(
+        (await SharedPreferences.getInstance()).getStringList('favorite_beer_ids'),
+        isNot(contains('kf_premium')),
+      );
+    },
+  );
+
+  testWidgets('shows a filled heart immediately if the beer is already favorited', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({
+      'favorite_beer_ids': ['kf_premium'],
+    });
+    final repository = CatalogRepository(
+      loadAsset: (key) async => _oneSkuJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      _wrap(const BeerDetailScreen(beer: _kfPremium), repository: repository),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border), findsNothing);
+  });
 }

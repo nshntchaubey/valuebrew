@@ -5,6 +5,7 @@ import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/features/beer_detail/wrong_report.dart';
+import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/providers/recommendation_providers.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
@@ -76,6 +77,27 @@ Widget? _recommendationTile(
       );
     },
   );
+}
+
+/// The AppBar favorite toggle: an outline heart when [beerId] isn't
+/// favorited, a filled one when it is — standard Material icons, no
+/// custom animation. Reads and writes [favoriteBeerIdsProvider] directly;
+/// it's the only place on this screen favorite status can be changed.
+class _FavoriteButton extends ConsumerWidget {
+  const _FavoriteButton({required this.beerId});
+
+  final String beerId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFavorite = ref.watch(favoriteBeerIdsProvider).contains(beerId);
+
+    return IconButton(
+      icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+      tooltip: isFavorite ? 'Remove from favorites' : 'Add to favorites',
+      onPressed: () => ref.read(favoriteBeerIdsProvider.notifier).toggle(beerId),
+    );
+  }
 }
 
 /// A small "This looks wrong" action for a single (beer, SKU) pair.
@@ -162,10 +184,11 @@ class _WrongReportAction extends ConsumerWidget {
   }
 }
 
-/// Shows details for a single [Beer]: its name, brewery, style, every
-/// [Sku] (pack size) it comes in, a "This looks wrong" report action per
-/// SKU, and two [RecommendationEngine]-backed lists — "Similar beers" and
-/// "Better value picks" — under a shared "Similar & Better Value" heading.
+/// Shows details for a single [Beer]: a favorite toggle in the AppBar, its
+/// name, brewery, style, every [Sku] (pack size) it comes in, a "This looks
+/// wrong" report action per SKU, and two [RecommendationEngine]-backed
+/// lists — "Similar beers" and "Better value picks" — under a shared
+/// "Similar & Better Value" heading.
 ///
 /// Deliberately minimal — no SKU selection belongs here yet, every SKU is
 /// simply listed. `valueScore`/`valueVerdict` are read directly from the
@@ -200,7 +223,10 @@ class BeerDetailScreen extends ConsumerWidget {
     final engine = ref.watch(recommendationEngineProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(beer.name)),
+      appBar: AppBar(
+        title: Text(beer.name),
+        actions: [_FavoriteButton(beerId: beer.id)],
+      ),
       body: catalogAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stackTrace) => Center(

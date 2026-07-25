@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
@@ -152,6 +153,10 @@ const _catalogJsonForSorting = '''
 ''';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('HomeScreen shows a loading indicator, then the loaded beers', (
     WidgetTester tester,
   ) async {
@@ -547,5 +552,67 @@ void main() {
       find.descendant(of: detailScreen, matching: find.text('United Breweries')),
       findsOneWidget,
     );
+  });
+
+  testWidgets(
+    'each beer row shows a filled heart if favorited, an outline heart otherwise',
+    (WidgetTester tester) async {
+      SharedPreferences.setMockInitialValues({
+        'favorite_beer_ids': ['kf_premium'],
+      });
+      final fakeRepository = CatalogRepository(
+        loadAsset: (key) async => _catalogJson,
+        assetKey: 'fake_key',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            catalogRepositoryProvider.overrideWithValue(fakeRepository),
+          ],
+          child: const ValueBrewApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final favoritedTile = find.widgetWithText(ListTile, 'Kingfisher Premium');
+      final unfavoritedTile = find.widgetWithText(ListTile, 'Toit Porter');
+
+      expect(
+        find.descendant(of: favoritedTile, matching: find.byIcon(Icons.favorite)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: unfavoritedTile, matching: find.byIcon(Icons.favorite_border)),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('Favorites is reachable from HomeScreen via the AppBar action', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final fakeRepository = CatalogRepository(
+      loadAsset: (key) async => _catalogJson,
+      assetKey: 'fake_key',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          catalogRepositoryProvider.overrideWithValue(fakeRepository),
+        ],
+        child: const ValueBrewApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.descendant(of: find.byType(AppBar), matching: find.byIcon(Icons.favorite)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Favorites'), findsOneWidget);
   });
 }
