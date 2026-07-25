@@ -1,0 +1,40 @@
+import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
+
+/// Combines multiple [SimilarityStrategy]s into a single similarity score
+/// via a weighted average.
+///
+/// Each strategy already returns a score in `[0.0, 1.0]`; normalizing by
+/// the sum of weights (rather than assuming weights sum to `1.0`) means
+/// callers can pass any positive weights — relative magnitude between
+/// them is all that matters, not an exact total.
+///
+/// This is the one place individual strategy scores are combined. Adding,
+/// removing, or reweighting a scoring dimension only ever means changing
+/// the weight map passed to a [WeightedScorer] — never touching any
+/// strategy's own code.
+class WeightedScorer {
+  /// Creates a [WeightedScorer] combining [weights] — a strategy mapped
+  /// to how much it should count relative to the others.
+  const WeightedScorer(this.weights);
+
+  /// Which strategies contribute to this scorer's score, and by how much
+  /// relative to each other.
+  final Map<SimilarityStrategy, double> weights;
+
+  /// Returns the combined, weighted-average similarity score between [a]
+  /// and [b], in `[0.0, 1.0]`. Returns `0.0` if [weights] is empty or all
+  /// weights are zero.
+  double score(Sku a, Sku b, Catalog catalog) {
+    var weightedSum = 0.0;
+    var totalWeight = 0.0;
+    for (final entry in weights.entries) {
+      weightedSum += entry.key.score(a, b, catalog) * entry.value;
+      totalWeight += entry.value;
+    }
+
+    if (totalWeight <= 0) return 0.0;
+    return weightedSum / totalWeight;
+  }
+}

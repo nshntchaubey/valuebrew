@@ -1,6 +1,21 @@
+import 'package:valuebrew/data/models/beer.dart';
 import 'package:valuebrew/data/models/catalog.dart';
 import 'package:valuebrew/data/models/sku.dart';
 import 'package:valuebrew/data/models/style.dart';
+
+/// Resolves [beerId] to its [Beer] within [catalog], or `null` if no beer
+/// with that id exists.
+///
+/// A SKU's `beerId` is a plain reference, not an embedded [Beer] — this is
+/// the lookup that resolves it.
+Beer? resolveBeer(Catalog catalog, String beerId) {
+  for (final beer in catalog.beers) {
+    if (beer.id == beerId) {
+      return beer;
+    }
+  }
+  return null;
+}
 
 /// Resolves [styleId] to its [Style] within [catalog], or `null` if no
 /// style with that id exists.

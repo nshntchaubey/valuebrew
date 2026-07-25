@@ -53,12 +53,12 @@
 ## M4 — Core Utilities (In-App Dart)
 - [ ] 39. Implement `costPerLitre` in `core/utils/value_score_calculator.dart`
 - [ ] 40. Implement `costPerMlAlcohol` in the same file
-- [ ] 41. Implement `scoreMatch` fuzzy search function in `core/utils/fuzzy_match.dart`
-- [ ] 42. Implement `levenshtein` distance helper
+- [x] 41. Implement `scoreMatch` fuzzy search function in `core/utils/fuzzy_match.dart`
+- [x] 42. Implement `levenshtein` distance helper
 - [ ] 43. Unit test `costPerLitre`
 - [ ] 44. Unit test `costPerMlAlcohol`
-- [ ] 45. Unit test `scoreMatch`
-- [ ] 46. Unit test `levenshtein`
+- [x] 45. Unit test `scoreMatch`
+- [x] 46. Unit test `levenshtein`
 
 ## M5 — Catalog Loading & Local Storage
 - [ ] 47. Implement `CatalogLocalCacheService` (get/set raw JSON + version via `shared_preferences`)
@@ -78,7 +78,7 @@
 - [ ] 59. Set up `ProviderScope` at app root
 - [ ] 60. Implement `catalogProvider` (`FutureProvider<Catalog>`)
 - [ ] 61. Implement `searchQueryProvider` (`StateProvider<String>`)
-- [ ] 62. Implement `searchResultsProvider` (derived from catalog + query + `scoreMatch`)
+- [x] 62. Implement `searchResultsProvider` (derived from catalog + query + `scoreMatch`)
 - [ ] 63. Implement `selectedSkuProvider`
 - [ ] 64. Implement `similarBeersProvider` (derived from selected SKU + catalog, sorted by value score)
 - [ ] 65. Add 250ms debounce to search query updates

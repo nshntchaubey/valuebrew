@@ -115,6 +115,17 @@ void main() {
       expect(container.read(searchResultsProvider).value, isEmpty);
     });
 
+    test('tolerates a small typo in the beer name', () async {
+      final container = _containerWithCatalog();
+      await container.read(catalogProvider.future);
+
+      container.read(searchQueryProvider.notifier).state = 'Kingfsiher';
+
+      final results = container.read(searchResultsProvider).value!;
+      expect(results, hasLength(1));
+      expect(results.single.name, 'Kingfisher Premium');
+    });
+
     test('passes through the loading state from catalogProvider', () {
       final container = _containerWithCatalog();
 
