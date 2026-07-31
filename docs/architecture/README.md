@@ -75,3 +75,16 @@ Minor revisions are documented in `CHANGELOG.md`.
 ## Status
 
 Version 1.0 is considered feature complete and frozen pending external architectural review.
+---
+
+## Architecture Governance
+
+The canonical architecture has completed independent review and validation.
+
+The following governance documents accompany the architecture:
+
+- Architecture-Review.md
+- Architecture-Resolution-Report.md
+- Engineering-Planning-Roadmap.md
+
+These documents do not define product behavior. They document architecture review, adjudication of findings, and the transition from architecture into engineering.
