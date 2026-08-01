@@ -267,12 +267,13 @@ The canon's own data model draws a sharp line between what's cacheable and what 
 - **The Beer Detail → Recommendation navigation inconsistency is unresolved between two frozen documents.** Coding *either* direction as if it were settled bakes in a guess. The navigator method for this specific edge should be either omitted entirely or explicitly gated behind a comment pending formal resolution — not implemented on inference.
 - **Regulatory price staleness is an operational risk, not just a technical one.** If the legal price refresh pipeline lags, the product's single highest-confidence capability silently degrades without anyone noticing unless staleness is surfaced deliberately (Section 15).
 - **Scope creep via Flutter idiom.** Flutter makes certain nice-to-haves (animations, micro-interactions, "just one more field") cheap to add; none of them are licensed by a Feature Inventory tier. The Core V1 boundary is a product decision this document does not get to loosen.
-
+- **App store compliance for alcohol-related content is untracked.** ValueBrew recommends, compares, and prices alcoholic beverages; both major app stores impose category-specific requirements (age-gating/verification, content-rating declarations, a published privacy policy) that nothing in this document currently assigns an owner to. Tracked here as a release-readiness risk, owned by Milestone 9 in the Implementation Bootstrap Plan — not a reason to change anything the app does.
+- **No committed decision or owner yet exists for the Beer Knowledge Base's backend/data source.** Milestone 2 (Catalog Platform Service) can proceed against a stubbed or mocked remote source without this being resolved, so it does not block implementation start. It is tracked here, explicitly, as an open external dependency this document takes no position on — see Implementation Assumptions below — and should be assigned an owner and a target decision point before the milestones that depend on real catalog data (M6 onward) are reached.
 ---
 
 ## Implementation Assumptions
 
-- The Beer Knowledge Base's backend/data source is not yet decided; this document assumes a network API exists or will exist, fronted entirely by `BeerCatalogRepository`, and takes no position on its technology.
+- The Beer Knowledge Base's backend/data source is not yet decided; this document assumes a network API exists or will exist, fronted entirely by `BeerCatalogRepository`, and takes no position on its technology.Tracked as an owned, milestone-linked risk under Implementation Risks above, not left as a background assumption alone.
 - Riverpod is recommended in the absence of an existing founder preference; if one exists, it should be confirmed before Section 3 is treated as settled.
 - No accounts, ever, per the ADR — this document assumes that decision holds for the entire MVP and does not scaffold anything account-shaped "just in case."
 - Single-market regulatory scope (the canon's own evidence base is Karnataka-specific); this document assumes no near-term multi-jurisdiction requirement, which would otherwise complicate the Legal Price refresh model in Section 8.
@@ -283,11 +284,11 @@ The canon's own data model draws a sharp line between what's cacheable and what 
 
 1. **Domain layer + canonical-rule unit tests first** — encode the Acceptance Criteria and Recommendation Principles as executable tests before any UI exists, continuing the project's own "governance before construction" sequencing into engineering.
 2. **Catalog repository + local cache** (Section 8–9) — nothing else can be demonstrated without it.
-3. **Discovery Module**: Home → Search/Browse Results → Beer Detail — the foundation every other flow enters through.
-4. **Verification Module**: Price Verification, scaffolded at the domain layer only until its Engineering Specification exists; presentation deferred (see Risks).
-5. **Recommendation Module** — the most complex reasoning surface; build once Discovery and the catalog are stable.
-6. **Comparison Module** — depends on Recommendation's Trade-off/Tie machinery; build after it.
-7. **Navigation Contract enforcement wiring** across all screens, plus the illegal-navigation tests.
+3. **Navigation Contract enforcement wiring across all screens, plus the illegal-navigation tests** — built before any screen, since Home cannot legally navigate anywhere without this layer already in place.
+4. **Discovery Module**: Home → Search/Browse Results → Beer Detail — the foundation every other flow enters through.
+5. **Verification Module**: Price Verification, scaffolded at the domain layer only until its Engineering Specification exists; presentation deferred (see Risks).
+6. **Recommendation Module** — the most complex reasoning surface; build once Discovery and the catalog are stable.
+7. **Comparison Module** — depends on Recommendation's Trade-off/Tie machinery; build after it.
 8. **Cross-cutting presentation**: `ExplanationPanel`, `ConfidenceBadge`, `TradeoffCard`, `RecoveryBanner` — extract these the moment a second screen needs one, not before.
 9. **Offline hardening, build flavors, CI** — last, once the behavioral surface is stable enough that polishing it is worth the time.
 

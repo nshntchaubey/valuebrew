@@ -265,8 +265,8 @@ Milestones, not sprints — no calendar estimate is attached to any of these, de
 
 ### M9 — Offline Hardening, Release Configuration, Polish
 **Objective:** the app is genuinely usable offline per Implementation Architecture §15, and is buildable for a real release.
-**Deliverables:** `connectivity_plus`-driven staleness/offline UI treatments; build flavors (dev/staging/prod) with `envied`-backed config; app icons, splash, and store metadata.
-**Definition of Done:** the app functions (Beer Detail, cached-catalog Recommendation) with connectivity disabled in a manual test; a release build succeeds for both platforms.
+**Deliverables:** `connectivity_plus`-driven staleness/offline UI treatments; build flavors (dev/staging/prod) with `envied`-backed config; app icons, splash, and store metadata; app store compliance for alcohol-related content (age-gating/verification, content-rating declarations, published privacy policy) confirmed against current Google Play and Apple App Store requirements.
+**Definition of Done:** the app functions (Beer Detail, cached-catalog Recommendation) with connectivity disabled in a manual test; a release build succeeds for both platforms; app store compliance items are confirmed complete, not merely reviewed..
 **Dependencies:** M4–M8 substantially complete.
 **Estimated complexity:** M.
 
