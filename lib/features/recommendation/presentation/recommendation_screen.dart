@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/features/recommendation/domain/generate_recommendation.dart';
+import 'package:valuebrew/features/recommendation/domain/recommendation_outcome.dart';
 import 'package:valuebrew/features/recommendation/domain/recommendation_result.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
@@ -43,7 +44,14 @@ class _RecommendationScreenState extends ConsumerState<RecommendationScreen> {
         _result = null;
       } else {
         _error = null;
-        _result = generateRecommendation(catalog, budget: budget);
+        final outcome = generateRecommendation(catalog, budget: budget);
+        _result = switch (outcome) {
+          RecommendationFound(:final result) => result,
+          NoRecommendationWithinBudget() => null,
+          // Unreachable in this milestone: styleId is never supplied, so
+          // generateRecommendation can never return this outcome yet.
+          NoRecommendationMatchingStyle() => null,
+        };
         _searched = true;
       }
     });
