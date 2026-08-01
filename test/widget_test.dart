@@ -5,9 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:valuebrew/catalog/data/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
+import 'package:valuebrew/features/home/screens/home_screen.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
-import 'package:valuebrew/main.dart';
 
 const _catalogJson = '''
 {
@@ -228,7 +228,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(fakeRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
 
@@ -256,7 +256,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(failingRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
 
@@ -281,7 +281,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [catalogRepositoryProvider.overrideWithValue(repository)],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -307,7 +307,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -335,7 +335,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(fakeRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -368,7 +368,7 @@ void main() {
           overrides: [
             catalogRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -415,7 +415,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(fakeRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -450,7 +450,7 @@ void main() {
           overrides: [
             catalogRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -482,7 +482,7 @@ void main() {
           overrides: [
             catalogRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -512,7 +512,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(fakeRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -541,7 +541,7 @@ void main() {
           overrides: [
             catalogRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -576,7 +576,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(fakeRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -607,7 +607,7 @@ void main() {
           overrides: [
             catalogRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -646,7 +646,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(fakeRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -677,7 +677,7 @@ void main() {
           overrides: [
             catalogRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -721,7 +721,7 @@ void main() {
           overrides: [
             catalogRepositoryProvider.overrideWithValue(fakeRepository),
           ],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();
@@ -764,7 +764,7 @@ void main() {
         overrides: [
           catalogRepositoryProvider.overrideWithValue(fakeRepository),
         ],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -789,7 +789,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -823,7 +823,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
-        child: const ValueBrewApp(),
+        child: MaterialApp(home: const HomeScreen()),
       ),
     );
     await tester.pumpAndSettle();
@@ -864,7 +864,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
-          child: const ValueBrewApp(),
+          child: MaterialApp(home: const HomeScreen()),
         ),
       );
       await tester.pumpAndSettle();

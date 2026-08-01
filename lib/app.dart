@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:valuebrew/features/home/screens/home_screen.dart';
+import 'package:valuebrew/features/discovery/presentation/home_screen.dart';
+import 'package:valuebrew/navigation/value_brew_navigator.dart';
 
 /// The app's shared [ThemeData] — a single, amber-seeded Material 3 color
 /// scheme (evoking beer, rather than Flutter's stock indigo default) plus
@@ -36,6 +37,7 @@ class ValueBrewApp extends StatelessWidget {
     return MaterialApp(
       title: 'ValueBrew',
       debugShowCheckedModeBanner: false,
+      navigatorKey: rootNavigatorKey,
       theme: _appTheme,
       home: const HomeScreen(),
     );
