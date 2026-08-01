@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/sorting/models/sort_option.dart';
 
 Sku _sku({

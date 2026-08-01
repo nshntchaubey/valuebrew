@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/filtering/models/abv_range.dart';
 import 'package:valuebrew/features/filtering/models/filter_state.dart';
 import 'package:valuebrew/features/filtering/models/price_range.dart';

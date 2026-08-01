@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 

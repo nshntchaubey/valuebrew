@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/core/utils/fuzzy_match.dart';
-import 'package:valuebrew/data/models/beer.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
 /// The current search query, as typed by the user. Empty by default.

@@ -1,4 +1,4 @@
-import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/catalog/domain/style.dart';
 
 /// The reference cost-per-ml-of-alcohol distribution for a single [Style],
 /// computed once at catalog build time from every SKU in that style.

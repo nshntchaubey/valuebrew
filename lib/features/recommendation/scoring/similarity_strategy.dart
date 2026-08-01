@@ -1,5 +1,5 @@
-import 'package:valuebrew/data/models/catalog.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/catalog/domain/catalog.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 

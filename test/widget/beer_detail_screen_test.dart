@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/catalog.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/catalog/domain/catalog.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';

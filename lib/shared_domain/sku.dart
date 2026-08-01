@@ -1,4 +1,4 @@
-import 'package:valuebrew/data/models/beer.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
 
 /// The physical container type of a [Sku], as sold at retail.
 enum PackageType {

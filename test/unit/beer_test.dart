@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:valuebrew/data/models/beer.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
 
 void main() {
   group('Beer', () {

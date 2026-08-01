@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:valuebrew/core/utils/display_formatting.dart';
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 

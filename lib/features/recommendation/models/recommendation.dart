@@ -1,4 +1,4 @@
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 
 /// Which of [RecommendationEngine]'s two methods produced a

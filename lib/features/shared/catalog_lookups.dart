@@ -1,7 +1,7 @@
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/catalog.dart';
-import 'package:valuebrew/data/models/sku.dart';
-import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/catalog/domain/catalog.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
+import 'package:valuebrew/catalog/domain/style.dart';
 
 /// Resolves [beerId] to its [Beer] within [catalog], or `null` if no beer
 /// with that id exists.

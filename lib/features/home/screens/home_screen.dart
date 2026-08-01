@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/compare/screens/compare_screen.dart';
 import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
 import 'package:valuebrew/features/favorites/screens/favorites_screen.dart';

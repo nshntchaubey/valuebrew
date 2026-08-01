@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/catalog/domain/style.dart';
 
 void main() {
   group('Style', () {

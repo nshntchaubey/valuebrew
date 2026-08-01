@@ -1,5 +1,5 @@
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 
 /// A catalog sort order, strongly typed rather than a string, an integer
 /// ID, or a scattered `switch` in every screen that needs to sort.

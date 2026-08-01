@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
 import 'package:valuebrew/features/filtering/models/filter_state.dart';
 import 'package:valuebrew/features/filtering/services/filtering_engine.dart';

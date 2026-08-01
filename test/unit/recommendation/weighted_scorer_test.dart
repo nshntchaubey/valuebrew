@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:valuebrew/data/models/benchmark.dart';
-import 'package:valuebrew/data/models/catalog.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/catalog/domain/benchmark.dart';
+import 'package:valuebrew/catalog/domain/catalog.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation_reason.dart';
 import 'package:valuebrew/features/recommendation/scoring/similarity_strategy.dart';
 import 'package:valuebrew/features/recommendation/scoring/weighted_scorer.dart';

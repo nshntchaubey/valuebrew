@@ -1,5 +1,5 @@
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/sorting/models/sort_option.dart';
 

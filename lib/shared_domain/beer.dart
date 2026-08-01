@@ -1,4 +1,4 @@
-import 'package:valuebrew/data/models/style.dart';
+import 'package:valuebrew/catalog/domain/style.dart';
 
 /// A beer brand/product, e.g. "Kingfisher Premium".
 ///

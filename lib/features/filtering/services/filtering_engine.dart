@@ -1,5 +1,5 @@
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/features/filtering/models/filter_state.dart';
 
 /// Narrows a list of [Beer]s down to those matching every active filter in

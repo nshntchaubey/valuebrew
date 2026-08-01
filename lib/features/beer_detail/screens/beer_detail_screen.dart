@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/core/constants/app_spacing.dart';
 import 'package:valuebrew/core/utils/display_formatting.dart';
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/features/beer_detail/wrong_report.dart';
 import 'package:valuebrew/features/favorites/providers/favorites_providers.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';

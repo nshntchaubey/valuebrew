@@ -1,4 +1,4 @@
-import 'package:valuebrew/data/models/sku.dart';
+import 'package:valuebrew/shared_domain/sku.dart';
 
 /// Formats a raw rupee amount for display.
 ///

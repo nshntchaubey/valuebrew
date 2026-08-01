@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:valuebrew/data/models/beer.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
 import 'package:valuebrew/data/repositories/catalog_repository.dart';
 import 'package:valuebrew/features/compare/screens/compare_screen.dart';
 import 'package:valuebrew/features/home/screens/home_screen.dart';

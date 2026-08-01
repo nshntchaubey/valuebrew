@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/core/utils/display_formatting.dart';
-import 'package:valuebrew/data/models/beer.dart';
-import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/shared/widgets/error_state_view.dart';

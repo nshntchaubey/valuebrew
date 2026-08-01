@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:valuebrew/data/models/catalog.dart';
+import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/data/sources/catalog_local_cache.dart';
 import 'package:valuebrew/data/sources/catalog_remote_source.dart';
 

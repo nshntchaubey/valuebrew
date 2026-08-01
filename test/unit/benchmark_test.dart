@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:valuebrew/data/models/benchmark.dart';
+import 'package:valuebrew/catalog/domain/benchmark.dart';
 
 void main() {
   group('Benchmark', () {
