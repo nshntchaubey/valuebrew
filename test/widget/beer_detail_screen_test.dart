@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:valuebrew/shared_domain/beer.dart';
 import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/shared_domain/sku.dart';
-import 'package:valuebrew/data/repositories/catalog_repository.dart';
+import 'package:valuebrew/catalog/data/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/recommendation/models/recommendation.dart';
 import 'package:valuebrew/features/recommendation/policy/recommendation_policy.dart';

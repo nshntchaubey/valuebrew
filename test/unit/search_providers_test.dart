@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:valuebrew/data/repositories/catalog_repository.dart';
+import 'package:valuebrew/catalog/data/catalog_repository.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/search/providers/search_providers.dart';
 

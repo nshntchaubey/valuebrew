@@ -4,9 +4,9 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:valuebrew/core/constants/app_constants.dart';
-import 'package:valuebrew/data/repositories/catalog_repository.dart';
-import 'package:valuebrew/data/sources/catalog_local_cache.dart';
-import 'package:valuebrew/data/sources/catalog_remote_source.dart';
+import 'package:valuebrew/catalog/data/catalog_repository.dart';
+import 'package:valuebrew/catalog/data/catalog_local_cache.dart';
+import 'package:valuebrew/catalog/data/catalog_remote_source.dart';
 
 /// A fake [CatalogRepository.loadAsset] that returns [contents] for any key.
 Future<String> Function(String key) fixedLoader(String contents) {

@@ -2,9 +2,9 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:valuebrew/core/constants/app_constants.dart';
 import 'package:valuebrew/catalog/domain/catalog.dart';
-import 'package:valuebrew/data/repositories/catalog_repository.dart';
-import 'package:valuebrew/data/sources/catalog_local_cache.dart';
-import 'package:valuebrew/data/sources/catalog_remote_source.dart';
+import 'package:valuebrew/catalog/data/catalog_repository.dart';
+import 'package:valuebrew/catalog/data/catalog_local_cache.dart';
+import 'package:valuebrew/catalog/data/catalog_remote_source.dart';
 
 /// Exposes the app's production [CatalogRepository].
 ///

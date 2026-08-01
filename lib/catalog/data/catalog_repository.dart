@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:valuebrew/catalog/domain/catalog.dart';
-import 'package:valuebrew/data/sources/catalog_local_cache.dart';
-import 'package:valuebrew/data/sources/catalog_remote_source.dart';
+import 'package:valuebrew/catalog/data/catalog_local_cache.dart';
+import 'package:valuebrew/catalog/data/catalog_remote_source.dart';
 
 /// Loads and parses the catalog from, in order: a. the bundled asset,
 /// b. a local cache (if present and newer), c. a remote source (if it

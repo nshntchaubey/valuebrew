@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:valuebrew/core/constants/app_constants.dart';
 import 'package:valuebrew/catalog/domain/catalog.dart';
-import 'package:valuebrew/data/repositories/catalog_repository.dart';
+import 'package:valuebrew/catalog/data/catalog_repository.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 
 /// A fake [CatalogRepository.loadAsset] that returns [contents] for any key.

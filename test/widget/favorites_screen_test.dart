@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:valuebrew/data/repositories/catalog_repository.dart';
+import 'package:valuebrew/catalog/data/catalog_repository.dart';
 import 'package:valuebrew/features/beer_detail/screens/beer_detail_screen.dart';
 import 'package:valuebrew/features/favorites/screens/favorites_screen.dart';
 import 'package:valuebrew/features/filtering/models/filter_state.dart';

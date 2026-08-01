@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:valuebrew/data/sources/catalog_local_cache.dart';
+import 'package:valuebrew/catalog/data/catalog_local_cache.dart';
 
 void main() {
   group('NoopCatalogLocalCache', () {
