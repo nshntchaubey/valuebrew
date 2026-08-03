@@ -38,6 +38,12 @@
 
 ---
 
+## Engineering Retrospective
+
+- **Engineering-Retrospective.md** — the closed engineering record for the canonical rebuild: architectural evolution, engineering principles demonstrated, decisions that proved correct or changed, mistakes the review process caught, review methodology, repository maturity, and guidance for future contributors. Distinct from the Architecture Reference above, which describes *what was built* — this document describes *how it was built*. Read once, kept as history; never updated to track new work.
+
+---
+
 ## Engineering Specifications
 
 Held in `specifications/`. Each is a citation-only restatement of its canonical Screen Contract, produced via the Canonical Screen Specification Template. Status as of this index: Home, Recommendation, Beer Detail, Comparison, and Price Verification each have a completed specification tied directly to their own canonical Screen Contract. Search/Browse Results also has a completed specification, produced to close the Navigation Contract's flagged structural gap, ahead of that screen having a dedicated canonical Screen Contract of its own.

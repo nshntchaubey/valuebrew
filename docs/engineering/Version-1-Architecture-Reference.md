@@ -4,6 +4,7 @@
 **Status:** Frozen — describes the repository exactly as implemented at Version 1.
 **Relationship to the rest of this folder:** `implementation/20-23` are pre-implementation planning documents — they describe what was *intended* to be built, in what order, against a larger eventual scope (including Comparison and Search/Browse Results). This document is different in kind: it describes what was *actually* built, and only what was actually built. Where the two differ, this document is authoritative for Version 1's real behavior; the planning documents remain historically accurate as a record of original intent.
 **Relationship to the Canonical Architecture:** every claim below traces to a citation in `docs/architecture/current/`. This document restates canon in implementation-facing terms; it never reinterprets it. Where V1 implements a deliberate subset of a canonical capability, that is stated explicitly, not silently narrowed.
+**Relationship to the Engineering Retrospective:** `Engineering-Retrospective.md` records *how* this was built — the process, the decisions that survived and changed, the mistakes the review process caught. This document remains the sole authority on *what was built*; the retrospective is never updated to track new work.
 
 ---
 
@@ -23,6 +24,7 @@ ValueBrew is a decision engine that helps a beer buyer in Karnataka choose the b
 Home ──homeToRecommendation({isPlanning})──> Recommendation
 Recommendation ──recommendationToBeerDetail(skuId)──> Beer Detail
 Beer Detail ──beerDetailToPriceVerification(skuId)──> Price Verification
+Price Verification ──priceVerificationToBeerDetail(skuId)──> Beer Detail
 ```
 
 **Every screen:** Home, Recommendation, Beer Detail, Price Verification.
@@ -31,6 +33,7 @@ Beer Detail ──beerDetailToPriceVerification(skuId)──> Price Verification
 - `Home → Recommendation` — `homeToRecommendation({bool isPlanning = false})`. One edge, not two: Planning is a flagged variant of the same transition, per the Home Screen Contract's own language — "not a fourth distinct destination." Home offers this edge from two actions ("Get a recommendation," "I'm planning ahead"); both call the identical method, differing only in the flag.
 - `Recommendation → Beer Detail` — `recommendationToBeerDetail(String skuId)`. Reachable from a `RecommendationFound` outcome's own SKU, or from any one candidate of a `RecommendationTie` — the same method, called once per tied candidate's own button.
 - `Beer Detail → Price Verification` — `beerDetailToPriceVerification(String skuId)`. Invitation-only: a plain button, never automatic, consistent with Segment-Appropriate Restraint as Beer Detail's own contract cites it.
+- `Price Verification → Beer Detail` — `priceVerificationToBeerDetail(String skuId)`. Invitation-only, for broader context beyond the verification itself; carries the SKU identity only — the charged price is never carried forward, per the Navigation Contract's own rule. Same body shape as `recommendationToBeerDetail` (both push `BeerDetailScreen(skuId: skuId)`), kept as two distinct methods rather than one shared method, because the Navigation Contract treats `Recommendation → Beer Detail` and `Price Verification → Beer Detail` as two separate edges, each owned by the screen initiating it.
 
 **Navigation ownership:** `ValueBrewNavigator` is the only class permitted to trigger a screen transition. Every edge above is one method, added only once a real screen needed it — there is no route table, because no edge yet has more than one caller or more than one destination to justify one.
 
@@ -70,7 +73,7 @@ Beer Detail ──beerDetailToPriceVerification(skuId)──> Price Verification
 
 ### Beer Detail
 
-**Owns:** the complete presentation of one identified SKU — beer identity, price, ABV, volume, package, Value Score, verdict, and price staleness (`priceLastChecked`).
+**Owns:** the complete presentation of one identified SKU — beer identity, price, ABV, volume, package, Value Score, verdict, price staleness (`priceLastChecked`), and Style Benchmark standing (when a benchmark exists for the beer's style; gracefully omitted otherwise).
 
 **Does not own:** the verification delta computation (Price Verification's job, even though this screen links into it); multi-candidate comparison logic; any recommendation logic.
 
@@ -78,7 +81,7 @@ Beer Detail ──beerDetailToPriceVerification(skuId)──> Price Verification
 
 **Outputs:** a navigation call to Price Verification, invitation-only.
 
-**Dependencies:** `catalogProvider`, `catalog_lookups` (`resolveSku`, `resolveBeer`, `resolveStyle`), `display_formatting`, `ErrorStateView`, `SkeletonBox`.
+**Dependencies:** `catalogProvider`, `catalog_lookups` (`resolveSku`, `resolveBeer`, `resolveStyle`, `resolveBenchmark`), `classifyStyleStanding`, `display_formatting` (including `StyleStandingFormatting`), `ErrorStateView`, `SkeletonBox`.
 
 ---
 
@@ -90,7 +93,7 @@ Beer Detail ──beerDetailToPriceVerification(skuId)──> Price Verification
 
 **Inputs:** `skuId`.
 
-**Outputs:** none currently wired — the optional `Price Verification → Beer Detail` hand-off (a MAY in its own contract) is not built; the platform back gesture already satisfies "return to Beer Detail."
+**Outputs:** a navigation call to Beer Detail, invitation-only, for broader context beyond the verification itself — the SKU identity only is carried forward; the charged price never is.
 
 **Dependencies:** `catalogProvider`, `catalog_lookups` (`resolveSku`, `resolveBeer`), `verifyPrice`, `display_formatting`, `ErrorStateView`, `SkeletonBox`.
 
@@ -112,15 +115,17 @@ Beer Detail ──beerDetailToPriceVerification(skuId)──> Price Verification
 
 **`PriceVerificationResult`** — `verdict` + `chargedPrice` + `legalPrice` + `explanation`, a flat class, not a sealed hierarchy. The Beer Knowledge Model defines the verification delta as a classification alone, not as three differently-shaped outcomes — there is no per-verdict data to justify branching the type.
 
+**`StyleStanding`** (`betterThanTypical`, `typical`, `worseThanTypical`) and **`classifyStyleStanding`** — Beer Detail's first domain function, comparing a SKU's cost per millilitre of alcohol against its style's median (`Benchmark.p50`) alone. The canon specifies the comparison concept ("relative standing," "better value than typical for this style") but not a number of bands, so this three-way split is the smallest classification that faithfully represents it — an earlier four-band design using `p25`/`p50`/`p75` was rejected once checked directly against the canon and found uncited. `Benchmark.p25` and `Benchmark.p75` remain unused, available for a future milestone that actually needs them.
+
 ---
 
 ## 5. Shared Infrastructure
 
 **`catalogProvider`** — the single `FutureProvider<Catalog>` every screen reads from. Composes `catalogRepositoryProvider`; never reimplements loading or parsing.
 
-**`catalog_lookups`** — `resolveBeer`, `resolveStyle`, `resolveSku`, `resolveSkus`, `bestSkuForBeer`, `cheapestSkuForBeer`: pure, null-returning functions, the only place any id-to-object resolution happens against a loaded `Catalog`. `generateRecommendation` was itself consolidated onto `resolveBeer`/`resolveStyle` rather than keeping its own inline lookups, once it became a second real consumer.
+**`catalog_lookups`** — `resolveBeer`, `resolveStyle`, `resolveSku`, `resolveBenchmark`, `resolveSkus`, `bestSkuForBeer`, `cheapestSkuForBeer`: pure, null-returning functions, the only place any id-to-object resolution happens against a loaded `Catalog`. `generateRecommendation` was itself consolidated onto `resolveBeer`/`resolveStyle` rather than keeping its own inline lookups, once it became a second real consumer.
 
-**`display_formatting`** — extension methods on domain types (`CurrencyFormatting`, `VolumeFormatting`, `PackageTypeFormatting`, `ValueVerdictFormatting`, `PriceVerificationVerdictFormatting`) — the only place a raw domain value becomes display text. Each new enum-to-label need was added here, never inlined, once an equivalent extension already established the pattern.
+**`display_formatting`** — extension methods on domain types (`CurrencyFormatting`, `VolumeFormatting`, `PackageTypeFormatting`, `ValueVerdictFormatting`, `PriceVerificationVerdictFormatting`, `StyleStandingFormatting`) — the only place a raw domain value becomes display text. Each new enum-to-label need was added here, never inlined, once an equivalent extension already established the pattern.
 
 **`ValueBrewNavigator`** — described fully in Section 2. The one class allowed to trigger a transition; its public API is exactly the Navigation Contract's edge list.
 
