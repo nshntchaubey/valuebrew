@@ -40,14 +40,55 @@ const _catalogJson = '''
 }
 ''';
 
+const _catalogJsonWithBenchmark = '''
+{
+  "catalog_version": 1,
+  "generated_at": "2026-01-01T00:00:00Z",
+  "styles": [
+    { "id": "lager", "name": "Lager", "description": "Crisp, mild bitterness" }
+  ],
+  "beers": [
+    { "id": "kf_premium", "name": "Kingfisher Premium", "brewery": "United Breweries", "style_id": "lager", "is_craft": false }
+  ],
+  "skus": [
+    {
+      "id": "kf_premium_650",
+      "beer_id": "kf_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 260,
+      "price": 110,
+      "price_last_checked": "2026-07-20",
+      "price_source": "test",
+      "cost_per_litre": 169.2,
+      "cost_per_ml_alcohol": 3.52,
+      "value_score": 78,
+      "value_verdict": "great_value"
+    }
+  ],
+  "benchmarks": [
+    {
+      "style_id": "lager",
+      "avg_cost_per_ml_alcohol": 4.10,
+      "p25": 3.40,
+      "p50": 3.95,
+      "p75": 4.60,
+      "sample_size": 42
+    }
+  ]
+}
+''';
+
 void main() {
   Future<void> pumpBeerDetailScreen(
     WidgetTester tester, {
     String skuId = 'kf_premium_650',
+    String catalogJson = _catalogJson,
     Future<String> Function(String key)? loadAsset,
   }) async {
     final fakeRepository = CatalogRepository(
-      loadAsset: loadAsset ?? (key) async => _catalogJson,
+      loadAsset: loadAsset ?? (key) async => catalogJson,
       assetKey: 'fake_key',
     );
 
@@ -89,6 +130,24 @@ void main() {
 
     expect(find.textContaining('78'), findsOneWidget);
     expect(find.textContaining('Great value'), findsOneWidget);
+  });
+
+  testWidgets('shows the Style Benchmark standing when a benchmark exists for the style', (
+    WidgetTester tester,
+  ) async {
+    await pumpBeerDetailScreen(tester, catalogJson: _catalogJsonWithBenchmark);
+
+    expect(find.text('Better value than typical for this style'), findsOneWidget);
+  });
+
+  testWidgets('omits the Style Benchmark section when no benchmark exists for the style', (
+    WidgetTester tester,
+  ) async {
+    await pumpBeerDetailScreen(tester);
+
+    expect(find.text('Better value than typical for this style'), findsNothing);
+    expect(find.text('Typical value for this style'), findsNothing);
+    expect(find.text('Worse value than typical for this style'), findsNothing);
   });
 
   testWidgets('shows price staleness via priceLastChecked, already existing catalog data', (

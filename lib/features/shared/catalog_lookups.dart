@@ -1,4 +1,5 @@
 import 'package:valuebrew/shared_domain/beer.dart';
+import 'package:valuebrew/catalog/domain/benchmark.dart';
 import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/shared_domain/sku.dart';
 import 'package:valuebrew/catalog/domain/style.dart';
@@ -38,6 +39,20 @@ Sku? resolveSku(Catalog catalog, String skuId) {
   for (final sku in catalog.skus) {
     if (sku.id == skuId) {
       return sku;
+    }
+  }
+  return null;
+}
+
+/// Resolves [styleId] to its [Benchmark] within [catalog], or `null` if no
+/// benchmark for that style exists.
+///
+/// A style's benchmark is Important-Soon-After, not Core V1 — its absence
+/// is expected, not an error.
+Benchmark? resolveBenchmark(Catalog catalog, String styleId) {
+  for (final benchmark in catalog.benchmarks) {
+    if (benchmark.styleId == styleId) {
+      return benchmark;
     }
   }
   return null;

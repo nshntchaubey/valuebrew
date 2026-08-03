@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:valuebrew/core/constants/app_spacing.dart';
 import 'package:valuebrew/core/utils/display_formatting.dart';
+import 'package:valuebrew/features/beer_detail/domain/style_standing.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/shared/widgets/error_state_view.dart';
@@ -11,12 +12,14 @@ import 'package:valuebrew/navigation/value_brew_navigator.dart';
 
 /// The Beer Detail screen: Recommendation → Beer Detail.
 ///
-/// Purely presentational. Every value shown — price, package, ABV, volume,
-/// Value Score, verdict, price staleness — already exists on [Sku]/[Beer]/
-/// [Style]; nothing here is computed. Recommendation remains the only
-/// place a beer is chosen; this screen only explains one already-chosen
-/// SKU, identified by [skuId] rather than an embedded model, consistent
-/// with the rest of the new architecture.
+/// Mostly presentational. Price, package, ABV, volume, Value Score,
+/// verdict, and price staleness already exist on [Sku]/[Beer]/[Style] and
+/// are shown as-is; Style Benchmark standing is the one value this screen
+/// computes, via [classifyStyleStanding], gracefully omitted when no
+/// [Benchmark] exists for the beer's style. Recommendation remains the
+/// only place a beer is chosen; this screen only explains one
+/// already-chosen SKU, identified by [skuId] rather than an embedded
+/// model, consistent with the rest of the new architecture.
 class BeerDetailScreen extends ConsumerWidget {
   const BeerDetailScreen({super.key, required this.skuId});
 
@@ -41,6 +44,9 @@ class BeerDetailScreen extends ConsumerWidget {
             return const ErrorStateView(message: "This beer couldn't be found.");
           }
           final style = resolveStyle(catalog, beer.styleId);
+          final benchmark = resolveBenchmark(catalog, beer.styleId);
+          final styleStanding =
+              benchmark == null ? null : classifyStyleStanding(sku, benchmark);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -66,6 +72,10 @@ class BeerDetailScreen extends ConsumerWidget {
                 Text('${sku.abv}% ABV'),
                 const SizedBox(height: AppSpacing.md),
                 Text('Value score: ${sku.valueScore} (${sku.valueVerdict.displayLabel})'),
+                if (styleStanding != null) ...[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(styleStanding.displayLabel),
+                ],
                 const SizedBox(height: AppSpacing.xs),
                 Text('Price last checked: ${_formatDate(sku.priceLastChecked)}'),
                 const SizedBox(height: AppSpacing.lg),

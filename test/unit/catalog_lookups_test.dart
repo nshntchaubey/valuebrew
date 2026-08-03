@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:valuebrew/catalog/domain/benchmark.dart';
 import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/catalog/domain/style.dart';
 import 'package:valuebrew/features/shared/catalog_lookups.dart';
@@ -31,13 +32,21 @@ void main() {
   final lager = Style(id: 'lager', name: 'Lager', description: 'Crisp');
   final beer = _beer('beer_1');
   final sku = _sku('sku_1', beerId: 'beer_1');
+  const benchmark = Benchmark(
+    styleId: 'lager',
+    avgCostPerMlAlcohol: 4.10,
+    p25: 3.40,
+    p50: 3.95,
+    p75: 4.60,
+    sampleSize: 42,
+  );
   final catalog = Catalog(
     catalogVersion: 1,
     generatedAt: DateTime(2026, 1, 1),
     styles: [lager],
     beers: [beer],
     skus: [sku],
-    benchmarks: const [],
+    benchmarks: const [benchmark],
   );
 
   group('resolveBeer', () {
@@ -67,6 +76,16 @@ void main() {
 
     test('returns null when no SKU matches', () {
       expect(resolveSku(catalog, 'missing'), isNull);
+    });
+  });
+
+  group('resolveBenchmark', () {
+    test('returns the benchmark for a matching style id', () {
+      expect(resolveBenchmark(catalog, 'lager'), benchmark);
+    });
+
+    test('returns null when no benchmark matches', () {
+      expect(resolveBenchmark(catalog, 'missing'), isNull);
     });
   });
 }

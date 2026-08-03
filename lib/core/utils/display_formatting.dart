@@ -1,3 +1,4 @@
+import 'package:valuebrew/features/beer_detail/domain/style_standing.dart';
 import 'package:valuebrew/features/price_verification/domain/price_verification_result.dart';
 import 'package:valuebrew/shared_domain/sku.dart';
 
@@ -57,6 +58,22 @@ extension PriceVerificationVerdictFormatting on PriceVerificationVerdict {
         return 'Below the legal price';
       case PriceVerificationVerdict.aboveLegalPrice:
         return 'Above the legal price';
+    }
+  }
+}
+
+/// Plain-language label for a [StyleStanding], matching the Beer Knowledge
+/// Model's own worked example wording ("better value than typical for this
+/// style") directly.
+extension StyleStandingFormatting on StyleStanding {
+  String get displayLabel {
+    switch (this) {
+      case StyleStanding.betterThanTypical:
+        return 'Better value than typical for this style';
+      case StyleStanding.typical:
+        return 'Typical value for this style';
+      case StyleStanding.worseThanTypical:
+        return 'Worse value than typical for this style';
     }
   }
 }
