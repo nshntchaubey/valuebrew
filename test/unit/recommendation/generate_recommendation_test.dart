@@ -4,6 +4,7 @@ import 'package:valuebrew/catalog/domain/style.dart';
 import 'package:valuebrew/features/recommendation/domain/generate_recommendation.dart';
 import 'package:valuebrew/features/recommendation/domain/recommendation_outcome.dart';
 import 'package:valuebrew/features/recommendation/domain/recommendation_result.dart';
+import 'package:valuebrew/features/recommendation/domain/tied_candidate.dart';
 import 'package:valuebrew/shared_domain/beer.dart';
 import 'package:valuebrew/shared_domain/sku.dart';
 
@@ -114,22 +115,6 @@ void main() {
         expect((outcome as RecommendationFound).result.sku.id, 'exact_sku');
       });
 
-      test('a tie in Value Score is broken deterministically by catalog order (temporary for this slice)', () {
-        final firstBeer = _beer('first_beer', 'First Beer');
-        final secondBeer = _beer('second_beer', 'Second Beer');
-        final catalog = _catalog(
-          beers: [firstBeer, secondBeer],
-          skus: [
-            _sku(id: 'first_sku', beerId: 'first_beer', price: 100, valueScore: 70),
-            _sku(id: 'second_sku', beerId: 'second_beer', price: 100, valueScore: 70),
-          ],
-        );
-
-        final outcome = generateRecommendation(catalog, budget: 200);
-
-        expect((outcome as RecommendationFound).result.sku.id, 'first_sku');
-      });
-
       test('the explanation names the beer and states the budget and Value Score reasoning, with no style clause', () {
         final beer = _beer('kf_premium', 'Kingfisher Premium');
         final catalog = _catalog(
@@ -225,6 +210,108 @@ void main() {
         expect(found.result.explanation, isNot(contains('matching your preferred')));
       });
     });
+
+    group('Tie Disclosure', () {
+      test('two candidates sharing the highest Value Score return RecommendationTie with both', () {
+        final firstBeer = _beer('first_beer', 'First Beer');
+        final secondBeer = _beer('second_beer', 'Second Beer');
+        final catalog = _catalog(
+          beers: [firstBeer, secondBeer],
+          skus: [
+            _sku(id: 'first_sku', beerId: 'first_beer', price: 100, valueScore: 70),
+            _sku(id: 'second_sku', beerId: 'second_beer', price: 100, valueScore: 70),
+          ],
+        );
+
+        final outcome = generateRecommendation(catalog, budget: 200);
+
+        expect(outcome, isA<RecommendationTie>());
+        final tie = outcome as RecommendationTie;
+        expect(tie.candidates, hasLength(2));
+        expect(
+          tie.candidates.map((candidate) => candidate.sku.id),
+          containsAll(['first_sku', 'second_sku']),
+        );
+      });
+
+      test('three candidates sharing the highest Value Score all appear in the tie', () {
+        final beers = [
+          _beer('beer_a', 'Beer A'),
+          _beer('beer_b', 'Beer B'),
+          _beer('beer_c', 'Beer C'),
+        ];
+        final catalog = _catalog(
+          beers: beers,
+          skus: [
+            _sku(id: 'sku_a', beerId: 'beer_a', price: 100, valueScore: 80),
+            _sku(id: 'sku_b', beerId: 'beer_b', price: 100, valueScore: 80),
+            _sku(id: 'sku_c', beerId: 'beer_c', price: 100, valueScore: 80),
+          ],
+        );
+
+        final outcome = generateRecommendation(catalog, budget: 200);
+
+        expect(outcome, isA<RecommendationTie>());
+        expect((outcome as RecommendationTie).candidates, hasLength(3));
+      });
+
+      test('a near-miss in Value Score is not treated as a tie', () {
+        final firstBeer = _beer('first_beer', 'First Beer');
+        final secondBeer = _beer('second_beer', 'Second Beer');
+        final catalog = _catalog(
+          beers: [firstBeer, secondBeer],
+          skus: [
+            _sku(id: 'first_sku', beerId: 'first_beer', price: 100, valueScore: 70),
+            _sku(id: 'second_sku', beerId: 'second_beer', price: 100, valueScore: 71),
+          ],
+        );
+
+        final outcome = generateRecommendation(catalog, budget: 200);
+
+        expect(outcome, isA<RecommendationFound>());
+        expect((outcome as RecommendationFound).result.sku.id, 'second_sku');
+      });
+
+      test('the tie explanation states the budget, count, and shared Value Score', () {
+        final firstBeer = _beer('first_beer', 'First Beer');
+        final secondBeer = _beer('second_beer', 'Second Beer');
+        final catalog = _catalog(
+          beers: [firstBeer, secondBeer],
+          skus: [
+            _sku(id: 'first_sku', beerId: 'first_beer', price: 100, valueScore: 70),
+            _sku(id: 'second_sku', beerId: 'second_beer', price: 100, valueScore: 70),
+          ],
+        );
+
+        final outcome = generateRecommendation(catalog, budget: 200) as RecommendationTie;
+
+        expect(
+          outcome.explanation,
+          "Within your ₹200 budget, 2 beers are equally good, each with a "
+          "Value Score of 70 — these are equivalent on everything you've "
+          "told me matters.",
+        );
+      });
+
+      test('the tie explanation mentions the matched style when one is stated', () {
+        final lager = Style(id: 'lager', name: 'Lager', description: 'Crisp');
+        final firstBeer = _beer('first_beer', 'First Beer', styleId: 'lager');
+        final secondBeer = _beer('second_beer', 'Second Beer', styleId: 'lager');
+        final catalog = _catalog(
+          styles: [lager],
+          beers: [firstBeer, secondBeer],
+          skus: [
+            _sku(id: 'first_sku', beerId: 'first_beer', price: 100, valueScore: 70),
+            _sku(id: 'second_sku', beerId: 'second_beer', price: 100, valueScore: 70),
+          ],
+        );
+
+        final outcome =
+            generateRecommendation(catalog, budget: 200, styleId: 'lager') as RecommendationTie;
+
+        expect(outcome.explanation, contains('and matching your preferred Lager style'));
+      });
+    });
   });
 
   group('RecommendationOutcome.canBeRefinedFurther', () {
@@ -244,6 +331,19 @@ void main() {
 
     test('is false for NoRecommendationWithinBudget', () {
       expect(const NoRecommendationWithinBudget().canBeRefinedFurther, isFalse);
+    });
+
+    test('is true for RecommendationTie', () {
+      final beerA = _beer('beer_a', 'Beer A');
+      final beerB = _beer('beer_b', 'Beer B');
+      final skuA = _sku(id: 'sku_a', beerId: 'beer_a', price: 100, valueScore: 70);
+      final skuB = _sku(id: 'sku_b', beerId: 'beer_b', price: 100, valueScore: 70);
+      final tie = RecommendationTie(
+        [TiedCandidate(sku: skuA, beer: beerA), TiedCandidate(sku: skuB, beer: beerB)],
+        'test',
+      );
+
+      expect(tie.canBeRefinedFurther, isTrue);
     });
   });
 }

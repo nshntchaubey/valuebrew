@@ -2,6 +2,8 @@ import 'package:valuebrew/catalog/domain/catalog.dart';
 import 'package:valuebrew/core/utils/display_formatting.dart';
 import 'package:valuebrew/features/recommendation/domain/recommendation_outcome.dart';
 import 'package:valuebrew/features/recommendation/domain/recommendation_result.dart';
+import 'package:valuebrew/features/recommendation/domain/tied_candidate.dart';
+import 'package:valuebrew/features/shared/catalog_lookups.dart';
 
 /// Recommends one SKU from [catalog] within [budget], optionally narrowed
 /// by [styleId].
@@ -12,7 +14,10 @@ import 'package:valuebrew/features/recommendation/domain/recommendation_result.d
 /// (a Strong Preference), if given, narrows only within whatever survives
 /// that. Among the final candidates, the one with the best Value Score
 /// wins — the highest-confidence remaining differentiator, per the
-/// Recommendation Framework's tie-breaker rule (Section 2).
+/// Recommendation Framework's tie-breaker rule (Section 2) — unless
+/// multiple candidates share that exact best score, in which case a
+/// [RecommendationTie] is returned instead of an arbitrary pick, per the
+/// Recommendation Framework's own rule for a genuine tie (Section 5).
 ///
 /// Returns [NoRecommendationWithinBudget] if no SKU is at or under
 /// [budget] at all, or [NoRecommendationMatchingStyle] if SKUs exist
@@ -31,21 +36,14 @@ import 'package:valuebrew/features/recommendation/domain/recommendation_result.d
 ///
 /// **Extension seams, deliberately not built here:** further Progressive
 /// Question-Asking (strength, size, brand) once budget and style alone
-/// leave candidates too close together; a genuine Tie Disclosure once
-/// ties need real handling — see the tie-break note below; the optional
-/// hand-off to Beer Detail; Planning Mode's confidence ceiling;
-/// Proxy-Buying Mode's conservative default; a general unmet-preferences
-/// outcome model once a second Strong Preference exists (this milestone's
-/// [NoRecommendationMatchingStyle] is deliberately specific to style
-/// alone, not yet generalized).
-///
-/// **Tie-break, explicitly temporary:** when multiple SKUs share the
-/// highest Value Score among the final candidates, the first one
-/// encountered in [Catalog.skus]'s own order wins. This is a
-/// deterministic implementation choice for this vertical slice only, not
-/// the long-term recommendation policy — the Recommendation Framework's
-/// actual rule for a genuine tie ("presented as a tie... a complete,
-/// honest recommendation") is a real extension seam, not yet implemented.
+/// leave candidates too close together; Proxy-Buying Mode's conservative
+/// default; a general unmet-preferences outcome model once a second
+/// Strong Preference exists (this milestone's [NoRecommendationMatchingStyle]
+/// is deliberately specific to style alone, not yet generalized);
+/// Trade-off Explanation, which requires two conflicting Strong
+/// Preferences to exist simultaneously — not reachable with today's
+/// single optional style preference, and mechanically distinct from the
+/// tie handling implemented here.
 RecommendationOutcome generateRecommendation(
   Catalog catalog, {
   required double budget,
@@ -59,7 +57,8 @@ RecommendationOutcome generateRecommendation(
   final candidates = styleId == null
       ? withinBudget
       : withinBudget.where((sku) {
-          final beer = catalog.beers.firstWhere((b) => b.id == sku.beerId);
+          final beer = resolveBeer(catalog, sku.beerId) ??
+              (throw StateError('No beer found for id: ${sku.beerId}'));
           return beer.styleId == styleId;
         }).toList();
 
@@ -67,26 +66,48 @@ RecommendationOutcome generateRecommendation(
     return const NoRecommendationMatchingStyle();
   }
 
-  var best = candidates.first;
+  var tied = [candidates.first];
   for (final candidate in candidates.skip(1)) {
-    if (candidate.valueScore > best.valueScore) {
-      best = candidate;
+    if (candidate.valueScore > tied.first.valueScore) {
+      tied = [candidate];
+    } else if (candidate.valueScore == tied.first.valueScore) {
+      tied.add(candidate);
     }
   }
 
-  final beer = catalog.beers.firstWhere((b) => b.id == best.beerId);
+  var styleClause = '';
+  if (styleId != null) {
+    final style = resolveStyle(catalog, styleId) ??
+        (throw StateError('No style found for id: $styleId'));
+    styleClause = ' and matching your preferred ${style.name} style';
+  }
 
-  final styleClause = styleId == null
-      ? ''
-      : ' and matching your preferred '
-          '${catalog.styles.firstWhere((s) => s.id == styleId).name} style';
+  if (tied.length == 1) {
+    final best = tied.single;
+    final beer = resolveBeer(catalog, best.beerId) ??
+        (throw StateError('No beer found for id: ${best.beerId}'));
+
+    final explanation =
+        'Within your ${budget.currencyLabel} budget$styleClause, ${beer.name} '
+        '(${best.sizeMl.volumeLabel}) is the best value available — '
+        'a Value Score of ${best.valueScore}.';
+
+    return RecommendationFound(
+      RecommendationResult(sku: best, beer: beer, explanation: explanation),
+    );
+  }
+
+  final tiedCandidates = tied.map((sku) {
+    final beer = resolveBeer(catalog, sku.beerId) ??
+        (throw StateError('No beer found for id: ${sku.beerId}'));
+    return TiedCandidate(sku: sku, beer: beer);
+  }).toList();
 
   final explanation =
-      'Within your ${budget.currencyLabel} budget$styleClause, ${beer.name} '
-      '(${best.sizeMl.volumeLabel}) is the best value available — '
-      'a Value Score of ${best.valueScore}.';
+      'Within your ${budget.currencyLabel} budget$styleClause, '
+      '${tied.length} beers are equally good, each with a Value Score of '
+      "${tied.first.valueScore} — these are equivalent on everything "
+      "you've told me matters.";
 
-  return RecommendationFound(
-    RecommendationResult(sku: best, beer: beer, explanation: explanation),
-  );
+  return RecommendationTie(tiedCandidates, explanation);
 }
