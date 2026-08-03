@@ -19,10 +19,12 @@ const _catalogJson = '''
 }
 ''';
 
+const _planningCaveat =
+    'This is a provisional recommendation for planning ahead — prices '
+    'and availability may have changed by the time you actually buy.';
+
 void main() {
-  testWidgets('tapping "Get a recommendation" navigates to the real RecommendationScreen', (
-    WidgetTester tester,
-  ) async {
+  Future<void> pumpHomeScreen(WidgetTester tester) async {
     final fakeRepository = CatalogRepository(
       loadAsset: (key) async => _catalogJson,
       assetKey: 'fake_key',
@@ -37,6 +39,12 @@ void main() {
         ),
       ),
     );
+  }
+
+  testWidgets('tapping "Get a recommendation" navigates to the real RecommendationScreen', (
+    WidgetTester tester,
+  ) async {
+    await pumpHomeScreen(tester);
 
     expect(find.byType(RecommendationScreen), findsNothing);
 
@@ -44,5 +52,45 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(RecommendationScreen), findsOneWidget);
+  });
+
+  testWidgets('the default recommendation path opens Recommendation without the Planning banner', (
+    WidgetTester tester,
+  ) async {
+    await pumpHomeScreen(tester);
+
+    await tester.tap(find.text('Get a recommendation'));
+    await tester.pumpAndSettle();
+
+    final submitButton = find.descendant(
+      of: find.byType(RecommendationScreen),
+      matching: find.widgetWithText(ElevatedButton, 'Get a recommendation'),
+    );
+    await tester.enterText(find.byType(TextField), '150');
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text(_planningCaveat), findsNothing);
+  });
+
+  testWidgets('"I\'m planning ahead" opens Recommendation with the Planning banner visible', (
+    WidgetTester tester,
+  ) async {
+    await pumpHomeScreen(tester);
+
+    await tester.tap(find.text("I'm planning ahead"));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RecommendationScreen), findsOneWidget);
+
+    final submitButton = find.descendant(
+      of: find.byType(RecommendationScreen),
+      matching: find.widgetWithText(ElevatedButton, 'Get a recommendation'),
+    );
+    await tester.enterText(find.byType(TextField), '150');
+    await tester.tap(submitButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text(_planningCaveat), findsOneWidget);
   });
 }

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:valuebrew/features/beer_detail/presentation/beer_detail_screen.dart';
+import 'package:valuebrew/features/price_verification/presentation/price_verification_screen.dart';
 import 'package:valuebrew/features/recommendation/presentation/recommendation_screen.dart';
 
 /// The [Navigator] key every screen transition in the app goes through.
 ///
 /// Shared between [ValueBrewNavigator] (which uses it to push) and the
-/// root [MaterialApp] (which will be wired to it as `navigatorKey` once
-/// the new Home screen becomes the app's default entry point).
+/// root [MaterialApp], which is wired to it as `navigatorKey`.
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
 /// The only thing in the app allowed to trigger a screen transition.
@@ -27,9 +28,37 @@ class ValueBrewNavigator {
   /// Pushes directly to [RecommendationScreen] rather than a named route —
   /// there is exactly one caller and one destination so far, so a route
   /// table isn't earned yet.
-  Future<void> homeToRecommendation() {
+  ///
+  /// [isPlanning] carries a Planning Mode intent through as a flagged
+  /// variant of this same transition — per the Home Screen Contract, "not
+  /// a fourth distinct destination" — rather than a separate edge.
+  Future<void> homeToRecommendation({bool isPlanning = false}) {
     return _navigatorKey.currentState!.push<void>(
-      MaterialPageRoute(builder: (_) => const RecommendationScreen()),
+      MaterialPageRoute(builder: (_) => RecommendationScreen(isPlanning: isPlanning)),
+    );
+  }
+
+  /// Recommendation → Beer Detail (Navigation Contract, Section 6).
+  ///
+  /// Reachable only from a [RecommendationFound] outcome — the caller
+  /// passes the id of the SKU already chosen there. Pushes directly, same
+  /// as [homeToRecommendation]: still exactly one caller and one
+  /// destination per edge, so a route table isn't earned yet.
+  Future<void> recommendationToBeerDetail(String skuId) {
+    return _navigatorKey.currentState!.push<void>(
+      MaterialPageRoute(builder: (_) => BeerDetailScreen(skuId: skuId)),
+    );
+  }
+
+  /// Beer Detail → Price Verification (Navigation Contract, Section 6).
+  ///
+  /// Invitation-only — reachable only from an explicit request on an
+  /// already-identified SKU. Pushes directly, same as the other two
+  /// edges: still exactly one caller and one destination per edge, so a
+  /// route table isn't earned yet.
+  Future<void> beerDetailToPriceVerification(String skuId) {
+    return _navigatorKey.currentState!.push<void>(
+      MaterialPageRoute(builder: (_) => PriceVerificationScreen(skuId: skuId)),
     );
   }
 }

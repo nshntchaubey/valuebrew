@@ -19,9 +19,21 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('ValueBrew')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () => ref.read(valueBrewNavigatorProvider).homeToRecommendation(),
-          child: const Text('Get a recommendation'),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ElevatedButton(
+              onPressed: () => ref.read(valueBrewNavigatorProvider).homeToRecommendation(),
+              child: const Text('Get a recommendation'),
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () => ref
+                  .read(valueBrewNavigatorProvider)
+                  .homeToRecommendation(isPlanning: true),
+              child: const Text("I'm planning ahead"),
+            ),
+          ],
         ),
       ),
     );
