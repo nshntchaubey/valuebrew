@@ -32,6 +32,17 @@ Style? resolveStyle(Catalog catalog, String styleId) {
   return null;
 }
 
+/// Resolves [skuId] to its [Sku] within [catalog], or `null` if no SKU
+/// with that id exists.
+Sku? resolveSku(Catalog catalog, String skuId) {
+  for (final sku in catalog.skus) {
+    if (sku.id == skuId) {
+      return sku;
+    }
+  }
+  return null;
+}
+
 /// Returns every [Sku] in [catalog] belonging to the beer with [beerId].
 ///
 /// A SKU's `beerId` is a plain reference, not an embedded beer object —
