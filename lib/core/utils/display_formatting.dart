@@ -1,3 +1,4 @@
+import 'package:valuebrew/features/price_verification/domain/price_verification_result.dart';
 import 'package:valuebrew/shared_domain/sku.dart';
 
 /// Formats a raw rupee amount for display.
@@ -42,6 +43,20 @@ extension ValueVerdictFormatting on ValueVerdict {
         return 'Fair value';
       case ValueVerdict.overpriced:
         return 'Overpriced for this ABV';
+    }
+  }
+}
+
+/// Plain-language label for a [PriceVerificationVerdict].
+extension PriceVerificationVerdictFormatting on PriceVerificationVerdict {
+  String get displayLabel {
+    switch (this) {
+      case PriceVerificationVerdict.atLegalPrice:
+        return 'At the legal price';
+      case PriceVerificationVerdict.belowLegalPrice:
+        return 'Below the legal price';
+      case PriceVerificationVerdict.aboveLegalPrice:
+        return 'Above the legal price';
     }
   }
 }
