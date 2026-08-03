@@ -5,81 +5,68 @@ follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`,
 with the Android/iOS build number as the fourth, CI-facing component).
 
-## [Unreleased]
+## [1.0.0] - 2026-08-03
 
-Production-readiness polish — no user-facing features added. See
-`release_checklist.md` for what's left before publishing.
+The canonical-architecture rebuild, built milestone-by-milestone against
+the frozen Canonical Architecture (`docs/architecture/current/`). Each
+bullet below is a distinct, independently-tested milestone.
 
 ### Added
-- Adaptive app icon (Android 8+), monochrome themed icon (Android 13+),
-  and a matching splash screen, generated from a single vector mark.
-- Release build configuration: R8/resource shrinking for release builds, a
-  release-signing config that reads a local, gitignored `key.properties`
-  and falls back to debug signing when none is present (see
-  `docs/RELEASE_SIGNING.md`).
-- `privacy_policy.md`, `THIRD_PARTY_NOTICES.md`, `store_listing.md`,
-  `release_checklist.md`.
-- A polished, GitHub-facing `README.md`.
+- Project reorganization onto the Canonical Architecture: catalog and
+  shared domain models relocated into `catalog/` and `shared_domain/`,
+  the app's default launch screen switched to a new, canon-derived Home
+  screen, and `ValueBrewNavigator` introduced as the sole owner of every
+  screen transition — one method per legal transition, added only once a
+  real screen needed it, never ahead of that need.
+- Recommendation: budget-driven recommendation against the real catalog,
+  with an honest explanation attached to every result.
+- Style refinement: an optional Style preference, requested only after a
+  budget-only recommendation exists, never gathered upfront — matching
+  the canon's progressive-question discipline. Refinement is reversible
+  and persists correctly across budget edits.
+- Beer Detail: the complete picture of one recommended SKU (price,
+  package, volume, ABV, Value Score, verdict, price staleness), reached
+  from Recommendation. Presentation-only — nothing here is computed.
+- Price Verification: checks one SKU's charged price against its legal
+  reference price, classified as at, below, or above, with its own
+  confidence framing. Reached from Beer Detail, on request.
+- Tie Disclosure: when multiple beers are genuinely, exactly tied for
+  the best value within budget, the app says so honestly — each tied
+  beer shown individually, with its own path to full details — rather
+  than silently picking one.
+- Planning Mode: an alternate entry point for recommendations intended
+  for a future purchase, carrying a standing caveat throughout the flow
+  that prices and availability may have changed by the time of an
+  actual purchase.
 
 ### Changed
-- Android `applicationId` from the template default `com.example.valuebrew`
-  to `com.nishantchaubey.valuebrew` (Play Console rejects `com.example.*`).
-- App display name from `valuebrew` to `ValueBrew` (Android manifest label,
-  iOS `CFBundleDisplayName`/`CFBundleName`).
-
-### Fixed
-- Release builds were missing the `INTERNET` permission (only granted to
-  debug/profile builds by Flutter's own tooling), which would have made
-  the remote catalog fetch silently fail on every published build.
-
-## [1.0.0] - 2026-07-25
-
-The full V1 feature set, built milestone-by-milestone. All dated the same
-day here because the project's git history was authored in one continuous
-session; each bullet below represents a distinct, separately-tested
-milestone, not a single day's work.
-
-### Added
-- Project scaffold: Flutter app shell, feature-first folder structure,
-  core dependencies (`flutter_riverpod`, `http`, `shared_preferences`,
-  `path_provider`), and initial documentation.
-- Immutable catalog data models (`Style`, `Beer`, `Benchmark`, `Catalog`)
-  and a repository that loads and parses the bundled JSON catalog.
-- Home screen with the full catalog loaded and rendered.
-- Beer detail screen and navigation from the home list.
-- Search, with fuzzy matching over beer name and brewery.
-- Per-SKU value information (price, cost per litre, cost per mL of
-  alcohol, value score/verdict) surfaced on both the list and detail
-  screens.
-- Value-based sorting, later generalized into a reusable `SortingEngine` +
-  `SortOption` pair shared across Home and Favorites.
-- Beer-to-beer comparison screen.
-- Shared display-formatting helpers, used consistently across list,
-  detail, and comparison views.
-- Similar-beer recommendations, later generalized into a full
-  recommendation engine: a `RecommendationPolicy` abstraction, explainable
-  recommendation reasons (e.g. "Similar ABV", "Better value"), and
-  user-selectable recommendation profiles.
-- Local "this looks wrong" reporting for incorrect catalog data — recorded
-  on-device only, for later manual review (see `privacy_policy.md`).
-- Persistent favorites (`shared_preferences`-backed), with a dedicated
-  Favorites screen that respects the same filter/sort state as Home.
-- A reusable `FilteringEngine` and advanced catalog filters (style, ABV,
-  price range, minimum value score).
-- `docs/architecture.md` and `docs/philosophy.md` — living documentation
-  of the codebase's architecture and engineering principles.
-- Remote catalog updates: the bundled catalog is checked against a
-  remotely-hosted `catalog.json` (via `HttpCatalogRemoteSource`) on
-  launch, preferring whichever of {bundled, cached, remote} has the
-  newest `catalog_version`, with a configurable timeout and a silent,
-  crash-free fallback to whatever's already loaded on any failure
-  (offline, timeout, a non-200 response, or malformed JSON).
-- UX polish pass: skeleton loading states, richer empty/error states with
-  retry actions, an app-wide Material 3 theme, consistent spacing
-  constants, and subtle built-in-widget animations for favoriting and
-  profile-driven reordering.
+- `generate_recommendation.dart`'s lookups consolidated onto the shared
+  `catalog_lookups` module, removing duplicated catalog-search logic.
+- Recommendation's loading and error states brought in line with the
+  rest of the app — a composed skeleton placeholder while the catalog
+  loads, and a retry-capable error state that never shows a raw
+  exception, matching Beer Detail and Price Verification.
 
 ### Testing
-- Comprehensive unit, provider, and widget test coverage added
-  incrementally alongside every feature above (467 tests as of this
-  release) — see `README.md`'s Testing Strategy section for the approach.
+- 562 tests passing, `flutter analyze` clean — both a hard gate for
+  every milestone in this release. Unit tests cover every domain
+  function (recommendation generation, tie detection, price
+  verification, catalog lookups) independently of any widget. Widget
+  tests cover every screen's rendering, navigation, state preservation
+  across back-navigation, and recovery behavior, using `ProviderScope`
+  overrides against a fake catalog repository rather than real assets,
+  storage, or network.
+
+### Documentation
+- `docs/engineering/Version-1-Architecture-Reference.md` — the
+  permanent, as-built engineering reference: navigation graph, screen
+  and domain ownership, shared infrastructure, repository conventions,
+  and every intentionally deferred capability with its concrete
+  blocker.
+
+### Out of scope
+Search/Browse, Comparison, Trade-off Explanation, Confirm-as-Is,
+preferences beyond budget and style, Proxy-Buying Mode, and any
+account or persistence layer. See the Architecture Reference's
+"Intentionally Deferred Capabilities" section for why each is deferred
+and what would need to change to unblock it.

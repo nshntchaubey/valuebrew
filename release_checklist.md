@@ -13,8 +13,7 @@ track or higher). Check off manually — nothing here runs itself.
 - [ ] Version bumped in `pubspec.yaml` (`version: X.Y.Z+N`) — this is the
       single source of truth for both Android `versionName`/`versionCode`
       and iOS `CFBundleShortVersionString`/`CFBundleVersion`
-- [ ] `android/key.properties` present and correct (see
-      `docs/RELEASE_SIGNING.md`) — confirm with:
+- [ ] `android/key.properties` present and correct — confirm with:
       `apksigner verify --print-certs build/app/outputs/flutter-apk/app-release.apk`
       and check it's signed with the release key, not the debug fallback
 - [ ] `flutter build appbundle --release` succeeds
@@ -23,26 +22,26 @@ track or higher). Check off manually — nothing here runs itself.
 ## Manual verification (on the release build, not `flutter run` debug)
 
 - [ ] Remote catalog fetch works: confirm a launch actually reaches the
-      configured URL (`AppConstants.remoteCatalogUrl`) — e.g. via
-      `adb logcat` filtered on the `CatalogRemoteSource` log tag — and
-      falls back cleanly with airplane mode on (no crash, no error shown)
-- [ ] Favorites persist: favorite a beer, force-quit the app, relaunch,
-      confirm it's still favorited
-- [ ] Recommendations: open a beer detail screen, confirm similar-beer
-      recommendations appear with reasons, and that switching
-      recommendation profiles reorders them
-- [ ] Filters: apply a style/ABV/price/value-score filter, confirm the
-      list narrows correctly and "Clear filters" restores it
-- [ ] Sorting: switch sort options on Home and Favorites, confirm order
-      changes accordingly
+      configured URL (`AppConstants.remoteCatalogUrl`) and falls back
+      cleanly with airplane mode on (no crash, no error shown)
+- [ ] Get a recommendation: enter a budget, confirm a specific beer and
+      an explanation appear
+- [ ] Style refinement: refine a recommendation by style, confirm the
+      result updates and can be cleared back to "No preference"
+- [ ] Tie Disclosure: confirm a budget that produces a genuine tie shows
+      every tied beer, each with its own path to full details, rather
+      than a single arbitrary pick
+- [ ] Beer Detail: from a recommendation, confirm price, size, package,
+      ABV, value score, and price-checked date all display
+- [ ] Price Verification: from Beer Detail, confirm entering a charged
+      price returns the correct at/below/above classification
+- [ ] Planning Mode: use "I'm planning ahead" from Home, confirm the
+      standing caveat appears alongside the recommendation and persists
+      through a budget edit or style refinement
 - [ ] Accessibility: enable TalkBack (or a screen reader), confirm
-      favorite-heart buttons announce their state ("Favorited" / "Not
-      favorited") and primary actions are reachable
+      primary actions are reachable and announced correctly
 - [ ] Splash/icon: confirm the launcher icon (not the Flutter default)
-      appears on the home screen and app drawer, and the splash shows the
-      brand background + mark before the first frame — check on both an
-      Android 12+ device (native SplashScreen API) and an older one
-      (`launch_background.xml` path)
+      appears on the home screen and app drawer
 
 ## Documentation
 
@@ -60,6 +59,5 @@ track or higher). Check off manually — nothing here runs itself.
 - [ ] Play Console Data Safety form filled in, consistent with
       `privacy_policy.md` (no personal data collected, no third parties)
 - [ ] Privacy policy URL set in Play Console (this file needs to be
-      hosted somewhere public — e.g. a GitHub Pages page or raw GitHub
-      URL — a local Markdown file isn't enough; Play Console requires a
-      reachable link)
+      hosted somewhere public — a local Markdown file isn't enough;
+      Play Console requires a reachable link)

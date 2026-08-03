@@ -6,76 +6,67 @@ Store's actual limits at time of writing — recount if Google changes them.
 ## Short Description (max 80 characters)
 
 ```
-Compare beer prices and find the best value, pint for pint.
+Get an honest beer recommendation, budgeted to what you actually want.
 ```
-(62 characters)
+(71 characters)
 
 ## Full Description (max 4000 characters)
 
 ```
-ValueBrew helps you find the beer that's actually worth your money.
+ValueBrew helps you pick a beer that's actually worth your money.
 
-Instead of guessing from price alone, ValueBrew breaks every beer down to
-what matters: cost per litre and cost per millilitre of alcohol — so a
-cheap large bottle and a pricier strong can are finally comparable on the
-same terms.
+Tell ValueBrew your budget, and it recommends the beer with the best
+real value for that money — cost measured per unit of alcohol, not just
+the sticker price. Refine by style if you want, and if two beers are
+genuinely, exactly tied for the best value, ValueBrew says so honestly
+instead of picking one for you.
 
 WHAT YOU CAN DO
-• Browse a catalog of beers with real, regularly-checked prices
-• Search by name or brewery, with typo-tolerant fuzzy matching
-• See a clear value score and verdict (Great value, Fair value, and so
-  on) for every pack size
-• Filter by style, ABV, price range, or minimum value score
-• Sort by value, price, or name
-• Compare any two beers side by side
-• Get similar-beer recommendations, explained in plain language ("Similar
-  ABV", "Better value") — including recommendation profiles you can
-  switch between (e.g. budget-focused or craft-focused)
-• Save favorites for quick access later
-• Flag a listing that looks wrong, right from the beer's detail screen
-
-HOW IT WORKS
-ValueBrew ships with a built-in beer catalog and quietly checks for
-updates in the background, so prices and value scores can improve over
-time without needing an app update. If that check ever fails — no signal,
-a slow connection, whatever — the app just keeps using what it already
-has. You'll never see an error for it.
+• Get a specific beer recommendation, explained in plain language, for
+  whatever budget you set
+• Narrow your recommendation by style — reversible any time
+• See an honest tie disclosure when multiple beers are truly equal in
+  value, not an arbitrary pick
+• View the full picture on any recommended beer: price, size, package,
+  ABV, value score, and how recently the price was checked
+• Check whether you were charged fairly for a specific beer against the
+  legal reference price
+• Plan ahead for a future purchase, with a standing reminder that prices
+  and availability may change by the time you actually buy
 
 NO ACCOUNT NEEDED
 There's no sign-up, no login, and nothing about your usage is tracked,
-analyzed, or shared. Favorites and preferences are stored only on your
-device. See the full privacy policy for details.
+analyzed, or shared. Nothing you enter is stored beyond the moment
+you're using it. See the full privacy policy for details.
 
 Pricing data currently reflects the Karnataka, India market.
 ```
 
 ## Key Features (for a bulleted store-listing section)
 
-- Cost-per-litre and cost-per-mL-of-alcohol value scoring, not just sticker price
-- Fuzzy search across name and brewery
-- Style, ABV, price, and value-score filters
-- Side-by-side beer comparison
-- Explainable, profile-based recommendations
-- Local favorites — no account required
-- Background catalog updates with automatic offline fallback
-- No ads, no analytics, no tracking
+- Budget-based recommendation with real, explained reasoning
+- Optional style refinement, reversible any time
+- Honest tie disclosure — never an arbitrary pick when beers are equal
+- Full per-beer detail: price, size, package, ABV, value score
+- Legal price verification for a specific charge
+- Planning-ahead mode with a standing confidence caveat
+- No ads, no analytics, no tracking, no account
 
 ## Keywords
 
-beer, craft beer, beer prices, beer value, price comparison, beer finder,
-beer search, ABV, alcohol by volume, beer recommendations, India beer
-prices, Karnataka, beer catalog, value for money
+beer, beer recommendation, beer value, beer price, price verification,
+beer budget, ABV, alcohol by volume, India beer prices, Karnataka, beer
+value score
 
 ## What's New (initial release)
 
 ```
 Initial release of ValueBrew:
-• Browse and search a real beer price catalog
-• See a clear value score for every pack size
-• Filter, sort, and compare beers side by side
-• Get explainable recommendations, with switchable profiles
-• Save favorites — no account needed
-• Catalog updates automatically in the background
+• Get a budget-based beer recommendation, fully explained
+• Refine by style, or see an honest tie when beers are equal
+• View full detail on any recommended beer
+• Verify you were charged the correct legal price
+• Plan ahead for a future purchase
 ```
 
 ---
@@ -89,35 +80,30 @@ what to capture before submitting to Play Console.
 
 Play Store requires at least 2, recommends 4–8. Suggested shots, in order:
 
-- [ ] Home screen — full catalog list with value scores visible
-- [ ] Search — mid-query, showing fuzzy-matched results
-- [ ] Filter bottom sheet — a filter or two applied
-- [ ] Beer detail screen — SKU/value info plus a recommendation section
-- [ ] Recommendation profile picker (bottom sheet)
-- [ ] Compare screen — two beers side by side
-- [ ] Favorites screen — a few saved favorites
-- [ ] Empty or error state (optional, shows polish) — e.g. "No beers match your filters"
+- [ ] Home screen — both entry actions visible
+- [ ] Recommendation — a budget entered, a specific beer recommended
+      with its explanation
+- [ ] Recommendation — Style refinement in progress
+- [ ] Recommendation — a genuine Tie Disclosure, showing multiple beers
+- [ ] Beer Detail — full facts for one recommended beer
+- [ ] Price Verification — a charged price entered, with its result
+- [ ] Recommendation — Planning Mode caveat visible
+- [ ] An honest no-match state (e.g. "No beer in the catalog fits that
+      budget") — optional, shows polish
 
 ### Tablet (optional — only if the listing targets tablets)
 
-- [ ] Home screen on a tablet-sized layout
-- [ ] Beer detail screen on a tablet-sized layout
-
 ValueBrew's current UI has not been specifically verified for tablet
 layouts (no tablet-specific breakpoints exist in the codebase as of this
-milestone) — capture these only after confirming the layout actually
+release) — capture these only after confirming the layout actually
 looks correct at tablet width, not just larger.
 
 ### Feature graphic (required, 1024×500)
 
 - [ ] One wide banner image combining the app icon/mark with a short
-      tagline (e.g. "Know what you're really paying for"). Not a
-      screenshot — a separate marketing graphic.
+      tagline. Not a screenshot — a separate marketing graphic.
 
 ### App icon (required, 512×512, 32-bit PNG, no alpha)
 
 - [ ] Export a flattened, opaque 512×512 version of the launcher mark
-      (`android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png` is 192×192
-      and has no alpha in its background layer, but Play Console wants a
-      dedicated 512×512 upload — re-render at that size rather than
-      upscaling the existing PNG).
+      — re-render at that size rather than upscaling an existing PNG.

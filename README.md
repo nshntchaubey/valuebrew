@@ -1,23 +1,15 @@
 # ValueBrew
 
-**Know what you're really paying for.** ValueBrew compares beers on cost
-per litre and cost per millilitre of alcohol — not just sticker price —
-so a cheap large bottle and a pricier strong can are finally comparable
-on the same terms.
+**Get an honest beer recommendation, budgeted to what you actually want.**
+ValueBrew recommends the beer with the best real value for your budget —
+cost measured per unit of alcohol, not just the price on the shelf — and
+explains why, every time.
 
-No account. No ads. No tracking. Just a catalog, a value score, and
-explanations you can actually check.
+No account. No ads. No tracking.
 
 <!--
 Screenshots: capture per the checklist in store_listing.md, then replace
-this block with actual images, e.g.:
-
-<p align="center">
-  <img src="docs/screenshots/home.png" width="200" />
-  <img src="docs/screenshots/beer_detail.png" width="200" />
-  <img src="docs/screenshots/compare.png" width="200" />
-  <img src="docs/screenshots/favorites.png" width="200" />
-</p>
+this block with actual images.
 -->
 📱 *Screenshots coming soon — see [`store_listing.md`](store_listing.md) for the capture checklist.*
 
@@ -25,36 +17,24 @@ this block with actual images, e.g.:
 
 ## Features
 
-- **Value scoring** — every SKU gets a cost-per-litre and
-  cost-per-mL-of-alcohol breakdown, plus a plain-language verdict (Great
-  value, Fair value, …).
-- **Search** — typo-tolerant fuzzy matching over beer name and brewery.
-- **Filtering** — by style, ABV, price range, and minimum value score.
-- **Sorting** — by value, price, or name, on both Home and Favorites.
-- **Comparison** — any two beers, side by side.
-- **Explainable recommendations** — "Similar ABV", "Better value", and
-  friends — never a bare list of suggestions with no reason attached.
-  Switchable recommendation profiles let you weight what "similar" means.
-- **Favorites** — persisted locally, no account required.
-- **"This looks wrong" reporting** — flag bad catalog data for later
-  review, recorded on-device only.
-- **Remote catalog updates** — the bundled catalog is checked against a
-  remotely-hosted version on launch, with a silent, crash-free fallback
-  to whatever's already available if the network doesn't cooperate.
-
-## Screenshots
-
-| Home | Beer Details |
-|------|--------------|
-| ![](assets/screenshots/home.png) | ![](assets/screenshots/beer-detail.png) |
-
-| Compare | Recommendation Profiles |
-|----------|-------------------------|
-| ![](assets/screenshots/compare.png) | ![](assets/screenshots/profiles.png) |
-
-| Filters | Sorting |
-|---------|---------|
-| ![](assets/screenshots/filters.png) | ![](assets/screenshots/sorting.png) |
+- **Budget-based recommendation** — state a budget, get one specific
+  beer with the best real value within it, and a plain-language
+  explanation of why.
+- **Style refinement** — optionally narrow a recommendation by style,
+  requested only after a budget-only recommendation already exists, and
+  reversible at any time.
+- **Tie Disclosure** — when multiple beers are genuinely, exactly tied
+  for the best value, ValueBrew says so honestly and shows every one of
+  them, rather than picking one arbitrarily.
+- **Beer Detail** — the complete picture of any recommended beer: price,
+  size, package, ABV, value score and verdict, and how recently the
+  price was checked.
+- **Price Verification** — check whether a price you were charged for a
+  specific beer matches the legal reference price, classified as at,
+  below, or above.
+- **Planning Mode** — an alternate entry point for a future purchase,
+  carrying a standing reminder throughout that prices and availability
+  may have changed by the time you actually buy.
 
 ## Technology Stack
 
@@ -63,149 +43,120 @@ this block with actual images, e.g.:
 | Framework | Flutter 3.44.8 / Dart 3.12.2 |
 | State management | [flutter_riverpod](https://pub.dev/packages/flutter_riverpod) 2.6.1 |
 | Networking | [http](https://pub.dev/packages/http) 1.2.2 (remote catalog fetch) |
-| Local persistence | [shared_preferences](https://pub.dev/packages/shared_preferences) 2.3.3 |
-| Filesystem access | [path_provider](https://pub.dev/packages/path_provider) 2.1.5 |
+| Local persistence | [shared_preferences](https://pub.dev/packages/shared_preferences) 2.3.3 (cached catalog only) |
 | Static analysis | [flutter_lints](https://pub.dev/packages/flutter_lints) 6.0.0 |
 
 No backend. The catalog is a local JSON file, optionally refreshed from a
-static CDN-hosted copy of the same file — see
-[Remote Catalog](#remote-catalog) below. Full license text for every
-dependency: [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+static CDN-hosted copy of the same file — see [Remote Catalog](#remote-catalog)
+below. Full license text for every declared dependency:
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  UI (ConsumerWidget screens)                             │
-│  Home · BeerDetail · Compare · Favorites                 │
+│  UI (Consumer/ConsumerStatefulWidget screens)             │
+│  Home · Recommendation · Beer Detail · Price Verification │
 └───────────────────────────┬───────────────────────────────┘
                              │ ref.watch / ref.read
                              ▼
 ┌─────────────────────────────────────────────────────────┐
 │  Riverpod Providers                                       │
-│  dependency wiring · search · filtering · sorting          │
+│  catalogProvider · catalogRepositoryProvider ·             │
+│  valueBrewNavigatorProvider                                │
 └───────────┬─────────────────────────────┬─────────────────┘
             │                             │
             ▼                             ▼
 ┌───────────────────────┐     ┌───────────────────────────┐
-│  Repositories           │     │  RecommendationEngine       │
-│  CatalogRepository ·    │     │  → RecommendationPolicy     │
-│  FavoritesRepository ·  │     │  → WeightedScorer            │
-│  WrongReportStore       │     │  → SimilarityStrategy         │
+│  CatalogRepository       │     │  Domain functions            │
+│  bundled asset ·          │     │  generateRecommendation ·     │
+│  local cache · remote     │     │  verifyPrice — pure Dart,      │
+│  fetch, in that order     │     │  no Flutter dependency         │
 └───────────┬───────────┘     └──────────────┬──────────────┘
             │                                │ (reads, as plain data)
             ▼                                ▼
-┌───────────────────────┐     ┌───────────────────────────┐
-│  Persistence             │     │  Catalog                    │
-│  Bundled asset ·          │◄────  (Beer, Sku, Style,         │
-│  SharedPreferences ·      │     Benchmark — value objects)  │
-│  Remote HTTP fetch        │     │                              │
-└───────────────────────┘     └───────────────────────────┘
+┌─────────────────────────────────────────────────────────┐
+│  Catalog (Beer, Sku, Style, Benchmark — value objects)     │
+└─────────────────────────────────────────────────────────┘
 ```
 
-Feature-first, repository-pattern, dependency-injected throughout — every
-repository and service is swappable via Riverpod provider overrides, with
-no global singletons and nothing constructed inside a widget's `build()`.
+Feature-first, repository-pattern, every dependency wired via Riverpod
+provider — nothing constructed inside a widget's `build()`, no global
+singletons. `ValueBrewNavigator` is the only class permitted to trigger
+a screen transition; its public API is exactly the set of legal
+transitions, one method each, added only once a real screen needed it.
 
-The full reasoning behind these choices — why Flutter, why Riverpod, why
-the recommendation engine is SKU-centric rather than Beer-centric, what
-each architectural principle looks like in code — is written up in
-[`docs/architecture.md`](docs/architecture.md). The engineering workflow
-this project is built with (one milestone at a time, verified before it's
-considered done) is in [`docs/philosophy.md`](docs/philosophy.md).
+The full reasoning behind ownership, navigation, and every design
+principle actually exercised in this codebase is written up in
+[`docs/engineering/Version-1-Architecture-Reference.md`](docs/engineering/Version-1-Architecture-Reference.md)
+— the permanent, as-built engineering reference for this version. The
+product-level canon it's built against lives in
+[`docs/architecture/current/`](docs/architecture/current/).
 
-### Recommendation Engine, briefly
+### Recommendation, briefly
 
-Recommendations are the one part of the app with real internal layering,
-because "recommend a beer" is a weaker product than "recommend a beer and
-be able to say why":
-
-```mermaid
-flowchart TD
-    UI["BeerDetailScreen"] -->|"reads"| Engine["RecommendationEngine"]
-    Engine -->|"asks for weights & thresholds"| Policy["RecommendationPolicy"]
-    Policy -->|"owns a"| Scorer["WeightedScorer"]
-    Scorer -->|"combines"| S1["StyleMatchStrategy"]
-    Scorer -->|"combines"| S2["AbvClosenessStrategy"]
-    Scorer -->|"combines"| S3["PriceClosenessStrategy"]
-    Scorer -->|"combines"| S4["PackageTypeMatchStrategy"]
-    Scorer -->|"combines"| S5["BreweryMatchStrategy"]
-    Engine -->|"produces"| Rec["Recommendation\n(sku, score, matchedReasons, type)"]
-```
-
-- **`RecommendationEngine`** holds zero hardcoded numbers — every weight
-  and threshold comes from an injected `RecommendationPolicy`, so a new
-  recommendation profile (budget-focused, craft-focused, …) is a new
-  policy class, never an engine change.
-- **`SimilarityStrategy`** implementations (style, ABV, price, package
-  type, brewery) each score *and* explain themselves using the same
-  internal comparison — an explanation can never disagree with the score
-  that produced it.
-- Everything above is plain Dart with no Flutter or Riverpod dependency,
-  which is why it's the most heavily unit-tested part of the codebase.
-
-Full depth: [`docs/architecture.md#recommendation-architecture`](docs/architecture.md#recommendation-architecture).
+`generateRecommendation` is pure Dart with zero Flutter dependency,
+which is why it's the most heavily unit-tested part of the codebase. It
+filters the catalog by budget (a hard limit), optionally narrows by
+style, and ranks the remainder by Value Score — detecting an exact tie
+rather than picking arbitrarily between equally-good options. The
+result is a `RecommendationOutcome`: a sealed type with one case per
+real outcome (found, tied, no match within budget, no match for the
+stated style), built so a future outcome variant cannot be added
+without the compiler forcing every renderer to handle it explicitly.
 
 ### Remote Catalog
 
 On launch, `CatalogRepository` tries, in order: the bundled JSON asset
-(the only failure that actually stops loading), a locally-cached catalog
-if it's newer, then a remote fetch (`HttpCatalogRemoteSource`) if *that*
-reports something newer still. Any failure reading the cache or the
-network — offline, timeout, a non-200 response, malformed JSON — is
-silently ignored; the app just keeps whatever it already has. Configure
-the remote URL and timeout in one place:
-[`lib/core/constants/app_constants.dart`](lib/core/constants/app_constants.dart).
+(the only failure that actually stops loading), a locally-cached
+catalog if it's newer, then a remote fetch if *that* reports something
+newer still. Any failure reading the cache or the network — offline,
+timeout, a non-200 response, malformed JSON — is silently ignored; the
+app just keeps whatever it already has. Configure the remote URL and
+timeout in one place: [`lib/core/constants/app_constants.dart`](lib/core/constants/app_constants.dart).
 
 ## Project Structure
 
 ```
 lib/
+  navigation/                     — ValueBrewNavigator, the sole owner of screen transitions
+  catalog/
+    domain/                        — Style, Benchmark, Catalog
+    data/                          — CatalogRepository, local cache, remote source
+  shared_domain/                  — Beer, Sku
   core/
-    constants/     — app-wide constants (catalog asset key, remote URL, timeout)
-    theme/          — reserved for theme extraction (currently inline in app.dart)
-    utils/          — pure functions: fuzzy string matching, display formatting
-  data/
-    models/         — immutable value objects mirroring the catalog JSON schema
-    repositories/   — CatalogRepository
-    sources/        — CatalogLocalCache, CatalogRemoteSource (persistence/network boundaries)
+    constants/                     — AppSpacing, AppConstants
+    utils/                          — display_formatting
   features/
-    beer_detail/    — beer detail screen, wrong-report submission
-    compare/        — side-by-side beer comparison
-    favorites/       — favorites repository, provider, screen
-    filtering/       — FilteringEngine, FilterState, the filter bottom sheet
-    home/            — the app's entry screen (search + filter + sort + list)
-    recommendation/  — the recommendation engine stack (models, policy, scoring, services, providers, widgets)
-    search/          — search query + fuzzy-matched results provider
-    shared/          — catalog lookups, the catalog provider, shared widgets
-    sorting/         — SortingEngine, SortOption, the sort bottom sheet
+    discovery/presentation/        — Home screen
+    recommendation/
+      domain/                       — generateRecommendation, RecommendationOutcome,
+                                       RecommendationResult, RecommendationTie, TiedCandidate
+      presentation/                  — RecommendationScreen
+    beer_detail/presentation/       — BeerDetailScreen
+    price_verification/
+      domain/                        — verifyPrice, PriceVerificationResult
+      presentation/                   — PriceVerificationScreen
+    shared/
+      catalog_lookups.dart            — resolveBeer / resolveStyle / resolveSku / …
+      providers/                       — catalogProvider
+      widgets/                          — ErrorStateView, SkeletonBox
   app.dart, main.dart
 ```
 
-See [`docs/architecture.md`](docs/architecture.md) for why the structure
-is shaped this way (in particular, why there's no `features/catalog/`
-folder, and why `recommendation/` is the one deeply-layered module).
-
 ## Testing Strategy
 
-**467 tests**, all passing, `flutter analyze` clean — both are a hard
-gate in this project's workflow; a milestone isn't complete until both
-pass.
+**562 tests**, all passing, `flutter analyze` clean — both a hard gate
+in this project's workflow; a milestone isn't complete until both pass.
 
-- **Unit tests** (the large majority) — data models, core utilities, and
-  the heaviest-tested area, the recommendation stack (every
-  `SimilarityStrategy`, `WeightedScorer`, `RecommendationPolicy`,
-  `RecommendationEngine`), plus `FilteringEngine` and `SortingEngine`.
-- **Widget tests** — `HomeScreen`, `BeerDetailScreen`, `CompareScreen`,
-  `FavoritesScreen`, each using `ProviderScope` overrides to inject fake
-  repositories/engines rather than touching real assets, `SharedPreferences`,
-  or the network.
-- **Provider tests** — where the thing worth testing is composition/wiring
-  itself, not business logic already covered at the unit level.
-- **Repository tests** — `SharedPreferences`-backed repositories tested
-  against `SharedPreferences.setMockInitialValues({})`, including
-  "survives recreation" cases as a local proxy for "survives an app
-  restart".
+- **Unit tests** — every domain function tested directly and
+  independently of any widget: `generateRecommendation` (including tie
+  detection), `verifyPrice`, and every `catalog_lookups` function.
+- **Widget tests** — every screen, pumped with `ProviderScope` overrides
+  injecting a fake `CatalogRepository` rather than touching real
+  assets, storage, or network. Coverage includes rendering, navigation
+  to the correct destination, state preservation across back
+  navigation, and recovery/failure states.
 
 Run everything:
 
@@ -253,7 +204,6 @@ regenerate every density.
 ## Release Instructions
 
 Full release process: [`release_checklist.md`](release_checklist.md).
-Signing a real release build: [`docs/RELEASE_SIGNING.md`](docs/RELEASE_SIGNING.md).
 
 Short version:
 
@@ -263,29 +213,23 @@ flutter build apk --release         # a signed APK
 ```
 
 Without `android/key.properties` present, release builds fall back to
-debug signing (so the commands above always succeed locally) — see
-`docs/RELEASE_SIGNING.md` for generating and wiring up a real release key.
+debug signing (so the commands above always succeed locally).
 
-## Roadmap
+## What's not built yet
 
-Ordered by what the codebase has already been explicitly built to
-support but hasn't yet implemented — see
-[`docs/architecture.md#extension-points`](docs/architecture.md#extension-points)
-for how each one plugs into what exists today:
-
-1. Personalization using Favorites (the signal already exists; the open
-   question is how it should influence scoring or explanations)
-2. Food pairing as a recommendation dimension (blocked on catalog
-   schema/data, not architecture)
-3. Recently Viewed (a close structural cousin of Favorites)
-4. Cloud sync for favorites (an interface already sits behind
-   `favoritesRepositoryProvider`; a remote-backed implementation slots in
-   without touching any screen)
+Search/Browse, Comparison, Trade-off Explanation, Confirm-as-Is,
+preferences beyond budget and style, and Proxy-Buying Mode are all
+intentionally deferred, each for a specific, documented reason — see
+["Intentionally Deferred Capabilities"](docs/engineering/Version-1-Architecture-Reference.md#9-intentionally-deferred-capabilities)
+in the Architecture Reference. This is not a roadmap — nothing here is
+scheduled; each item is blocked on either a missing canonical
+specification or a missing precondition this repository can't resolve
+on its own.
 
 ## Privacy
 
-ValueBrew collects no personal data, runs no analytics, shows no ads, and
-requires no account. Full policy: [`privacy_policy.md`](privacy_policy.md).
+ValueBrew collects no personal data, runs no analytics, shows no ads,
+and requires no account. Full policy: [`privacy_policy.md`](privacy_policy.md).
 
 ## License
 
