@@ -32,6 +32,12 @@
 
 ---
 
+## Version 1 Architecture Reference
+
+- **Version-1-Architecture-Reference.md** — the permanent, as-built engineering reference for Version 1: navigation graph, screen and domain ownership, shared infrastructure, repository conventions, and every intentionally deferred capability with its concrete blocker. Distinct from the Implementation Planning documents above, which describe original intent against a larger eventual scope — this document describes only what was actually built. Authoritative for Version 1's real behavior; frozen until repository behavior, the canon, the Product Definition, or a new Screen Contract changes.
+
+---
+
 ## Engineering Specifications
 
 Held in `specifications/`. Each is a citation-only restatement of its canonical Screen Contract, produced via the Canonical Screen Specification Template. Status as of this index: Home, Recommendation, Beer Detail, Comparison, and Price Verification each have a completed specification tied directly to their own canonical Screen Contract. Search/Browse Results also has a completed specification, produced to close the Navigation Contract's flagged structural gap, ahead of that screen having a dedicated canonical Screen Contract of its own.
