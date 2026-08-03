@@ -9,6 +9,7 @@ import 'package:valuebrew/features/shared/catalog_lookups.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/shared/widgets/error_state_view.dart';
 import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
+import 'package:valuebrew/navigation/value_brew_navigator.dart';
 
 /// The Price Verification screen: Beer Detail → Price Verification.
 ///
@@ -109,6 +110,12 @@ class _PriceVerificationScreenState extends ConsumerState<PriceVerificationScree
                     style: TextStyle(fontStyle: FontStyle.italic),
                   ),
                 ],
+                const SizedBox(height: AppSpacing.lg),
+                TextButton(
+                  onPressed: () =>
+                      ref.read(valueBrewNavigatorProvider).priceVerificationToBeerDetail(sku.id),
+                  child: const Text('View Beer Detail'),
+                ),
               ],
             ),
           );

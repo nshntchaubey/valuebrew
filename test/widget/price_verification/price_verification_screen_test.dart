@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:valuebrew/catalog/data/catalog_repository.dart';
+import 'package:valuebrew/features/beer_detail/presentation/beer_detail_screen.dart';
 import 'package:valuebrew/features/price_verification/presentation/price_verification_screen.dart';
 import 'package:valuebrew/features/shared/providers/catalog_provider.dart';
 import 'package:valuebrew/features/shared/widgets/skeleton_box.dart';
+import 'package:valuebrew/navigation/value_brew_navigator.dart';
 
 const _catalogJson = '''
 {
@@ -79,7 +81,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [catalogRepositoryProvider.overrideWithValue(fakeRepository)],
-        child: MaterialApp(home: PriceVerificationScreen(skuId: skuId)),
+        child: MaterialApp(
+          navigatorKey: rootNavigatorKey,
+          home: PriceVerificationScreen(skuId: skuId),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -214,5 +219,41 @@ void main() {
     );
 
     expect(find.text("This beer couldn't be found."), findsOneWidget);
+  });
+
+  group('navigation to Beer Detail', () {
+    testWidgets('tapping "View Beer Detail" opens Beer Detail for the correct SKU', (
+      WidgetTester tester,
+    ) async {
+      await pumpPriceVerificationScreen(tester);
+
+      await tester.tap(find.text('View Beer Detail'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BeerDetailScreen), findsOneWidget);
+      expect(find.text('Kingfisher Premium'), findsOneWidget);
+    });
+
+    testWidgets('navigating back from Beer Detail preserves Price Verification state', (
+      WidgetTester tester,
+    ) async {
+      await pumpPriceVerificationScreen(tester);
+      await enterChargedPriceAndSubmit(tester, '120');
+      expect(find.text('Above the legal price'), findsOneWidget);
+
+      await tester.tap(find.text('View Beer Detail'));
+      await tester.pumpAndSettle();
+      expect(find.byType(BeerDetailScreen), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+
+      expect(find.byType(PriceVerificationScreen), findsOneWidget);
+      expect(find.text('Above the legal price'), findsOneWidget);
+      expect(
+        find.text('You paid ₹120, above the legal price of ₹110. This may be an overcharge.'),
+        findsOneWidget,
+      );
+    });
   });
 }

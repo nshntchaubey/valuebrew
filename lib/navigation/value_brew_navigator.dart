@@ -61,6 +61,20 @@ class ValueBrewNavigator {
       MaterialPageRoute(builder: (_) => PriceVerificationScreen(skuId: skuId)),
     );
   }
+
+  /// Price Verification → Beer Detail (Navigation Contract, Section 6).
+  ///
+  /// Invitation-only, for broader context beyond the verification itself —
+  /// reachable only from an already-resolved SKU. Carries the SKU identity
+  /// only; the charged price is never carried forward, per the Navigation
+  /// Contract's own Section 12. Pushes directly, same as the other edges:
+  /// still exactly one caller and one destination per edge, so a route
+  /// table isn't earned yet.
+  Future<void> priceVerificationToBeerDetail(String skuId) {
+    return _navigatorKey.currentState!.push<void>(
+      MaterialPageRoute(builder: (_) => BeerDetailScreen(skuId: skuId)),
+    );
+  }
 }
 
 /// Exposes the app's [ValueBrewNavigator].
