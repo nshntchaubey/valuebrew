@@ -4,9 +4,10 @@ import 'package:valuebrew/shared_domain/sku.dart';
 /// The outcome of [generateRecommendation]: one specific SKU, the [Beer] it
 /// belongs to, and a plain-language explanation of why it was chosen.
 ///
-/// Deliberately minimal for this vertical slice — see
-/// `generate_recommendation.dart` for what's intentionally not represented
-/// here yet (a genuine tie, a trade-off, a low-confidence response).
+/// Represents the single-result case only. A genuine tie is represented
+/// separately, by the sibling `RecommendationTie` outcome — see
+/// `generate_recommendation.dart` for what's still intentionally not
+/// represented anywhere yet (a trade-off, a low-confidence response).
 class RecommendationResult {
   /// The recommended SKU.
   final Sku sku;
