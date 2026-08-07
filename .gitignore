@@ -44,3 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .DS_Store
+
+# KSBCL pricing pipeline (tool/ksbcl_pricing_pipeline) working data —
+# raw source PDFs and generated per-run CSVs/logs, not source-controlled.
+/pricing_data/
+__pycache__/
+*.pyc
+.pytest_cache/

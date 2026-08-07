@@ -1,0 +1,62 @@
+# Stage 2 (Beer Identification) classification vocabulary — architecture
+# §2.2. Exactly three top-level keys; each a flat list of plain strings,
+# in natural human-readable casing (the loader folds both sides at match
+# time, §4.1). Declaration order is the deterministic tie-break when more
+# than one entry matches the same row (§5).
+#
+# Every entry below is taken directly from the architecture document's
+# own cited seed lists (§4.2, §5, §6, §8) — nothing here is invented.
+# Confirmed-recurring real-data variants (e.g. "Whiskey", plural
+# "Beers") are deliberately NOT pre-added: per §16/§17 of the
+# architecture, that is configuration-curation work gated on real
+# confirm-then-allowlist evidence (§4.7), not something to guess ahead
+# of a real Stage 2 run.
+
+style_keywords:
+  - beer
+  - lager
+  - strong beer
+  - witbier
+  - wheat beer
+  - stout beer
+  - ale
+  - ipa
+  - indian pale ale
+  - pilsner
+  - porter
+
+brand_names:
+  # Confirmed against actual KSBCL data during the master architecture's
+  # ground-truth inspection (§6).
+  - Kingfisher
+  - Royal Challenge
+  - Haywards 5000
+  - Knock Out
+  - Budweiser
+  - Hoegaarden
+  - Simba
+  - Tuborg
+  - Carlsberg
+  - Witlinger
+  - Bira 91
+  # Plausible, low-cost import-brand additions — not confirmed present
+  # in the real KSBCL PDF, added anyway per §6/§8's explicit reasoning:
+  # being wrong about them costs nothing (falls through to the None->Low
+  # supplier-corroboration net instead of matching directly).
+  - Corona
+  - Stella Artois
+  - Guinness
+  - Peroni
+
+exclusion_terms:
+  # Spirit-family terms (§4.2 rule 3, master architecture §6.1/§6.2).
+  - whisky
+  - rum
+  - brandy
+  - vodka
+  - gin
+  # Beer-adjacent non-alcoholic products (§8) — defends only the
+  # brand-only match path, never the style-keyword path (§4.2 rule 1).
+  - soda
+  - packaged drinking water
+  - drinking water

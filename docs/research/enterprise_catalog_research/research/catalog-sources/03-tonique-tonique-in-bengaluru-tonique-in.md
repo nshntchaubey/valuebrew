@@ -1,0 +1,23 @@
+# Catalog Extraction Source: Tonique (tonique.in / bengaluru.tonique.in)
+
+- Source URL: https://www.tonique.in
+- SKUs extracted: 0
+- Access notes: SUMMARY OF WHAT I ACTUALLY DID: Used WebFetch (an AI-summarizing fetch tool, not raw HTML retrieval) and a real Chromium browser (mcp__plugin_browser_browser) to load pages, plus DuckDuckGo HTML search results.
+
+=== Tonique (tonique.in, bengaluru.tonique.in) — VERIFIED via WebFetch, Medium confidence on existence, no SKUs found ===
+tonique.in loaded successfully. It describes itself as "Asia's largest liquor boutique," 1,500+ brands, with physical stores in Hyderabad, Bangalore, and Pune. It shows a "Beers" category icon/link but NO individual beer product listings, brand names, sizes, ABV, or prices anywhere on the homepage or on bengaluru.tonique.in (a location-specific microsite with only About/Gallery/Contact sections, phone 080-41303232, email itsupport@tonique.in). This is a landing/marketing page, not an e-commerce catalogue — I could not find a shop or product-listing URL anywhere in its navigation. CONCLUSION: Tonique appears to be a real physical liquor retail chain (Medium confidence — corroborated by an independent LBB.in article calling Tonique "Asia's biggest liquor store" in Shivajinagar, Bengaluru), but it has no publicly browsable online beer SKU catalogue that I could find. I did NOT fabricate any product data for it — zero SKUs are reported for this source, as instructed.
+
+=== Booozie.com — DEAD / PARKED DOMAIN (High confidence) ===
+Search results named "Booozie" ("India's first 10-minute liquor delivery service") at www.booozie.com/home/catalogue. I navigated an actual browser to https://www.booozie.com/home/catalogue and it redirected to a GoDaddy "domain parked" placeholder page (booozie.com is parked, for sale, courtesy of GoDaddy.com). This site is NOT currently operating. No product data exists to extract.
+
+=== Talli Drinks (tallidrinks.com) — VERIFIED via WebFetch + browser, but service area is Mumbai/Thane, NOT Bangalore ===
+Found via DuckDuckGo search for "Bangalore beer home delivery online." IMPORTANT CAVEAT: the site's own page title (read directly via browser) is "Kingfisher Strong Beer Price ₹190 | 8% ABV | Buy Online Mumbai & Thane | Talli Drinks" — i.e., this retailer explicitly serves Mumbai & Thane, not Bangalore/Karnataka. I'm reporting its SKUs anyway since the user asked to report "any other prominent... liquor delivery site discovered," but flagging clearly that it is NOT a Karnataka source. Reported below under a separate source entry.
+
+=== Beer Basket (beerbasket.in) — VERIFIED via browser; URL claims "Bengaluru" but footer explicitly EXCLUDES Karnataka ===
+Found via DuckDuckGo search "Bangalore beer home delivery online liquor." The site has a marketing landing page at https://beerbasket.in/alcohol-home-delivery-in-bengaluru/ mentioning "Beer, Whiskey, Wine... Home Delivery in Bengaluru in under 60 minutes." However, when I navigated a real browser to actual product pages (beerbasket.in/product/corona-extra/ and /product/tuborg-strong/) and read the page content directly (not just WebFetch summary), the site-wide footer "DELIVERY DETAILS" section explicitly states: "DELIVERY IN TELANGANA, TAMIL NADU, KERALA, GURUGRAM, MAHARASHTRA, ODISHA & PUNJAB ONLY" — Karnataka/Bengaluru is NOT listed among actual delivery states, contradicting the marketing landing-page URL slug. This is a directly observed contradiction, High confidence that the /bengaluru/ landing page is likely stale/legacy SEO content and the service may not currently deliver there. Reported below as a source with this caveat prominent.
+
+Other candidates found via search but not usable: onlinealcohol.in (page loaded but had no individual product listings, only category nav — WebFetch returned empty/no extractable SKU data); stayrunners.com (24-hour alcohol delivery aggregator, not investigated further — low relevance); fooddy.in blog (an informational article, not a retailer, naming Swiggy/Zomato/Dunzo/Zepto as apps that carry alcohol delivery in Bangalore, but I did not fetch those apps' catalogues as they are not liquor-specific retail sites and would require app/login access).
+
+All prices/ABV/sizes below were read directly from live page content (via browser accessibility-tree extraction or WebFetch) — not guessed. Where a field wasn't visible on the page, I omitted it rather than inventing it.
+
+## Raw extracted SKUs (pre-dedupe)
