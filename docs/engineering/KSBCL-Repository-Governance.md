@@ -58,7 +58,7 @@
 
 **One sentence:** A field is populated only from what the source data actually and confirmably shows; where information is genuinely absent, the field is left null or unknown rather than guessed, defaulted, or inferred from a different, less direct signal.
 
-**Demonstrated in:** Stage 1 (§9's invariants — raw fields are never reinterpreted, no case size is ever assumed for a bare-volume row); Stage 3 (`pack_count`/`container_type` left null/unknown rather than guessed); Stage 4 (`item_status` grounded in confirmed source presence rather than a downstream, filtered signal that could make a still-published item look delisted).
+**Demonstrated in:** Stage 1 (§9's invariants — raw fields are never reinterpreted, no case size is ever assumed for a bare-volume row); Stage 3 (`pack_count`/`container_type` left null/unknown rather than guessed); Stage 4 (`item_status` grounded in `structured_rows.csv` presence — a confirmed source signal — rather than `normalized_rows.csv` presence, a downstream, filtered signal that could make a still-published item look delisted).
 
 **Prevents:** the pipeline asserting a real-world fact it cannot actually support, which then propagates as false certainty into every feature built on top of it.
 

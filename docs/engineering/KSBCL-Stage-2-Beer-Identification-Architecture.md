@@ -406,7 +406,7 @@ A `none`-tier row is already fully handled (§4.6/§4.2) — excluded, no gate, 
 
 **Stage 3 (Normalization)** consumes exactly the rows Stage 2 marked `included = true` — joining `structured_rows.csv` and `classification_audit.csv` on `item_code`, the same normalized-join pattern already established between Stage 1 and Stage 4's `item_code_canonical_map.csv`. Stage 3 must not assume anything about `matched_term` or `confidence_tier` beyond "this row is in scope" — no coupling between why a row was classified beer and how its name gets normalized.
 
-**Canonical products (Stage 4).** No direct relationship. Stage 4 only ever sees rows that passed both Stage 2's inclusion and Stage 3's normalization; Stage 2's confidence tier plays no role in canonical-identity matching.
+**Canonical products (Stage 4).** No direct relationship for identity resolution itself: Stage 4 only ever matches or creates a canonical product from rows that passed both Stage 2's inclusion and Stage 3's normalization, and Stage 2's confidence tier plays no role in that matching. Separately, Stage 4's `item_status` maintenance for already-mapped item_codes reads `structured_rows.csv` directly (`KSBCL-Stage-4-Canonical-Identity-Architecture.md` §2.1, §3.1) — a check against Stage 1's raw extracted output, not against `included = true` — so an item_code Stage 2 excludes from a given run does not, on that basis alone, get marked `DELISTED`.
 
 **GTIN / barcode search.** No relationship whatsoever. Stage 2 reserves nothing, hints at nothing, and should not be designed with barcode matching in mind at all.
 
