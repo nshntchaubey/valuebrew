@@ -38,6 +38,27 @@
 
 ---
 
+## KSBCL Pricing Pipeline
+
+An independent engineering workstream, not sequenced against the Engineering Documentation Flow above and not part of the Flutter app: a Python data pipeline that ingests KSBCL's monthly PDF price list, classifies which rows are beer, normalizes names and pack sizes, and resolves the result to a stable canonical product identity. Code and tests live in `tool/ksbcl_pricing_pipeline/`; real run output lives in `pricing_data/` (git-ignored — check that folder's own state before assuming its contents are on GitHub).
+
+**Reading order:**
+
+1. **KSBCL-Beer-Pricing-Pipeline-Architecture.md** — the master architecture: the four-stage pipeline, every artifact's field sketch, and the product decisions settled once at the top (Duty-Free exclusion, implementation language, the original auto-merge confidence bar). Read first.
+2. **KSBCL-Stage-1-Extraction-Contract.md** — raw PDF → `structured_rows.csv`. Frozen, implemented, tested.
+3. **KSBCL-Stage-2-Beer-Identification-Architecture.md** — beer/not-beer classification, the persistent known-terms ledger and review queue. Frozen, implemented, tested.
+4. **KSBCL-Stage-3-Normalization-Architecture.md** — name folding and pack-size/container extraction. Frozen, implemented, tested.
+5. **KSBCL-Stage-4-Canonical-Identity-Product-Discussion.md**, **-Settlement.md**, **-Product-Identity-Charter.md**, **-User-Mental-Model.md** — the product-design phase that preceded Stage 4's architecture, working through what "the same product" should mean before any mechanism was drafted.
+6. **KSBCL-Stage-4-Identity-Decision.md** — the two Product Decisions that came out of that phase (`supplier_code` excluded from canonical identity; multi-candidate ambiguity deferred to manual review, not auto-resolved), each recorded with rationale and accepted trade-off.
+7. **KSBCL-Stage-4-Canonical-Identity-Architecture.md** — Stage 4's architecture, built on the above. Revised twice; see its own status banner for what changed and why. Not yet implemented.
+8. **KSBCL-Stage-4-Review-Closure-Report.md** — the historical record of the adversarial review that produced Stage 4's architecture and the Identity Decisions: what was corrected, what was investigated and rejected, and why the review concluded.
+9. **KSBCL-Repository-Governance.md** — eleven conventions extracted from repeated practice across Stages 1–4, not a new policy — written for whoever drafts Stage 5.
+10. **KSBCL-Engineering-Process-Retrospective.md** — the blank-page-to-frozen workflow Stages 2–4 actually followed, extracted for Stage 5's author to reuse rather than rediscover by trial.
+
+**Status as of this index:** Stages 1–3 implemented and tested (182 tests, `tool/ksbcl_pricing_pipeline/`), run against a real June 2026 KSBCL price list. Stage 4 is architecture only, frozen in intent with two known-open freeze-review questions recorded in its own §13. Stage 5 (master catalogue construction) has not been designed.
+
+---
+
 ## Engineering Retrospective
 
 - **Engineering-Retrospective.md** — the closed engineering record for the canonical rebuild: architectural evolution, engineering principles demonstrated, decisions that proved correct or changed, mistakes the review process caught, review methodology, repository maturity, and guidance for future contributors. Distinct from the Architecture Reference above, which describes *what was built* — this document describes *how it was built*. Read once, kept as history; never updated to track new work.

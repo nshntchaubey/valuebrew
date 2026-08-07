@@ -44,6 +44,7 @@ engineering/
 ├── INDEX.md
 ├── CHANGELOG.md
 ├── Engineering-Planning-Roadmap.md
+├── KSBCL-*.md                    — independent pricing-pipeline workstream, see INDEX.md
 ├── implementation/
 │   ├── Flutter-Implementation-Architecture.md
 │   ├── Implementation-Bootstrap-Plan.md
@@ -53,6 +54,7 @@ engineering/
 ```
 
 - **`Engineering-Planning-Roadmap.md`** — sequences and prioritizes engineering work across the whole project; the starting point for everything else in this folder.
+- **`KSBCL-*.md`** — the KSBCL pricing pipeline: a separate, non-Flutter data-engineering workstream with its own architecture, product decisions, and governance model, indexed under "KSBCL Pricing Pipeline" in `INDEX.md`. Does not follow the Engineering Documentation Flow below, which describes the Flutter product engineering path only.
 - **`implementation/`** — the software architecture and build-planning documents: how the canon gets built, not what gets built.
 - **`specifications/`** — the Engineering Screen Specifications, one per screen, each a citation-only restatement of its canonical Screen Contract.
 - **`standards/`** — reserved for future engineering-wide standards (accessibility, telemetry, coding conventions) once ratified at the canonical layer; currently empty, consistent with the canon's own explicit deferral of these (Canonical Screen Specification Template, Sections 11–12).
