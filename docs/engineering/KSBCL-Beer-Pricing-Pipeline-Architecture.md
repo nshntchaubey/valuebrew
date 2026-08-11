@@ -208,6 +208,7 @@ Two artifacts, not one:
 | `ksbcl_item_code` | preserved exactly, **never modified** — the authoritative source-system key |
 | `canonical_product_id` | stable, internally-generated ID — the real SKU identity the app and `beer_master.csv` are keyed on |
 | `supplier_name`, `supplier_code` | |
+| `normalized_name_key`, `pack_size_ml`, `pack_count`, `container_type` | the matching key, persisted once at first mapping and never recomputed — hardened by Stage 4's own architecture, `KSBCL-Stage-4-Canonical-Identity-Architecture.md` §3.1, which is authoritative for this field's exact semantics |
 | `match_confidence` | `deterministic_high` (auto-merged on an exact key match, §4.4 below) \| `manual_confirmed` (a human reviewed a flagged suggestion and confirmed the link) \| `unreviewed` (brand-new canonical product, nothing to confirm yet) |
 | `matched_rule` | `exact_key_match` \| `manual_review` \| `new_canonical` |
 | `item_status` | `LIVE` \| `DELISTED` — at the *item-code* level, independent of the canonical product's own `status` (a canonical product can stay `LIVE` via one item code while another mapped to it goes `DELISTED`) |

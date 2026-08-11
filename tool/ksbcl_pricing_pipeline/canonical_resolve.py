@@ -10,7 +10,7 @@ from collections import defaultdict
 from dataclasses import dataclass, replace
 from typing import Dict, List, Optional, Tuple
 
-from .canonical_key import MatchingKey, matching_key
+from .canonical_key import MatchingKey, matching_key, matching_key_from_map_row
 from .canonical_models import CanonicalMapRow, ReviewRow, Stage4RunSummary
 from .models import ProductRow
 from .normalize_models import NormalizedRow
@@ -127,19 +127,20 @@ def run_stage4_resolution(
     review_by_reason: Dict[str, int] = defaultdict(int)
     already_mapped_updated = 0
 
-    # key -> already-mapped candidates sharing that key, visible this run
-    # (either from the prior map, or attached/created earlier in this
-    # same run — §6's bootstrap note). Seeded only from item_codes this
-    # run can actually observe a key for (§2.1's row set).
+    # key -> already-mapped candidates sharing that key. Seeded from every
+    # already-mapped item_code's own *persisted* key (§3.1) — not from
+    # this run's normalized_rows.csv — so an item_code that has since
+    # been delisted (and is therefore absent from this run's data
+    # entirely) still participates as a match candidate for a later
+    # item_code representing the same real-world product. This is the
+    # mechanism that closes the cross-month identity gap: a candidate's
+    # key is historical evidence recorded once at first mapping, never
+    # re-derived from data that may no longer exist.
     key_index: Dict[MatchingKey, List[_KeyCandidate]] = defaultdict(list)
-    for product_row in product_rows:
-        item_code = product_row.item_code
-        if item_code not in normalized_by_code or item_code not in true_prior_map:
-            continue
-        key = matching_key(normalized_by_code[item_code])
+    for item_code, entry in true_prior_map.items():
+        key = matching_key_from_map_row(entry)
         if key is None:
             continue
-        entry = true_prior_map[item_code]
         key_index[key].append((item_code, entry.canonical_product_id, entry.supplier_code))
 
     # Resolution, per item_code, in structured_rows.csv's original row
@@ -173,6 +174,10 @@ def run_stage4_resolution(
                 canonical_product_id=new_id,
                 supplier_name=product_row.supplier_name,
                 supplier_code=product_row.supplier_code,
+                normalized_name_key=normalized_row.normalized_name_key,
+                pack_size_ml=normalized_row.pack_size_ml,
+                pack_count=normalized_row.pack_count,
+                container_type=normalized_row.container_type,
                 match_confidence="unreviewed",
                 matched_rule="new_canonical",
                 item_status="LIVE",
@@ -190,6 +195,10 @@ def run_stage4_resolution(
                     canonical_product_id=target_cid,
                     supplier_name=product_row.supplier_name,
                     supplier_code=product_row.supplier_code,
+                    normalized_name_key=normalized_row.normalized_name_key,
+                    pack_size_ml=normalized_row.pack_size_ml,
+                    pack_count=normalized_row.pack_count,
+                    container_type=normalized_row.container_type,
                     match_confidence="deterministic_high",
                     matched_rule="exact_key_match",
                     item_status="LIVE",
@@ -205,6 +214,10 @@ def run_stage4_resolution(
                     canonical_product_id=new_id,
                     supplier_name=product_row.supplier_name,
                     supplier_code=product_row.supplier_code,
+                    normalized_name_key=normalized_row.normalized_name_key,
+                    pack_size_ml=normalized_row.pack_size_ml,
+                    pack_count=normalized_row.pack_count,
+                    container_type=normalized_row.container_type,
                     match_confidence="unreviewed",
                     matched_rule="new_canonical",
                     item_status="LIVE",
@@ -259,6 +272,10 @@ def run_stage4_resolution(
                     canonical_product_id=target_cid,
                     supplier_name=product_row.supplier_name,
                     supplier_code=product_row.supplier_code,
+                    normalized_name_key=normalized_row.normalized_name_key,
+                    pack_size_ml=normalized_row.pack_size_ml,
+                    pack_count=normalized_row.pack_count,
+                    container_type=normalized_row.container_type,
                     match_confidence="deterministic_high",
                     matched_rule="exact_key_match",
                     item_status="LIVE",
@@ -273,12 +290,26 @@ def run_stage4_resolution(
                     canonical_product_id=new_id,
                     supplier_name=product_row.supplier_name,
                     supplier_code=product_row.supplier_code,
+                    normalized_name_key=normalized_row.normalized_name_key,
+                    pack_size_ml=normalized_row.pack_size_ml,
+                    pack_count=normalized_row.pack_count,
+                    container_type=normalized_row.container_type,
                     match_confidence="unreviewed",
                     matched_rule="new_canonical",
                     item_status="LIVE",
                     first_seen_run_month=run_month,
                     last_seen_run_month=run_month,
                 )
+                # Delisted, same-supplier candidates correctly reach this
+                # branch once key_index includes them (see the seeding
+                # comment above) — their price/effective_date can never be
+                # verified (structured_by_code has no row for a delisted
+                # item_code, so `other` above is always None for them),
+                # so they always fall through to possible_supersession
+                # rather than auto-attaching. This is 2b's own pre-existing
+                # rule applied to a case it wasn't previously reachable
+                # for, not a new rule — price is deliberately never
+                # persisted on the map, so it can never be fabricated here.
                 review_rows.append(
                     ReviewRow(
                         run_month=run_month,

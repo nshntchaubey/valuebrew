@@ -9,6 +9,7 @@ dataclass + `to_csv_row`/`to_json_dict` conventions exactly.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal
 from typing import Dict, Optional
 
 
@@ -18,6 +19,17 @@ class CanonicalMapRow:
     canonical_product_id: str
     supplier_name: str
     supplier_code: str
+    # Matching-key fields, written once at first mapping and never
+    # recomputed thereafter — intentionally immutable historical evidence
+    # for the identity decision recorded in match_confidence/matched_rule
+    # below, not a live cache of Stage 3's current output. No
+    # normalization_rule_version accompanies them by design: their
+    # correctness is "what actually justified this decision when it was
+    # made," not "what today's normalization rules would produce."
+    normalized_name_key: str
+    pack_size_ml: Optional[Decimal]
+    pack_count: Optional[int]
+    container_type: str
     match_confidence: str  # "deterministic_high" | "manual_confirmed" | "unreviewed"
     matched_rule: str  # "exact_key_match" | "manual_review" | "new_canonical"
     item_status: str  # "LIVE" | "DELISTED"
@@ -25,7 +37,9 @@ class CanonicalMapRow:
     last_seen_run_month: str
 
     def to_csv_row(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        d["pack_size_ml"] = str(self.pack_size_ml) if self.pack_size_ml is not None else None
+        return d
 
 
 CANONICAL_MAP_FIELDS = [
@@ -33,6 +47,10 @@ CANONICAL_MAP_FIELDS = [
     "canonical_product_id",
     "supplier_name",
     "supplier_code",
+    "normalized_name_key",
+    "pack_size_ml",
+    "pack_count",
+    "container_type",
     "match_confidence",
     "matched_rule",
     "item_status",

@@ -72,6 +72,10 @@ def test_full_bootstrap_run_writes_canonical_map_and_summary(tmp_path):
     assert len(rows) == 2
     # Different suppliers, same key -> one canonical product (§6, 2a).
     assert rows[0]["canonical_product_id"] == rows[1]["canonical_product_id"]
+    # The persisted matching-key fields are written to the real CSV.
+    assert rows[0]["normalized_name_key"] == "kingfisher strong beer 650ml"
+    assert rows[0]["pack_size_ml"] == "650"
+    assert rows[0]["container_type"] == "bottle"
 
     summary_path = config.output_root / "runs" / config.run_month / "canonical_run_summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
@@ -155,3 +159,31 @@ def test_rerun_same_month_does_not_lose_review_rows(tmp_path):
         second_review_rows = list(csv.DictReader(f))
 
     assert second_review_rows == first_review_rows
+
+
+def test_delisted_then_reappears_across_three_real_runs(tmp_path):
+    """End-to-end (CLI-level) version of the cross-month identity fix:
+    item 1001 is introduced, delisted the next month, and a differently-
+    supplied successor reappears the month after -- it must attach to
+    1001's original canonical_product_id, via the real on-disk CSV."""
+    config_june = _config(tmp_path, run_month="2026-06")
+    _write_inputs(config_june.output_root, "2026-06", [_product_row("1001", "0210")], [_normalized_row("1001")])
+    assert run(config_june) == 0
+
+    config_july = _config(tmp_path, run_month="2026-07")
+    _write_inputs(config_july.output_root, "2026-07", [_product_row("9999", "0999")], [_normalized_row("9999")])
+    assert run(config_july) == 0
+
+    canonical_map_path = config_june.output_root / "item_code_canonical_map.csv"
+    with canonical_map_path.open(newline="", encoding="utf-8") as f:
+        rows_after_july = {r["ksbcl_item_code"]: r for r in csv.DictReader(f)}
+    assert rows_after_july["1001"]["item_status"] == "DELISTED"
+
+    config_august = _config(tmp_path, run_month="2026-08")
+    _write_inputs(config_august.output_root, "2026-08", [_product_row("2001", "0217")], [_normalized_row("2001")])
+    assert run(config_august) == 0
+
+    with canonical_map_path.open(newline="", encoding="utf-8") as f:
+        rows_after_august = {r["ksbcl_item_code"]: r for r in csv.DictReader(f)}
+    assert rows_after_august["2001"]["canonical_product_id"] == rows_after_august["1001"]["canonical_product_id"]
+    assert rows_after_august["2001"]["matched_rule"] == "exact_key_match"
