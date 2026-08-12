@@ -51,3 +51,7 @@ app.*.map.json
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# One-off status export for sharing outside this repo — not engineering
+# documentation, deliberately not source-controlled.
+/docs/PROJECT-BRIEFING-FOR-CHATGPT.md
