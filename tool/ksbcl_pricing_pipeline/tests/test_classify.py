@@ -8,7 +8,7 @@ from tool.ksbcl_pricing_pipeline.models import ProductRow
 CONFIG = ClassificationConfig(
     style_keywords=["beer", "lager", "strong beer", "witbier"],
     brand_names=["Kingfisher", "Budweiser", "Corona"],
-    exclusion_terms=["whisky", "rum", "gin"],
+    exclusion_terms=["whisky", "whiskey", "rum", "gin"],
     config_version="abc123def456",
 )
 
@@ -108,14 +108,26 @@ def test_is_duty_free_populated_independently_of_classification():
     assert result.is_duty_free is True
 
 
-def test_whisky_whiskey_spelling_gap_is_not_silently_fixed():
-    # American spelling "Whiskey" is not in the configured exclusion_terms
-    # (only "whisky" is) — this is a documented, permanent configuration
-    # gap (architecture §16/§17), not something the matching mechanism
-    # should paper over.
-    result = _classify("Budweiser Magnum Double Barrel Blended American Whiskey 750ML")
-    assert result.confidence_tier == "medium"
-    assert result.exclusion_term_matched is None
+def test_confirm_then_allowlist_closes_the_whiskey_spelling_gap():
+    # Real product, real gap, real fix — the confirm-then-allowlist
+    # policy (architecture §4.7) in action, not a hypothetical.
+    #
+    # item_code 1390101301, "Budweiser Magnum Double Barrel Blended
+    # American Whiskey 750MLx12Btls(0139)", is a genuine row in the
+    # 2026-06 KSBCL price list. Before this fix, exclusion_terms
+    # contained only the British spelling "whisky" — the American
+    # spelling "Whiskey" matched nothing, so this row was classified
+    # Medium (brand-only match on "Budweiser") with no exclusion term
+    # firing, and would have auto-included as beer. That was confirmed,
+    # not assumed: independently re-verified against the real
+    # structured_rows.csv before "whiskey" was added to the config
+    # (architecture §16, finding 2; §17's disposition routed it to
+    # configuration). This test locks in the corrected behavior now
+    # that the confirming evidence has actually been acted on.
+    result = _classify("Budweiser Magnum Double Barrel Blended American Whiskey 750MLx12Btls(0139)")
+    assert result.confidence_tier == "low"
+    assert result.exclusion_term_matched == "whiskey"
+    assert result.included is False
 
 
 def test_root_beer_style_keyword_match_is_the_documented_unmitigated_gap():

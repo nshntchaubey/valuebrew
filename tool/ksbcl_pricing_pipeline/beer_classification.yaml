@@ -5,12 +5,10 @@
 # than one entry matches the same row (§5).
 #
 # Every entry below is taken directly from the architecture document's
-# own cited seed lists (§4.2, §5, §6, §8) — nothing here is invented.
-# Confirmed-recurring real-data variants (e.g. "Whiskey", plural
-# "Beers") are deliberately NOT pre-added: per §16/§17 of the
-# architecture, that is configuration-curation work gated on real
-# confirm-then-allowlist evidence (§4.7), not something to guess ahead
-# of a real Stage 2 run.
+# own cited seed lists (§4.2, §5, §6, §8) — nothing here is invented,
+# except where a later entry's own comment says otherwise, citing the
+# real-data confirmation that justified adding it (§4.7's
+# confirm-then-allowlist policy).
 
 style_keywords:
   - beer
@@ -51,6 +49,15 @@ brand_names:
 exclusion_terms:
   # Spirit-family terms (§4.2 rule 3, master architecture §6.1/§6.2).
   - whisky
+  # American spelling, confirmed via §4.7's confirm-then-allowlist
+  # policy: item_code 1390101301, "Budweiser Magnum Double Barrel
+  # Blended American Whiskey 750MLx12Btls(0139)", real row in the
+  # 2026-06 run, brand-only matched ("Budweiser") with no exclusion
+  # term firing — a real, confirmed false positive, not a guess ahead
+  # of evidence. The plural "Whiskies" (11 real rows, none combined
+  # with a brand_names entry) is deliberately NOT added alongside it —
+  # no confirmed misclassification exists for that form yet.
+  - whiskey
   - rum
   - brandy
   - vodka
