@@ -1,0 +1,14 @@
+beer_key: "london_pilsner_premium_strong"
+canonical_product_ids:
+  - "CP0000009"
+  - "CP0000099"
+  - "CP0000100"
+  - "CP0000193"
+  - "CP0000196"
+name: "London Pilsner Premium Strong Beer"
+brewery: "United Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

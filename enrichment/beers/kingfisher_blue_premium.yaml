@@ -1,0 +1,16 @@
+beer_key: "kingfisher_blue_premium"
+canonical_product_ids:
+  - "CP0000023"
+  - "CP0000024"
+  - "CP0000025"
+  - "CP0000026"
+  - "CP0000725"
+  - "CP0000726"
+  - "CP0000727"
+name: "Kingfisher Blue Premium"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

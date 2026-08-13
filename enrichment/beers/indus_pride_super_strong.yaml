@@ -1,0 +1,13 @@
+beer_key: "indus_pride_super_strong"
+canonical_product_ids:
+  - "CP0000475"
+  - "CP0000476"
+  - "CP0000478"
+  - "CP0000479"
+name: "Indus Pride Super Strong Beer"
+brewery: "AB InBev India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

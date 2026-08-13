@@ -1,0 +1,15 @@
+beer_key: "ub_export_premium_lager"
+canonical_product_ids:
+  - "CP0000007"
+  - "CP0000018"
+  - "CP0000019"
+  - "CP0000092"
+  - "CP0000093"
+  - "CP0000170"
+name: "UB Export Premium Lager"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

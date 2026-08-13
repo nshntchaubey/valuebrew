@@ -1,0 +1,13 @@
+beer_key: "kingfisher_ultra_max"
+canonical_product_ids:
+  - "CP0000166"
+  - "CP0000167"
+  - "CP0000168"
+  - "CP0000169"
+name: "Kingfisher Ultra Max Premium Strong Beer"
+brewery: "United Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

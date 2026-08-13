@@ -1,0 +1,25 @@
+beer_key: "heineken_silver"
+canonical_product_ids:
+  - "CP0000177"
+  - "CP0000178"
+  - "CP0000179"
+  - "CP0000190"
+  - "CP0000195"
+  - "CP0000803"
+name: "Heineken Silver 100% Malt Lager Beer"
+brewery: "United Breweries"
+style: "lager"
+abv:
+  value: 4.0
+  source_type: "manufacturer"
+  source_name: "Heineken India official site, https://www.heineken.com/in/en/our-products/heineken-silver, states 'The alcohol volume of Heineken Silver is 4%', checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 35.0
+  source_type: "manufacturer"
+  source_name: "Heineken India official site, https://www.heineken.com/in/en/our-products/heineken-silver, states 'ENERGY 146 kJ / 35 kcal' per 100ml, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

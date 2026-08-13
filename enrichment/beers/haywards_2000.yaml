@@ -1,0 +1,11 @@
+beer_key: "haywards_2000"
+canonical_product_ids:
+  - "CP0000124"
+  - "CP0000125"
+name: "Haywards 2000 H2K Premium Beer"
+brewery: "AB InBev India"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

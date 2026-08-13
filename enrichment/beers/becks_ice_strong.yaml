@@ -1,0 +1,12 @@
+beer_key: "becks_ice_strong"
+canonical_product_ids:
+  - "CP0000654"
+  - "CP0000655"
+  - "CP0000656"
+name: "Becks Ice Strong Beer"
+brewery: "AB InBev India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

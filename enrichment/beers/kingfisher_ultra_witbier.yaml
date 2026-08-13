@@ -1,0 +1,12 @@
+beer_key: "kingfisher_ultra_witbier"
+canonical_product_ids:
+  - "CP0000172"
+  - "CP0000173"
+  - "CP0000174"
+name: "Kingfisher Ultra Witbier"
+brewery: "United Breweries"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

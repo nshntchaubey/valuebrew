@@ -1,0 +1,10 @@
+beer_key: "carlsberg_miracle_of_2005"
+canonical_product_ids:
+  - "CP0000073"
+name: "Carlsberg Limited Edition Beer Miracle of 2005"
+brewery: "Carlsberg India"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,10 @@
+beer_key: "tuborg_super_premium_danish_strong"
+canonical_product_ids:
+  - "CP0000075"
+name: "Tuborg Super Premium Danish Beer Strong"
+brewery: "Carlsberg India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

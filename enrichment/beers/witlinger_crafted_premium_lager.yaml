@@ -1,0 +1,10 @@
+beer_key: "witlinger_crafted_premium_lager"
+canonical_product_ids:
+  - "CP0000080"
+name: "Witlinger Crafted Premium Lager"
+brewery: "Witlinger"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

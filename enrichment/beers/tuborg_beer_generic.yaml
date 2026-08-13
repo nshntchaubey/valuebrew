@@ -1,0 +1,10 @@
+beer_key: "tuborg_beer_generic"
+canonical_product_ids:
+  - "CP0000780"
+name: "Tuborg Beer"
+brewery: "Carlsberg India"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

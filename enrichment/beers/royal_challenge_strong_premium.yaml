@@ -1,0 +1,20 @@
+beer_key: "royal_challenge_strong_premium"
+canonical_product_ids:
+  - "CP0000148"
+  - "CP0000212"
+  - "CP0000213"
+  - "CP0000228"
+  - "CP0000247"
+  - "CP0000472"
+  - "CP0000473"
+  - "CP0000477"
+  - "CP0000819"
+  - "CP0000135"
+  - "CP0000590"
+name: "Royal Challenge Strong Premium Beer"
+brewery: "AB InBev India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,25 @@
+beer_key: "corona_extra"
+canonical_product_ids:
+  - "CP0000569"
+  - "CP0000570"
+  - "CP0000571"
+  - "CP0000854"
+  - "CP0000862"
+  - "CP0000864"
+name: "Corona Extra"
+brewery: "AB InBev India"
+style: "lager"
+abv:
+  value: 4.6
+  source_type: "manufacturer"
+  source_name: "Corona USA official brand site, https://www.coronausa.com/pages/corona-extra, states 'Per 12 fl. oz. serving of average analysis: Alcohol by volume: 4.6%', checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 41.7
+  source_type: "manufacturer"
+  source_name: "Corona USA official brand site, https://www.coronausa.com/pages/corona-extra, states 'Per 12 fl. oz. serving... Calories 148' -- converted 148 kcal / 354.88 ml x 100 = 41.7 kcal/100ml, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

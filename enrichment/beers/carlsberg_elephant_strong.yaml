@@ -1,0 +1,26 @@
+beer_key: "carlsberg_elephant_strong"
+canonical_product_ids:
+  - "CP0000054"
+  - "CP0000064"
+  - "CP0000731"
+  - "CP0000777"
+  - "CP0000062"
+  - "CP0000083"
+  - "CP0000677"
+name: "Carlsberg Elephant Strong Super Premium Beer"
+brewery: "Carlsberg India"
+style: "strong_lager"
+abv:
+  value: 7.2
+  source_type: "manufacturer"
+  source_name: "Carlsberg Group official brand database, https://www.carlsberggroup.com/products/carlsberg/carlsberg-elephant/, states ABV: 7.2%, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 58.0
+  source_type: "manufacturer"
+  source_name: "Carlsberg Group official brand database, https://www.carlsberggroup.com/products/carlsberg/carlsberg-elephant/, states Nutritional Info Per 100ml serving: Calories 58 kcal, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

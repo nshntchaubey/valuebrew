@@ -1,0 +1,14 @@
+beer_key: "kingfisher_ultra_lager"
+canonical_product_ids:
+  - "CP0000158"
+  - "CP0000159"
+  - "CP0000164"
+  - "CP0000165"
+  - "CP0000715"
+name: "Kingfisher Ultra Lager Beer"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

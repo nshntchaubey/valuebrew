@@ -1,0 +1,19 @@
+beer_key: "kingfisher_super_smooth_strong_premium"
+canonical_product_ids:
+  - "CP0000095"
+  - "CP0000096"
+  - "CP0000097"
+  - "CP0000098"
+  - "CP0000183"
+  - "CP0000184"
+  - "CP0000185"
+  - "CP0000186"
+  - "CP0000187"
+  - "CP0000188"
+name: "Kingfisher Super Smooth Strong Premium Beer"
+brewery: "United Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,14 @@
+beer_key: "bullet_super_strong"
+canonical_product_ids:
+  - "CP0000008"
+  - "CP0000010"
+  - "CP0000084"
+  - "CP0000085"
+  - "CP0000200"
+name: "Bullet Super Strong Beer"
+brewery: "United Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,41 @@
+beer_key: "budweiser_king_of_beers"
+canonical_product_ids:
+  - "CP0000229"
+  - "CP0000251"
+  - "CP0000257"
+  - "CP0000469"
+  - "CP0000470"
+  - "CP0000471"
+  - "CP0000572"
+  - "CP0000573"
+  - "CP0000576"
+  - "CP0000584"
+  - "CP0000689"
+  - "CP0000693"
+  - "CP0000697"
+  - "CP0000698"
+  - "CP0000770"
+  - "CP0000771"
+  - "CP0000775"
+  - "CP0000865"
+  - "CP0000231"
+  - "CP0000232"
+  - "CP0000695"
+  - "CP0000696"
+name: "Budweiser King of Beers"
+brewery: "AB InBev India"
+style: "lager"
+abv:
+  value: 5.0
+  source_type: "manufacturer"
+  source_name: "Budweiser official brand site, https://www.budweiser.com/company/products/budweiser, states ALCOHOL: 5.0 By volume, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 40.9
+  source_type: "manufacturer"
+  source_name: "Budweiser official brand site, https://www.budweiser.com/company/products/budweiser, states CALORIES: 145 Per 12oz -- converted 145 kcal / 354.88 ml x 100 = 40.9 kcal/100ml, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

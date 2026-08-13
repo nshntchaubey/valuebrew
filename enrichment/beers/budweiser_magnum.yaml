@@ -1,0 +1,27 @@
+beer_key: "budweiser_magnum"
+canonical_product_ids:
+  - "CP0000233"
+  - "CP0000252"
+  - "CP0000466"
+  - "CP0000467"
+  - "CP0000468"
+  - "CP0000574"
+  - "CP0000575"
+  - "CP0000577"
+  - "CP0000585"
+  - "CP0000692"
+  - "CP0000694"
+  - "CP0000772"
+  - "CP0000773"
+  - "CP0000774"
+  - "CP0000230"
+  - "CP0000240"
+  - "CP0000690"
+  - "CP0000691"
+name: "Budweiser Magnum Strong Beer"
+brewery: "AB InBev India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

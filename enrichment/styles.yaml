@@ -1,0 +1,24 @@
+# enrichment/styles.yaml — the full style vocabulary (Beer Knowledge Base
+# Architecture Part 4). One flat file, not one-per-style. Deliberately kept
+# small — check whether an existing style genuinely fits a beer before
+# adding a new one (Catalog Enrichment Playbook Part 6).
+#
+# Minimal starting seed: the two entries below are not new content — they
+# are the exact style_key/name/description already used as worked examples
+# across this session's own frozen documents (Catalog Contract 1.0 Part 10,
+# Catalog Implementation Architecture Part 2, the current placeholder
+# catalog/catalog.json). Everything else the real catalog needs is for the
+# founder to add during real Style Assignment work (Catalog Enrichment
+# Playbook Part 6) — this generator invents no further style content.
+#
+# No typical_abv_range field: proposed in Beer Entity Specification 1.0,
+# explicitly not adopted into the frozen v1 contract (Beer Knowledge Base
+# Architecture Part 4, Catalog Contract 1.0 Part 3) — not added here either.
+
+- style_key: lager
+  name: "Lager"
+  description: "Crisp, mild bitterness"
+
+- style_key: strong_lager
+  name: "Strong Lager"
+  description: "Higher-ABV lager, typically 7-8% — a distinct peer group from standard lager."

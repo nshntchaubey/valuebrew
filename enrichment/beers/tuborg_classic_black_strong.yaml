@@ -1,0 +1,20 @@
+beer_key: "tuborg_classic_black_strong"
+canonical_product_ids:
+  - "CP0000061"
+  - "CP0000067"
+  - "CP0000069"
+  - "CP0000071"
+  - "CP0000074"
+  - "CP0000681"
+name: "Tuborg Classic Black Strong Beer"
+brewery: "Carlsberg India"
+style: "strong_lager"
+abv:
+  value: 6.7
+  source_type: "manufacturer"
+  source_name: "Carlsberg Group official brand database, https://www.carlsberggroup.com/products/tuborg/tuborg-classic-with-scotch-malts/, states ABV: 6.7% (India-market product, confirmed via carlsbergindia.com's own matching pack-size list: 330ml bottles, 500ml cans, 650ml bottles), checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml: unknown
+is_craft: false
+images: []

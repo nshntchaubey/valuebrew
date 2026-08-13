@@ -1,0 +1,10 @@
+beer_key: "tuborg_booster_strong"
+canonical_product_ids:
+  - "CP0000737"
+name: "Tuborg Booster Strong Premium Beer"
+brewery: "Carlsberg India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

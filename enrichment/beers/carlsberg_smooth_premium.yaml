@@ -1,0 +1,21 @@
+beer_key: "carlsberg_smooth_premium"
+canonical_product_ids:
+  - "CP0000055"
+  - "CP0000056"
+  - "CP0000068"
+  - "CP0000072"
+  - "CP0000734"
+  - "CP0000778"
+  - "CP0000779"
+name: "Carlsberg Smooth Premium Beer"
+brewery: "Carlsberg India"
+style: "lager"
+abv:
+  value: 4.5
+  source_type: "manufacturer"
+  source_name: "Carlsberg Group official brand database, https://www.carlsberggroup.com/products/carlsberg/carlsberg-smooth-lager/, states ABV: 4.5% (page text: 'we know our friends in India prefer something a bit smoother'), checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml: unknown
+is_craft: false
+images: []

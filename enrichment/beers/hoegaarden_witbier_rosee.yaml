@@ -1,0 +1,12 @@
+beer_key: "hoegaarden_witbier_rosee"
+canonical_product_ids:
+  - "CP0000236"
+  - "CP0000237"
+  - "CP0000254"
+name: "Hoegaarden Witbier Rosee"
+brewery: "AB InBev India"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

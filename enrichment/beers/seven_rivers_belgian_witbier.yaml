@@ -1,0 +1,13 @@
+beer_key: "seven_rivers_belgian_witbier"
+canonical_product_ids:
+  - "CP0000241"
+  - "CP0000242"
+  - "CP0000243"
+  - "CP0000578"
+name: "Seven Rivers Belgian Witbier"
+brewery: "AB InBev India"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

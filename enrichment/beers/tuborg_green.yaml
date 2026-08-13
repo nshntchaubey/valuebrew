@@ -1,0 +1,29 @@
+beer_key: "tuborg_green"
+canonical_product_ids:
+  - "CP0000059"
+  - "CP0000060"
+  - "CP0000065"
+  - "CP0000732"
+  - "CP0000678"
+  - "CP0000679"
+  - "CP0000070"
+  - "CP0000076"
+  - "CP0000077"
+  - "CP0000735"
+name: "Tuborg Green Beer"
+brewery: "Carlsberg India"
+style: "lager"
+abv:
+  value: 4.6
+  source_type: "manufacturer"
+  source_name: "Tuborg official brand site, https://www.tuborg.com/en/beers/tuborg-green/, states ALCOHOL: 4,6%, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 37.0
+  source_type: "manufacturer"
+  source_name: "Tuborg official brand site, https://www.tuborg.com/en/beers/tuborg-green/, states Pr 100 ml: Calories 37 kcal/155kJ, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

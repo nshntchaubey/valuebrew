@@ -1,0 +1,15 @@
+beer_key: "black_fort_super_strong"
+canonical_product_ids:
+  - "CP0000275"
+  - "CP0000276"
+  - "CP0000277"
+  - "CP0000319"
+  - "CP0000704"
+  - "CP0000701"
+name: "Black Fort Super Strong Beer"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,12 @@
+beer_key: "woodpecker_draught_wheat"
+canonical_product_ids:
+  - "CP0000274"
+  - "CP0000313"
+  - "CP0000329"
+name: "Woodpecker Draught Beer Natural Wheat"
+brewery: "Som Distilleries and Breweries"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

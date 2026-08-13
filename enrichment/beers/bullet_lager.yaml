@@ -1,0 +1,10 @@
+beer_key: "bullet_lager"
+canonical_product_ids:
+  - "CP0000094"
+name: "Bullet Lager Beer"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

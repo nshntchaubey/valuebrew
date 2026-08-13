@@ -1,0 +1,12 @@
+beer_key: "amstel_grande"
+canonical_product_ids:
+  - "CP0000180"
+  - "CP0000181"
+  - "CP0000182"
+name: "Amstel Bier Grande Supreme Beer"
+brewery: "United Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

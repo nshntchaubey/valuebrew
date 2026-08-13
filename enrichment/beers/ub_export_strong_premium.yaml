@@ -1,0 +1,15 @@
+beer_key: "ub_export_strong_premium"
+canonical_product_ids:
+  - "CP0000006"
+  - "CP0000016"
+  - "CP0000017"
+  - "CP0000090"
+  - "CP0000091"
+  - "CP0000171"
+name: "UB Export Strong Premium"
+brewery: "United Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

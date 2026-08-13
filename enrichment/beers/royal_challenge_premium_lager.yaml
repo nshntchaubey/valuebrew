@@ -1,0 +1,17 @@
+beer_key: "royal_challenge_premium_lager"
+canonical_product_ids:
+  - "CP0000151"
+  - "CP0000209"
+  - "CP0000246"
+  - "CP0000462"
+  - "CP0000482"
+  - "CP0000756"
+  - "CP0000120"
+  - "CP0000123"
+name: "Royal Challenge Premium Lager Beer"
+brewery: "AB InBev India"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

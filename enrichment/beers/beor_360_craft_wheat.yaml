@@ -1,0 +1,10 @@
+beer_key: "beor_360_craft_wheat"
+canonical_product_ids:
+  - "CP0000028"
+name: "Beor 360 Craft Wheat Beer"
+brewery: "Beor 360"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

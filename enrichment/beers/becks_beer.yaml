@@ -1,0 +1,13 @@
+beer_key: "becks_beer"
+canonical_product_ids:
+  - "CP0000922"
+  - "CP0000929"
+  - "CP0000967"
+  - "CP0000971"
+name: "Becks Beer"
+brewery: "AB InBev India"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,23 @@
+beer_key: "tuborg_strong_premium"
+canonical_product_ids:
+  - "CP0000052"
+  - "CP0000053"
+  - "CP0000057"
+  - "CP0000058"
+  - "CP0000063"
+  - "CP0000066"
+  - "CP0000733"
+  - "CP0000676"
+  - "CP0000680"
+name: "Tuborg Strong Premium Beer"
+brewery: "Carlsberg India"
+style: "strong_lager"
+abv:
+  value: 6.1
+  source_type: "manufacturer"
+  source_name: "Carlsberg Group official brand database, https://www.carlsberggroup.com/products/tuborg/tuborg-strong/, states ABV: 6.1% (page text confirms the May 2010 India launch matching this product), checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml: unknown
+is_craft: false
+images: []

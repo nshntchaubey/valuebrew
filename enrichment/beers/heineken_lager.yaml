@@ -1,0 +1,31 @@
+beer_key: "heineken_lager"
+canonical_product_ids:
+  - "CP0000175"
+  - "CP0000176"
+  - "CP0000189"
+  - "CP0000194"
+  - "CP0000716"
+  - "CP0000802"
+  - "CP0000876"
+  - "CP0000877"
+  - "CP0000878"
+  - "CP0000980"
+  - "CP0000713"
+  - "CP0000714"
+name: "Heineken Lager Beer"
+brewery: "United Breweries"
+style: "lager"
+abv:
+  value: 5.0
+  source_type: "manufacturer"
+  source_name: "Heineken India official site, https://www.heineken.com/in/en/our-products/heineken-original, states 'The alcohol volume of Heineken pilsner is 5%', checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 42.0
+  source_type: "manufacturer"
+  source_name: "Heineken India official site, https://www.heineken.com/in/en/our-products/heineken-original, states 'ENERGY 176kJ / 42 kcal' per 100ml, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

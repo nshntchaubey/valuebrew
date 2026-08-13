@@ -1,0 +1,26 @@
+beer_key: "stella_artois"
+canonical_product_ids:
+  - "CP0000855"
+  - "CP0000926"
+  - "CP0000927"
+  - "CP0000963"
+  - "CP0000966"
+  - "CP0000997"
+  - "CP0001076"
+name: "Stella Artois Premium Lager Beer"
+brewery: "AB InBev India"
+style: "lager"
+abv:
+  value: 4.6
+  source_type: "manufacturer"
+  source_name: "Stella Artois official brand site, https://www.stellaartois.com/, states ALCOHOL: 4.6% ABV, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 39.0
+  source_type: "manufacturer"
+  source_name: "Stella Artois official brand site, https://www.stellaartois.com/, states CALORIES: 39kcal, 'All nutritional info per 100ml', checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

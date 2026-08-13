@@ -1,0 +1,15 @@
+beer_key: "black_fort_premium_lager"
+canonical_product_ids:
+  - "CP0000267"
+  - "CP0000268"
+  - "CP0000273"
+  - "CP0000310"
+  - "CP0000308"
+  - "CP0000309"
+name: "Black Fort Premium Lager Beer"
+brewery: "Som Distilleries and Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

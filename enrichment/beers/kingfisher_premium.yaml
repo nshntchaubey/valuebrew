@@ -1,0 +1,12 @@
+beer_key: "kingfisher_premium"
+canonical_product_ids:
+  - "CP0000002"
+  - "CP0000003"
+  - "CP0000011"
+name: "Kingfisher Premium"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

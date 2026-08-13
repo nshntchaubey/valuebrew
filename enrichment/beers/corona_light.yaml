@@ -1,0 +1,20 @@
+beer_key: "corona_light"
+canonical_product_ids:
+  - "CP0000860"
+name: "Corona Light"
+brewery: "AB InBev India"
+style: "lager"
+abv:
+  value: 4.0
+  source_type: "manufacturer"
+  source_name: "Corona USA official brand site, https://www.coronausa.com/pages/corona-light, states 'Per 12 fl. oz. serving of average analysis: Alcohol by volume: 4.0%', checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+calories_per_100ml:
+  value: 27.9
+  source_type: "manufacturer"
+  source_name: "Corona USA official brand site, https://www.coronausa.com/pages/corona-light, states 'Calories 99' per 12 fl. oz. serving -- converted 99 kcal / 354.88 ml x 100 = 27.9 kcal/100ml, checked 2026-08-13"
+  observed_at: 2026-08-13
+  observed_by: "founder"
+is_craft: false
+images: []

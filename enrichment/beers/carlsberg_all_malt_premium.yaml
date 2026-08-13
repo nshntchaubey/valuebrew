@@ -1,0 +1,15 @@
+beer_key: "carlsberg_all_malt_premium"
+canonical_product_ids:
+  - "CP0000736"
+  - "CP0000740"
+  - "CP0000781"
+  - "CP0000783"
+  - "CP0000682"
+  - "CP0000683"
+name: "Carlsberg All Malt Premium Beer"
+brewery: "Carlsberg India"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

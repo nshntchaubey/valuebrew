@@ -1,0 +1,14 @@
+beer_key: "tuborg_strong_beer"
+canonical_product_ids:
+  - "CP0000078"
+  - "CP0000738"
+  - "CP0000742"
+  - "CP0000686"
+  - "CP0000687"
+name: "Tuborg Strong Beer"
+brewery: "Carlsberg India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

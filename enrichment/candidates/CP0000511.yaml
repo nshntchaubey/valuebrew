@@ -1,0 +1,25 @@
+# Enrichment candidate — a raw draft, not a canonical Beer entity.
+# Generated from pricing_data/beer_master.csv by
+# generate_enrichment_candidates.py. Do not hand-edit the fields
+# above the divider; they are objectively known, pipeline-sourced
+# facts and will be overwritten the next time this generator runs.
+
+canonical_product_id: "CP0000511"
+item_name_raw: "Mount's 6000 Fine Strong Beer 330ML×24Btls(0220)"
+display_name: "Mount's 6000 Fine Strong Beer 330MLx24Btls"
+
+# --- Curated fields below are not known from pricing_data/ and must
+# --- be researched by hand (Catalog Enrichment Playbook Part 4).
+# --- Leave any field you cannot cite a real source for as null —
+# --- never guess (Catalog Enrichment Playbook Part 1/10).
+
+suggested_beer_key: null  # TODO — assign once you decide which real
+  # Beer this SKU belongs to (Catalog Enrichment Playbook Part 2, step
+  # 3). This generator never decides that for you — it may be the
+  # same beer_key as another candidate file at a different pack size.
+name: null      # TODO — cleaned display name
+brewery: null   # TODO
+style: null     # TODO — a style_key from enrichment/styles.yaml, or leave null
+abv: null       # TODO — {value, source_type, source_name, observed_at, observed_by}
+is_craft: null  # TODO
+images: []      # TODO
