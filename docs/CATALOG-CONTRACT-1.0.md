@@ -76,7 +76,7 @@ Confirmed directly from `lib/shared_domain/sku.dart`, the real, shipped class �
 | `size_ml` | integer | yes | **Pipeline-derived** — KSBCL `pack_size_ml` (Stage 3 structured extraction) |
 | `package_type` | enum string: `bottle` \| `can` \| `pint` | yes | **Pipeline-derived**, with a flagged incompatibility — see below |
 | `abv` | number (double) | yes | **Manually enriched** — no automated source exists (Catalog Builder Architecture §0.3, Catalog Specification 1.0's own ABV domain) |
-| `calories` | integer | yes | **Manually enriched** — same sourcing constraint as ABV, no KSBCL source exists |
+| `calories` | integer | yes | **Computed** at build time from the enrichment layer's manually-cited `calories_per_100ml` (a concentration, matching what manufacturer sources actually publish) and this Sku's own `size_ml` — same sourcing constraint as ABV one layer up, no KSBCL source exists |
 | `price` | number (double) | yes | **Pipeline-derived** — KSBCL `declared_price`/`mrp` via `beer_master.csv` (the Legal Price) |
 | `price_last_checked` | date string | yes | **Pipeline-derived** — KSBCL `effective_date` |
 | `price_source` | string | yes | **Pipeline-derived** — a fixed provenance label (e.g. `"karnataka_excise_mrp_2026"`), set by the Catalog Builder, not per-row from `beer_master.csv` directly |

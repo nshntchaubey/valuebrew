@@ -111,7 +111,7 @@ Not a ninth stage so much as Stages 1–8 run again, every month, against a new 
 | `Beer.isCraft` | none exists | **Manual observation** | — | — |
 | `Sku.sizeMl`, `packageType` | **Government** (KSBCL's structured `pack_size_ml`/`container_type`, Stage 3 output) | Manual correction only when `container_type=unknown` (confirmed 30% of 2026-06 rows) | — | — |
 | `Sku.abv` | none exists in KSBCL data at all (§0.3) | **Manufacturer** (a brewery's own published label/spec, manually observed and cited) | — | Future: Open Food Facts or another licensed open dataset, if ever adopted, always at a lower confidence tier than a manufacturer's own figure |
-| `Sku.calories` | none exists | **Manufacturer** (published per-100ml or per-serving figures, manually observed) | — | — |
+| `Sku.calories` | none exists | **Manufacturer** (published as a per-100ml concentration, manually observed and cited as `EnrichmentBeer.calories_per_100ml` — Beer Knowledge Base Architecture Part 3) — `Sku.calories`, the per-pack total, is then **Computed** at build time from that concentration and the SKU's own `size_ml`, never entered directly | — | — |
 | `Sku.price`, `priceLastChecked`, `priceSource` | **Government** (KSBCL declared MRP — the Legal Price, per the Beer Knowledge Model's own definition) | — | — | — |
 | `Sku.costPerLitre`, `costPerMlAlcohol`, `valueScore`, `valueVerdict` | — | — | **Computed** deterministically from Legal Price + Style Benchmark, exactly as the real, shipped `Sku` model already does | — |
 | `Style.name`, `description` | none exists | **Manual curation** | — | — |

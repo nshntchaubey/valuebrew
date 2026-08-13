@@ -19,7 +19,7 @@ So there are two kinds of fact in this catalog, and you need to know which one y
 Follow one real row through the whole system, start to finish.
 
 1. **It's a row in `beer_master.csv`.** Machine-produced. Has a price, a size, a `canonical_product_id`, nothing else useful to a person deciding whether to buy it.
-2. **You notice it's not enriched yet.** Either you're working through the file top to bottom, or `enrichment_report.py` told you (once that tool exists — until then, you're checking by hand).
+2. **You notice it's not enriched yet.** Either you're working through the file top to bottom, or `enrichment_queue.py` told you.
 3. **First human touchpoint: does this beer already have a file?** Check `enrichment/beers/` for one whose `canonical_product_ids` list this row's `canonical_product_id`, or whose name is obviously the same beer at a different pack size. If yes, you're just adding this SKU to an existing file. If no, you're creating a new one — you're the one deciding a `beer_key` for it. This decision — which SKUs are "the same beer" — exists nowhere else. Nothing upstream can make it for you.
 4. **Second human touchpoint: research.** Style, ABV, brewery identity — Part 4 through Part 6 cover exactly how.
 5. **Third human touchpoint: you write the YAML.** Fill in what you found, cite where it came from, note the date.
@@ -55,8 +55,9 @@ Nine steps. Five of them are you. That's the whole system.
 **Where to look, in order, and stop the moment you have a real answer — don't keep searching past a good source out of habit.**
 
 1. **The can or bottle itself, if you physically have one.** The single best source that exists. A label is Manufacturer-tier evidence, full stop.
+1a. **A clear, legible photograph of the manufacturer's own printed label also qualifies as manual observation.** You must personally verify that the photograph matches the exact beer and pack size being enriched — never trust the hosting page's own title or category alone. The evidence is the photographed manufacturer label itself, not the website or app hosting it; `source_name` must identify the specific photograph (or the specific page containing it), never the general site. This does not widen what counts as evidence beyond the manufacturer's own label — a retailer's written description, a nutrition table, or a figure from Untappd, BeerAdvocate, RateBeer, a blog, or any similar source remains unacceptable evidence, exactly as before.
 2. **The brewery's own official site.** Look for the specific product page — not a generic "our beers" listing. This is your primary source for ABV and calories when you don't have the physical product in hand.
-3. **`beer_master.csv`'s own `supplier_name` field.** Already sitting in front of you, no searching required — this is your Brewery field's starting point, unless you have a specific reason to think the licensed supplier isn't the brand a person would recognize (see Part 6's note on contract brewing).
+3. **Check whether you've already enriched a sibling pack size of this same beer.** `beer_master.csv` does not carry a supplier/brewery field of any kind — confirmed directly against its real columns, corrected here after an earlier version of this playbook wrongly said otherwise. Brewery has no automated starting point at all; it's researched the same way as everything else in this list. If another pack size of this exact beer already has a real `enrichment/beers/*.yaml` file, its `brewery` value is your fastest, already-cited starting point — otherwise, treat Brewery like any other fact: find it, cite it, write it down.
 4. **A retailer listing (Madhuloka, or whichever retailer you're already cross-checking against) — for corroboration only, never as your first or only source.** Retailers routinely show brand, size, and price but not ABV, and their category tagging is not reliable enough to settle a Style question on its own.
 5. **Anything else — a review site, a forum, a general web search — is a last resort, and if that's all you can find, the honest answer is Unknown, not "close enough."**
 
@@ -77,6 +78,10 @@ Nine steps. Five of them are you. That's the whole system.
 **Confidence rules.** Every ABV you record is Curated — a Manufacturer-sourced fact you personally observed and cited, never Verified (KSBCL never states it, so it can never carry that tier no matter how confident you are) and never a plain scalar with no source attached. If you can't attach a real `source_name` and an `observed_at` date, you don't actually have the fact yet — you have a guess wearing a fact's clothing. Don't record it.
 
 **One habit worth building now, cheap today, expensive to reconstruct later:** always write down the date you checked, even though it feels unnecessary when everything's fresh. Six months from now, "was this ABV ever reformulated" is a real question, and "I checked this on 2026-08-12" is the only thing that lets you answer it honestly instead of re-researching from scratch.
+
+---
+
+**Calorie collection, briefly, since the fact shape differs from ABV.** Record calories using the same sources and the same Part 4 search order, but the field you're filling — `calories_per_100ml` — wants exactly the number a source publishes, never one you've done arithmetic on. A manufacturer's own page almost always states calories as a concentration ("37 kcal per 100ml"), not a per-can or per-bottle total — write down that concentration figure directly. The Catalog Builder computes each SKU's actual per-pack total automatically at build time; you never need to multiply by pack size yourself, and doing so would silently record the wrong thing under the wrong field name. Same Unknown discipline as ABV: no citable source, no number.
 
 ---
 
@@ -136,7 +141,7 @@ Nine steps. Five of them are you. That's the whole system.
 
 **At 500 beers:** the workflow doesn't change, but two habits start to matter more than they did at 100. First, batching (Part 3) becomes more valuable, not less — you'll be doing enough repeated lookups (the same brewery's product line, say) that grouping work by research type saves real time. Second, spot checks need to become a genuine habit with a fixed cadence, not an occasional impulse — at 100 beers you'd probably notice a bad entry eventually just by using the app; at 500, you won't.
 
-**At 2,000 beers:** still the same workflow — one founder, one file per beer, the same five human touchpoints from Part 2 — but this is roughly the point where `enrichment_report.py` (Catalog Builder Implementation Design, Part 8) stops being a nice-to-have and starts being how you actually find out what still needs attention, rather than scanning `beer_master.csv` by eye. **This is not a new decision or a new tool this playbook is introducing** — that tool is already fully specified in the frozen implementation design; 2,000 beers is simply the scale at which building it, rather than deferring it, becomes the obviously correct call.
+**At 2,000 beers:** still the same workflow — one founder, one file per beer, the same five human touchpoints from Part 2 — but this is roughly the point where `enrichment_queue.py` stops being a nice-to-have and starts being how you actually find out what still needs attention, rather than scanning `beer_master.csv` by eye. **This is not a new tool this playbook is introducing** — it already exists and is already in daily use well before 2,000 beers; this is simply the scale at which relying on it, rather than working by eye, becomes the obviously correct call.
 
 **What never changes, at any of these sizes, and is worth stating plainly:** you are still the one deciding Style and ABV for every single beer. This workflow does not get automated as it scales — Catalog Builder Architecture already established why (Part 1 of that document), and nothing about volume changes that reasoning. What scales is how you organize your own time doing it, never who does it.
 
@@ -151,3 +156,30 @@ Nine steps. Five of them are you. That's the whole system.
 **When to stop researching:** the moment you have one real, citable, Manufacturer-tier source (Part 4). Not when you've exhausted every possible source — when you have *one that's actually good*. Chasing a second or third confirming source for a fact you already have solid evidence for is time better spent on the next beer.
 
 **How to avoid perfectionism, concretely, not just as advice:** remember that nothing you write here is permanent in the way it might feel while you're writing it. Every enrichment file is a plain-text, git-tracked, easily-revised record — Catalog Implementation Architecture built this whole system on exactly that assumption (Part 1's own immutable-vs-mutable-facts discipline: your Curated judgment today can always be superseded by better evidence later, without that ever implying today's version was careless). You are not making one irreversible decision per beer. You're making the best decision available from what you can actually find right now, writing down exactly how you got there, and trusting the system to let you — or someone else — improve it later with no penalty for having been honestly incomplete today.
+
+---
+
+## Part 11 — Physical Evidence Fieldwork
+
+**When remote research stops being the right next step.** Parts 4–5 above describe desk research — a brewery's own site, a global brand database, an official page. For a real, meaningful share of beers, that research genuinely runs out: the manufacturer's own site exists, is reachable, and simply has never published ABV or calories for that specific product. That is not a failure of searching harder — some facts are not on the internet at all, and the only source left is the physical product itself, exactly as Part 4's own item 1 already ranked highest. Three tools exist to make that fieldwork phase as organized as the desk-research phase already was:
+
+**`photo_queue.py` — what to go buy, in what order.** Ranks every Beer still blocked on `missing_abv`/`missing_calories` by how many real SKUs a photo would actually unlock — reusing the exact same join → business rules → cross-reference pipeline every other tool in this system already trusts, so this list changes automatically as evidence lands, never by hand-editing a spreadsheet.
+
+```
+python3 -m tool.catalog_builder.photo_queue --top 10
+python3 -m tool.catalog_builder.photo_queue --brewery "AB InBev" --missing-calories
+```
+
+**`photo_checklist.py` — what to actually photograph, for one beer.** Prints front label, back label, nutrition panel, ABV declaration, and an optional barcode — skipping any step for a fact already on file (a beer missing only calories doesn't ask you to re-photograph an ABV you already have), and ending with the exact `update_beer.py` command to run once you're back at your desk.
+
+```
+python3 -m tool.catalog_builder.photo_checklist --beer-key tuborg_strong_premium
+```
+
+**`photo_progress.py` — where the whole repository stands.** A dashboard, not a queue: how many Beers are fully publishable, how many are only waiting on a photo, how many still have a genuinely unresolved identity question (never a photo problem — see the module's own docstring for exactly how it tells the two apart), and how many are otherwise fully evidenced but blocked by something structural a photo can't touch.
+
+```
+python3 -m tool.catalog_builder.photo_progress --list
+```
+
+**The evidence policy does not change for fieldwork — it is the same one Part 4 already states.** A photo satisfies `manual_observation` under exactly the two conditions Part 4 item 1a already set: you personally confirm the photo matches this exact beer and pack size, and you cite the specific photo — not the general site — in `source_name`. `photo_checklist.py` prints both conditions every time, not as a reminder you can skim past, but as the actual gate between a photo and a recorded fact.

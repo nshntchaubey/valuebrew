@@ -45,6 +45,7 @@ enrichment/
 | `style` | **Required**, or explicitly `unknown` | string | References a `style_key` in `styles.yaml` — see Part 4 |
 | `is_craft` | Optional, defaults `false` | boolean | Product Decisions Register D14's own low-stakes item; not required to have a considered value |
 | `abv` | **Required**, or explicitly `unknown` | source-attribution block (Part 5) | Beer-level default, applied to every listed SKU unless overridden |
+| `calories_per_100ml` | **Required**, or explicitly `unknown` | source-attribution block (Part 5) | Milestone 7's own fix for a real gap this table never covered: `Sku.calories` is required and non-nullable, but no source publishes a per-pack total directly — manufacturers publish a concentration (kcal per 100ml), so that is exactly what this field holds. `Sku.calories`, the per-pack total the app shows, is computed once at build time from this value and each SKU's own `size_ml` — never entered manually, never duplicated per pack size, no per-SKU override needed |
 | `images` | Optional | list | Product Decisions Register D15 remains open on whether this is ever required — treated as optional here, unchanged from Catalog Implementation Architecture's own position |
 | `skus` | Optional | map, keyed by `canonical_product_id` | Per-SKU overrides only, for a fact that genuinely differs by pack size (Part 2 of Catalog Implementation Architecture's own worked example: a draught-strength variant with a different ABV than the packaged default) |
 
@@ -85,6 +86,8 @@ enrichment/
 | `source_name` | Required | A specific citation — "United Breweries official product page," not merely "the internet" |
 | `observed_at` | Required | The date this specific fact was checked — never the date the file was created, since a file accumulates facts checked on different dates |
 | `observed_by` | Required | Who — today, always the founder; the field exists so this remains true and checkable as more people are ever involved |
+
+**`manual_observation` includes verified photographs.** A clear, verified photograph of the manufacturer's own printed label — not only physical possession of the product — satisfies `manual_observation`, provided the founder personally confirms the photograph matches the exact beer and pack size, and `source_name` cites the specific photograph (or the page containing it), never the general hosting site. This does not create a new `source_type` value and does not relax any of the four required fields above.
 
 **Evidence.** Never a plain scalar. A `value` with no `source_name`/`observed_at` attached is not a fact this repository can hold — Part 5 of Catalog Builder Architecture's own already-frozen rule ("an ABV claim sourced to nothing citable" is a validation failure, Part 7 below) is what this attribution unit exists to make mechanically enforceable, not merely advisory.
 
