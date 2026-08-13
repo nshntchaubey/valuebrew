@@ -1,0 +1,97 @@
+{
+  "catalog_version": 1,
+  "generated_at": "2026-08-13T12:00:00Z",
+  "styles": [
+    {
+      "id": "lager",
+      "name": "Lager",
+      "description": "Crisp, mild bitterness"
+    },
+    {
+      "id": "strong_lager",
+      "name": "Strong Lager",
+      "description": "Higher-ABV lager, typically 7-8%"
+    }
+  ],
+  "beers": [
+    {
+      "id": "kingfisher_premium",
+      "name": "Kingfisher Premium",
+      "brewery": "United Breweries",
+      "style_id": "lager",
+      "is_craft": false
+    },
+    {
+      "id": "tuborg_strong",
+      "name": "Tuborg Strong",
+      "brewery": "Carlsberg India",
+      "style_id": "strong_lager",
+      "is_craft": false
+    }
+  ],
+  "skus": [
+    {
+      "id": "CP0000002",
+      "beer_id": "kingfisher_premium",
+      "size_ml": 330,
+      "package_type": "can",
+      "abv": 4.8,
+      "calories": 165,
+      "price": 100.0,
+      "price_last_checked": "2026-06-01",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 303.030303030303,
+      "cost_per_ml_alcohol": 6.313131313131313,
+      "value_score": 0,
+      "value_verdict": "overpriced"
+    },
+    {
+      "id": "CP0000003",
+      "beer_id": "kingfisher_premium",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.8,
+      "calories": 325,
+      "price": 180.0,
+      "price_last_checked": "2026-06-01",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 276.9230769230769,
+      "cost_per_ml_alcohol": 5.769230769230769,
+      "value_score": 100,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "CP0000010",
+      "beer_id": "tuborg_strong",
+      "size_ml": 500,
+      "package_type": "can",
+      "abv": 8.0,
+      "calories": 310,
+      "price": 145.0,
+      "price_last_checked": "2026-06-01",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 290.0,
+      "cost_per_ml_alcohol": 3.625,
+      "value_score": 50,
+      "value_verdict": "fair_value"
+    }
+  ],
+  "benchmarks": [
+    {
+      "style_id": "lager",
+      "avg_cost_per_ml_alcohol": 6.041181041181041,
+      "p25": 5.905205905205905,
+      "p50": 6.041181041181041,
+      "p75": 6.177156177156177,
+      "sample_size": 2
+    },
+    {
+      "style_id": "strong_lager",
+      "avg_cost_per_ml_alcohol": 3.625,
+      "p25": 3.625,
+      "p50": 3.625,
+      "p75": 3.625,
+      "sample_size": 1
+    }
+  ]
+}
