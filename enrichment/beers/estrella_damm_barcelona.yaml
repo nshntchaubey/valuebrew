@@ -1,0 +1,10 @@
+beer_key: "estrella_damm_barcelona"
+canonical_product_ids:
+  - "CP0001009"
+name: "Estrella Damm Barcelona Beer"
+brewery: "Damm Brewery"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

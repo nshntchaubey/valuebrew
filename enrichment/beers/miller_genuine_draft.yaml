@@ -1,0 +1,10 @@
+beer_key: "miller_genuine_draft"
+canonical_product_ids:
+  - "CP0000951"
+name: "Miller Genuine Draft Beer"
+brewery: "Molson Coors"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

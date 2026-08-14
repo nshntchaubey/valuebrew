@@ -1,0 +1,14 @@
+beer_key: "hunter_premium_super_strong"
+canonical_product_ids:
+  - "CP0000285"
+  - "CP0000291"
+  - "CP0000303"
+  - "CP0000304"
+  - "CP0000305"
+name: "Hunter Premium Super Strong Beer"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

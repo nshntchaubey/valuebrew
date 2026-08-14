@@ -1,0 +1,13 @@
+beer_key: "bira91_bollywood_ipa"
+canonical_product_ids:
+  - "CP0000415"
+  - "CP0000416"
+  - "CP0000425"
+  - "CP0000426"
+name: "Bira 91 Bollywood IPA Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

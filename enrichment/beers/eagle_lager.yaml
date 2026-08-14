@@ -1,0 +1,10 @@
+beer_key: "eagle_lager"
+canonical_product_ids:
+  - "CP0000950"
+name: "Eagle Lager Beer"
+brewery: "Mohan Meakin"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,11 @@
+beer_key: "belo_strong_quality"
+canonical_product_ids:
+  - "CP0000764"
+  - "CP0000765"
+name: "Belo Strong Quality Beer"
+brewery: "Impala Distillery and Brewery"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

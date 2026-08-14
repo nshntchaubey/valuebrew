@@ -1,0 +1,12 @@
+beer_key: "blockbuster_strong"
+canonical_product_ids:
+  - "CP0000550"
+  - "CP0000551"
+  - "CP0000553"
+name: "Blockbuster Strong Beer"
+brewery: "American Brew Crafts"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

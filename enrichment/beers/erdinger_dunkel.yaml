@@ -1,0 +1,10 @@
+beer_key: "erdinger_dunkel"
+canonical_product_ids:
+  - "CP0000992"
+name: "Erdinger Dunkel"
+brewery: "Erdinger Weissbrau"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

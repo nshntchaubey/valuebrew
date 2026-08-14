@@ -1,0 +1,12 @@
+beer_key: "pipehorn_platinum_premium_strong"
+canonical_product_ids:
+  - "CP0000299"
+  - "CP0000300"
+  - "CP0000301"
+name: "PIPEHORN Platinum Premium Strong Beer"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

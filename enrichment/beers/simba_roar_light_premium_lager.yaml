@@ -1,0 +1,14 @@
+beer_key: "simba_roar_light_premium_lager"
+canonical_product_ids:
+  - "CP0000616"
+  - "CP0000617"
+  - "CP0000621"
+  - "CP0000630"
+  - "CP0000631"
+name: "Simba Roar Series Light Premium Lager Beer"
+brewery: "Simba Brewery"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

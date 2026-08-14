@@ -1,0 +1,11 @@
+beer_key: "blue_moon_belgian_white"
+canonical_product_ids:
+  - "CP0000795"
+  - "CP0000799"
+name: "Blue Moon Belgian White Belgian Style Wheat Ale"
+brewery: "Molson Coors"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

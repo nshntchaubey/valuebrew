@@ -1,0 +1,12 @@
+beer_key: "pipehorn_ultimate_premium_lager"
+canonical_product_ids:
+  - "CP0000296"
+  - "CP0000297"
+  - "CP0000298"
+name: "PIPEHORN Ultimate Premium Lager Beer"
+brewery: "Som Distilleries and Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

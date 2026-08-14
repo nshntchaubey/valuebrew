@@ -1,0 +1,13 @@
+beer_key: "bira91_blonde"
+canonical_product_ids:
+  - "CP0000598"
+  - "CP0000599"
+  - "CP0000639"
+  - "CP0001044"
+name: "Original Bira 91 Blonde Beer"
+brewery: "B9 Beverages Private Limited"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

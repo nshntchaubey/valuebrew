@@ -1,0 +1,12 @@
+beer_key: "british_empire_premium_super_strong"
+canonical_product_ids:
+  - "CP0000651"
+  - "CP0000652"
+  - "CP0000653"
+name: "British Empire Premium Super Strong Beer"
+brewery: "SNJ Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

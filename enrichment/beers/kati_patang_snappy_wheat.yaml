@@ -1,0 +1,11 @@
+beer_key: "kati_patang_snappy_wheat"
+canonical_product_ids:
+  - "CP0000808"
+  - "CP0001104"
+name: "Kati Patang Snappy Wheat Beer"
+brewery: "Ser Bhum Brewery"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

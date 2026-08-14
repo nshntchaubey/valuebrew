@@ -1,0 +1,11 @@
+beer_key: "burton_export_lager"
+canonical_product_ids:
+  - "CP0000038"
+  - "CP0000039"
+name: "Burton Export Lager Beer"
+brewery: "unknown"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

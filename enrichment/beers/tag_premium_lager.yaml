@@ -1,0 +1,11 @@
+beer_key: "tag_premium_lager"
+canonical_product_ids:
+  - "CP0000611"
+  - "CP0000613"
+name: "TAG Premium Lager Beer"
+brewery: "Blossom Industries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

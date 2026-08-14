@@ -1,0 +1,10 @@
+beer_key: "rogue_mocha_porter"
+canonical_product_ids:
+  - "CP0000906"
+name: "Rogue Mocha Porter"
+brewery: "Rogue Ales"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

@@ -1,0 +1,13 @@
+beer_key: "bira91_brown_ale"
+canonical_product_ids:
+  - "CP0000417"
+  - "CP0000418"
+  - "CP0000427"
+  - "CP0000428"
+name: "Bira 91 Brown Ale Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

@@ -1,0 +1,10 @@
+beer_key: "rogue_double_dog_double_pale_ale"
+canonical_product_ids:
+  - "CP0000910"
+name: "Double Dog Double Pale Ale"
+brewery: "Rogue Ales"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

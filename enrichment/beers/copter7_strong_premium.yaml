@@ -1,0 +1,12 @@
+beer_key: "copter7_strong_premium"
+canonical_product_ids:
+  - "CP0000323"
+  - "CP0000324"
+  - "CP0000327"
+name: "Copter 7 Strong Beer Premium"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

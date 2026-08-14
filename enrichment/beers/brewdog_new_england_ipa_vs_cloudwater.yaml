@@ -1,0 +1,10 @@
+beer_key: "brewdog_new_england_ipa_vs_cloudwater"
+canonical_product_ids:
+  - "CP0000839"
+name: "New England IPA Brewdog Vs Cloudwater"
+brewery: "BrewDog"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

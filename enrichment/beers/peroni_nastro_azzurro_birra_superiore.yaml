@@ -1,0 +1,10 @@
+beer_key: "peroni_nastro_azzurro_birra_superiore"
+canonical_product_ids:
+  - "CP0000946"
+name: "Peroni Nastro Azzurro Birra Superiore"
+brewery: "Asahi Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

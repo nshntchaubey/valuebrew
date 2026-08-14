@@ -1,0 +1,17 @@
+beer_key: "bira91_indian_pale_ale_pomelo"
+canonical_product_ids:
+  - "CP0000340"
+  - "CP0000341"
+  - "CP0000389"
+  - "CP0000390"
+  - "CP0000444"
+  - "CP0000456"
+  - "CP0000496"
+  - "CP0000595"
+name: "Bira 91 Indian Pale Ale Pomelo Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

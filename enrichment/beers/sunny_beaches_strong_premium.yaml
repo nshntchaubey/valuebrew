@@ -1,0 +1,15 @@
+beer_key: "sunny_beaches_strong_premium"
+canonical_product_ids:
+  - "CP0000289"
+  - "CP0000290"
+  - "CP0000292"
+  - "CP0000293"
+  - "CP0000294"
+  - "CP0000295"
+name: "Sunny Beaches Strong Premium Beer"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

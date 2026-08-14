@@ -1,0 +1,11 @@
+beer_key: "okocim_palone_premium_strong"
+canonical_product_ids:
+  - "CP0000743"
+  - "CP0000782"
+name: "Okocim Palone Premium Strong Beer"
+brewery: "Browar Okocim"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

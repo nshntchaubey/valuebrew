@@ -1,0 +1,12 @@
+beer_key: "krombacher_pils"
+canonical_product_ids:
+  - "CP0000937"
+  - "CP0000938"
+  - "CP0000939"
+name: "Krombacher Pils Beer"
+brewery: "Krombacher Brauerei"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,10 @@
+beer_key: "kloud_100_malt_real"
+canonical_product_ids:
+  - "CP0001092"
+name: "Kloud 100% Malt Real Beer"
+brewery: "Lotte Chilsung"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -7,6 +7,8 @@ canonical_product_ids:
   - "CP0000725"
   - "CP0000726"
   - "CP0000727"
+  - "CP0000201"
+  - "CP0000202"
 name: "Kingfisher Blue Premium"
 brewery: "United Breweries"
 style: "lager"

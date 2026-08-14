@@ -1,0 +1,14 @@
+beer_key: "medusa_premium_strong"
+canonical_product_ids:
+  - "CP0000531"
+  - "CP0000532"
+  - "CP0000534"
+  - "CP0000538"
+  - "CP0000541"
+name: "Medusa Premium Strong Beer"
+brewery: "Medusa Beverages"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

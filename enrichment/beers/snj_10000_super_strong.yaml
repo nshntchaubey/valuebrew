@@ -1,0 +1,12 @@
+beer_key: "snj_10000_super_strong"
+canonical_product_ids:
+  - "CP0000645"
+  - "CP0000646"
+  - "CP0000650"
+name: "SNJ 10000 Super Strong Beer"
+brewery: "SNJ Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

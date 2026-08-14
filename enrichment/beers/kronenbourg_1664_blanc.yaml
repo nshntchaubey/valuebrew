@@ -1,0 +1,13 @@
+beer_key: "kronenbourg_1664_blanc"
+canonical_product_ids:
+  - "CP0000728"
+  - "CP0000729"
+  - "CP0000730"
+  - "CP0001073"
+name: "Kronenbourg 1664 Blanc Beer"
+brewery: "Carlsberg Group"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

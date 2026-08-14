@@ -1,0 +1,10 @@
+beer_key: "communiti_irish_ale"
+canonical_product_ids:
+  - "CP0001107"
+name: "Communiti Irish Ale"
+brewery: "Communiti Microbrewery"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

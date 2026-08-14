@@ -1,0 +1,13 @@
+beer_key: "bira91_fest_oktoberfest_lager"
+canonical_product_ids:
+  - "CP0000407"
+  - "CP0000408"
+  - "CP0000409"
+  - "CP0000410"
+name: "Bira 91 Fest Oktoberfest Lager Beer"
+brewery: "B9 Beverages Private Limited"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

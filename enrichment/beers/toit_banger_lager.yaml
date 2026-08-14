@@ -1,0 +1,10 @@
+beer_key: "toit_banger_lager"
+canonical_product_ids:
+  - "CP0000457"
+name: "Toit Banger Lager"
+brewery: "Toit"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

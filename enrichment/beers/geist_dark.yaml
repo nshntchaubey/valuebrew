@@ -1,0 +1,10 @@
+beer_key: "geist_dark"
+canonical_product_ids:
+  - "CP0000983"
+name: "Geist Dark Beer"
+brewery: "Geist Brewing Co."
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

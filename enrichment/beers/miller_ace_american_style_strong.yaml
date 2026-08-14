@@ -1,0 +1,12 @@
+beer_key: "miller_ace_american_style_strong"
+canonical_product_ids:
+  - "CP0000791"
+  - "CP0000792"
+  - "CP0000797"
+name: "Miller Ace American Style Strong Beer"
+brewery: "Molson Coors"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

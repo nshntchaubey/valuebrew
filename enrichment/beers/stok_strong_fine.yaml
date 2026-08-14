@@ -1,0 +1,15 @@
+beer_key: "stok_strong_fine"
+canonical_product_ids:
+  - "CP0000509"
+  - "CP0000513"
+  - "CP0000521"
+  - "CP0000522"
+  - "CP0001086"
+  - "CP0001088"
+name: "Stok Strong Fine Beer"
+brewery: "Mount Everest Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

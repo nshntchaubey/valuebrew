@@ -1,0 +1,12 @@
+beer_key: "mounts_6000_fine_strong"
+canonical_product_ids:
+  - "CP0000510"
+  - "CP0000511"
+  - "CP0000514"
+name: "Mount's 6000 Fine Strong Beer"
+brewery: "Mount Everest Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

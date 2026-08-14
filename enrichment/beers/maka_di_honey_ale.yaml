@@ -1,0 +1,11 @@
+beer_key: "maka_di_honey_ale"
+canonical_product_ids:
+  - "CP0000806"
+  - "CP0000811"
+name: "Maka Di Honey Ale Beer"
+brewery: "Latambarcem Brewers"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

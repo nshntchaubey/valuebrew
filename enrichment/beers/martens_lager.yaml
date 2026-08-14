@@ -1,0 +1,12 @@
+beer_key: "martens_lager"
+canonical_product_ids:
+  - "CP0001034"
+  - "CP0001035"
+  - "CP0001036"
+name: "Martens Lager Beer"
+brewery: "Martens Brouwerij"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

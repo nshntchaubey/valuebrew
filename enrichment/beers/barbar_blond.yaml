@@ -1,0 +1,10 @@
+beer_key: "barbar_blond"
+canonical_product_ids:
+  - "CP0001117"
+name: "Barbar Blond Beer"
+brewery: "Brasserie Lefebvre"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

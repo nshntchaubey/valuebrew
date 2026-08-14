@@ -1,0 +1,10 @@
+beer_key: "taiwan_beer_gold_medal"
+canonical_product_ids:
+  - "CP0001066"
+name: "Gold Medal Taiwan Beer"
+brewery: "Taiwan Tobacco and Liquor Corporation"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

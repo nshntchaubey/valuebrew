@@ -1,0 +1,12 @@
+beer_key: "simba_jungle_wheat"
+canonical_product_ids:
+  - "CP0000614"
+  - "CP0000620"
+  - "CP0000625"
+name: "Simba Jungle Wheat Beer"
+brewery: "Simba Brewery"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

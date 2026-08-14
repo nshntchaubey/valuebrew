@@ -1,0 +1,11 @@
+beer_key: "lemount_premium_super_strong"
+canonical_product_ids:
+  - "CP0000508"
+  - "CP0000512"
+name: "Lemount Premium Super Strong Beer"
+brewery: "Mount Everest Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

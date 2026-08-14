@@ -1,0 +1,12 @@
+beer_key: "black_pearl_triple_super_strong"
+canonical_product_ids:
+  - "CP0000029"
+  - "CP0000032"
+  - "CP0000814"
+name: "Black Pearl Triple Super Strong Beer"
+brewery: "Kals Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

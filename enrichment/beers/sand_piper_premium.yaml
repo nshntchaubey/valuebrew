@@ -1,0 +1,11 @@
+beer_key: "sand_piper_premium"
+canonical_product_ids:
+  - "CP0000109"
+  - "CP0000110"
+name: "Sand Piper Premium Beer"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

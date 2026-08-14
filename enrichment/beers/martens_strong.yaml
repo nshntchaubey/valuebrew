@@ -1,0 +1,12 @@
+beer_key: "martens_strong"
+canonical_product_ids:
+  - "CP0001031"
+  - "CP0001032"
+  - "CP0001033"
+name: "Martens Strong Beer"
+brewery: "Martens Brouwerij"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

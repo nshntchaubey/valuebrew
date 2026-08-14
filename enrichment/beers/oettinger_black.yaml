@@ -1,0 +1,10 @@
+beer_key: "oettinger_black"
+canonical_product_ids:
+  - "CP0001154"
+name: "Oettinger Black Beer"
+brewery: "Oettinger Brauerei"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

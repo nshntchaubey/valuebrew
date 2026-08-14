@@ -1,0 +1,11 @@
+beer_key: "tag_premium_strong"
+canonical_product_ids:
+  - "CP0000610"
+  - "CP0000612"
+name: "TAG Premium Strong Beer"
+brewery: "Blossom Industries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

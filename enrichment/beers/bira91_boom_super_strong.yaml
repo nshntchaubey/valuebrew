@@ -1,0 +1,19 @@
+beer_key: "bira91_boom_super_strong"
+canonical_product_ids:
+  - "CP0000332"
+  - "CP0000382"
+  - "CP0000439"
+  - "CP0000441"
+  - "CP0000448"
+  - "CP0000452"
+  - "CP0000491"
+  - "CP0000492"
+  - "CP0000597"
+  - "CP0000406"
+name: "Original Bira 91 Boom Super Strong Beer"
+brewery: "B9 Beverages Private Limited"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

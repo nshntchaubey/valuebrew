@@ -1,0 +1,14 @@
+beer_key: "simba_roar_extra_strong"
+canonical_product_ids:
+  - "CP0000618"
+  - "CP0000622"
+  - "CP0000627"
+  - "CP0000628"
+  - "CP0000633"
+name: "Simba Roar Extra Strong Beer"
+brewery: "Simba Brewery"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

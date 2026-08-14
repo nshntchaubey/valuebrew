@@ -1,0 +1,10 @@
+beer_key: "goa_brewing_co_pineapple_saison"
+canonical_product_ids:
+  - "CP0000567"
+name: "Pineapple Saison Beer"
+brewery: "Goa Brewcrafts"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

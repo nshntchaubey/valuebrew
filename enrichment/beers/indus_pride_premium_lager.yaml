@@ -2,6 +2,8 @@ beer_key: "indus_pride_premium_lager"
 canonical_product_ids:
   - "CP0000152"
   - "CP0000153"
+  - "CP0000156"
+  - "CP0000157"
 name: "Indus Pride Premium Lager Beer"
 brewery: "AB InBev India"
 style: "lager"

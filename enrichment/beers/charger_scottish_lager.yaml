@@ -1,0 +1,10 @@
+beer_key: "charger_scottish_lager"
+canonical_product_ids:
+  - "CP0001095"
+name: "Charger Scottish Lager"
+brewery: "Tennents Caledonian Brewery"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

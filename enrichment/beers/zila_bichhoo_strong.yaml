@@ -1,0 +1,10 @@
+beer_key: "zila_bichhoo_strong"
+canonical_product_ids:
+  - "CP0001152"
+name: "Zila Bichhoo Strong Beer"
+brewery: "Brewtus Beverages"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

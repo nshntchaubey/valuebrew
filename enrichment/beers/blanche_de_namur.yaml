@@ -1,0 +1,10 @@
+beer_key: "blanche_de_namur"
+canonical_product_ids:
+  - "CP0001112"
+name: "Blanche De Namur Beer"
+brewery: "Brasserie du Bocq"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

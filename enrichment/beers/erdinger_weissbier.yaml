@@ -1,0 +1,11 @@
+beer_key: "erdinger_weissbier"
+canonical_product_ids:
+  - "CP0000987"
+  - "CP0000991"
+name: "Erdinger Weissbier"
+brewery: "Erdinger Weissbrau"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,10 @@
+beer_key: "martens_extra"
+canonical_product_ids:
+  - "CP0001099"
+name: "Martens Extra Beer"
+brewery: "Martens Brouwerij"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

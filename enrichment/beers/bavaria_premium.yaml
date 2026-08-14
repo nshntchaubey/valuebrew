@@ -1,0 +1,11 @@
+beer_key: "bavaria_premium"
+canonical_product_ids:
+  - "CP0001001"
+  - "CP0001002"
+name: "Bavaria Premium Beer"
+brewery: "Royal Swinkels Family Brewers"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

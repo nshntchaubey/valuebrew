@@ -1,0 +1,13 @@
+beer_key: "bira91_kokum_sour"
+canonical_product_ids:
+  - "CP0000423"
+  - "CP0000424"
+  - "CP0000433"
+  - "CP0000434"
+name: "Bira 91 Kokum Sour Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

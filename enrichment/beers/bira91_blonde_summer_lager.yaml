@@ -1,0 +1,19 @@
+beer_key: "bira91_blonde_summer_lager"
+canonical_product_ids:
+  - "CP0000335"
+  - "CP0000336"
+  - "CP0000337"
+  - "CP0000385"
+  - "CP0000386"
+  - "CP0000437"
+  - "CP0000438"
+  - "CP0000484"
+  - "CP0000485"
+  - "CP0000594"
+name: "Bira 91 Blonde Summer Lager Beer"
+brewery: "B9 Beverages Private Limited"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

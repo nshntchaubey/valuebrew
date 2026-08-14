@@ -1,0 +1,12 @@
+beer_key: "cobra_extra_smooth_super_premium"
+canonical_product_ids:
+  - "CP0000044"
+  - "CP0000045"
+  - "CP0000705"
+name: "Cobra Extra Smooth Super Premium Beer"
+brewery: "Molson Coors"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

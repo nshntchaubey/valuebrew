@@ -1,0 +1,10 @@
+beer_key: "kilkenny_draught_irish"
+canonical_product_ids:
+  - "CP0000918"
+name: "Kilkenny Draught Irish Beer"
+brewery: "Diageo"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

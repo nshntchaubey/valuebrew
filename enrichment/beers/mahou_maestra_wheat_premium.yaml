@@ -1,0 +1,11 @@
+beer_key: "mahou_maestra_wheat_premium"
+canonical_product_ids:
+  - "CP0000608"
+  - "CP0000609"
+name: "Mahou Maestra Wheat Premium Beer"
+brewery: "Mahou San Miguel"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

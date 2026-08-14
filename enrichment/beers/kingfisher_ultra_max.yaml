@@ -4,6 +4,8 @@ canonical_product_ids:
   - "CP0000167"
   - "CP0000168"
   - "CP0000169"
+  - "CP0000699"
+  - "CP0000700"
 name: "Kingfisher Ultra Max Premium Strong Beer"
 brewery: "United Breweries"
 style: "strong_lager"

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import yaml
+
 from tool.catalog_builder.contamination_filter import load_default_exclusion_terms
 from tool.catalog_builder.enrichment_queue import (
     build_enrichment_queue,
@@ -203,18 +205,109 @@ def test_empty_input_yields_all_zero_counts():
 # ---------------------------------------------------------------------------
 
 
-def test_real_repository_dashboard():
-    from tool.catalog_builder.beer_master_reader import read_beer_master_csv
+def test_dashboard_end_to_end_through_the_real_readers(tmp_path: Path):
+    # Repository-independent regression for the same integration the old
+    # real-repository-coupled version of this test exercised: candidates
+    # and beer_master.csv, read through the real production readers
+    # (schema_validate, beer_master_reader), classify correctly into all
+    # five buckets via build_enrichment_queue. Counts are fixed by this
+    # fixture, not by however much real enrichment/ has grown to contain —
+    # RC1's fix to test_version.py's same anti-pattern applied here too.
+    import csv
 
-    candidates_dir = Path("enrichment/candidates")
-    beer_master_path = Path("pricing_data/beer_master.csv")
-    if not candidates_dir.is_dir() or not beer_master_path.exists():
-        import pytest
+    from tool.catalog_builder.beer_master_reader import EXPECTED_COLUMNS, read_beer_master_csv
 
-        pytest.skip("real repository data not present in this environment")
+    def _row(**overrides):
+        defaults = dict(
+            canonical_product_id="CP0000000",
+            representative_item_code="1000000000",
+            item_name_raw="Some Beer 330ML",
+            display_name="Some Beer 330ML",
+            normalized_name_key="some beer 330ml",
+            pack_size_ml="330",
+            pack_count="",
+            container_type="bottle",
+            declared_price="100.00",
+            landed_cost="100.00",
+            ksbcl_selling_price="100.00",
+            mrp="100.00",
+            effective_date="2026-06-01",
+            status="LIVE",
+            delisted_run_month="",
+            classification_confidence="high",
+            classification_matched_on="style_keyword:beer",
+            gtin="",
+            gtin_confidence="",
+            source_pdf_reference="x.pdf",
+            first_seen_run_month="2026-06",
+            last_updated_run_month="2026-06",
+        )
+        defaults.update(overrides)
+        return defaults
+
+    rows = [
+        _row(canonical_product_id="CP0000001", item_name_raw="Some Whiskey 750ML", display_name="Some Whiskey 750ML"),
+        _row(canonical_product_id="CP0000002", container_type="keg"),
+        _row(canonical_product_id="CP0000003"),
+        _row(canonical_product_id="CP0000004"),
+    ]
+    beer_master_path = tmp_path / "beer_master.csv"
+    with beer_master_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(EXPECTED_COLUMNS))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    def _write_candidate(cpid: str, name: str):
+        (candidates_dir / f"{cpid}.yaml").write_text(
+            yaml.safe_dump(
+                {
+                    "canonical_product_id": cpid,
+                    "item_name_raw": name,
+                    "display_name": name,
+                    "suggested_beer_key": None,
+                    "name": None,
+                    "brewery": None,
+                    "style": None,
+                    "abv": None,
+                    "is_craft": None,
+                    "images": [],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    candidates_dir = tmp_path / "candidates"
+    candidates_dir.mkdir()
+    _write_candidate("CP0000001", "Some Whiskey 750ML")  # contamination
+    _write_candidate("CP0000002", "Some Beer 330ML")  # structurally_blocked (keg)
+    _write_candidate("CP0000003", "Some Beer 330ML")  # remaining
+    _write_candidate("CP0000004", "Some Beer 330ML")  # enriched, below
+
+    enrichment_dir = tmp_path / "enrichment"
+    beers_dir = enrichment_dir / "beers"
+    beers_dir.mkdir(parents=True)
+    (enrichment_dir / "styles.yaml").write_text(
+        yaml.safe_dump([{"style_key": "lager", "name": "Lager", "description": "X"}]), encoding="utf-8"
+    )
+    (beers_dir / "some_beer.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "beer_key": "some_beer",
+                "canonical_product_ids": ["CP0000004"],
+                "name": "Some Beer",
+                "brewery": "Some Brewery",
+                "style": "lager",
+                "abv": "unknown",
+                "calories_per_100ml": "unknown",
+                "is_craft": False,
+                "images": [],
+            }
+        ),
+        encoding="utf-8",
+    )
 
     candidates, rejected_files = validate_candidates_directory(candidates_dir)
-    enrichment_report = validate_enrichment_repository(Path("enrichment"))
+    enrichment_report = validate_enrichment_repository(enrichment_dir)
     terms = load_default_exclusion_terms()
     accepted, _ = read_beer_master_csv(beer_master_path)
     container_type_by_id = {row.canonical_product_id: row.container_type for row in accepted}
@@ -228,11 +321,11 @@ def test_real_repository_dashboard():
         container_type_by_id=container_type_by_id,
     )
 
-    assert report.total_candidates == 1004
-    assert report.contamination_count == 2
-    # Real, confirmed during the founder dry run: roughly a quarter of
-    # real candidates have an unmappable container_type.
-    assert report.structurally_blocked_count > 200
+    assert report.total_candidates == 4
+    assert report.contamination_count == 1
+    assert report.structurally_blocked_count == 1
+    assert report.enriched_count == 1
+    assert report.remaining_count == 1
     assert (
         report.enriched_count
         + report.remaining_count

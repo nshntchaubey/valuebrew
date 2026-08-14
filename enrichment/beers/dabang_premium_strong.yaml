@@ -1,0 +1,12 @@
+beer_key: "dabang_premium_strong"
+canonical_product_ids:
+  - "CP0000505"
+  - "CP0000506"
+  - "CP0000507"
+name: "Dabang Premium Strong Beer"
+brewery: "Mount Everest Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

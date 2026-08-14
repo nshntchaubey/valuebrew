@@ -1,0 +1,11 @@
+beer_key: "tsingtao"
+canonical_product_ids:
+  - "CP0000889"
+  - "CP0001015"
+name: "Tsingtao Beer"
+brewery: "Tsingtao Brewery"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,15 @@
+beer_key: "stok_lager_fine"
+canonical_product_ids:
+  - "CP0000516"
+  - "CP0000518"
+  - "CP0000520"
+  - "CP0000524"
+  - "CP0001087"
+  - "CP0001090"
+name: "Stok Lager Fine Beer"
+brewery: "Mount Everest Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,12 @@
+beer_key: "legend_strong"
+canonical_product_ids:
+  - "CP0000282"
+  - "CP0000283"
+  - "CP0000284"
+name: "Legend Strong Beer"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

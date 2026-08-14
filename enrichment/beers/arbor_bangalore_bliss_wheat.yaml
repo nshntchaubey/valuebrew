@@ -1,0 +1,11 @@
+beer_key: "arbor_bangalore_bliss_wheat"
+canonical_product_ids:
+  - "CP0000545"
+  - "CP0000546"
+name: "Arbor Bangalore Bliss Wheat Beer"
+brewery: "Arbor Brewing Company"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

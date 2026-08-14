@@ -1,0 +1,10 @@
+beer_key: "white_rhino_india_pale_ale"
+canonical_product_ids:
+  - "CP0000788"
+name: "White Rhino Brewing Co. India Pale Ale"
+brewery: "White Rhino Brewing Co."
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

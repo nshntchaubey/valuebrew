@@ -1,0 +1,10 @@
+beer_key: "praga_premium_pils"
+canonical_product_ids:
+  - "CP0001025"
+name: "Praga Premium Pils Beer"
+brewery: "Prvni Budejovicky Pivovar Samson"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

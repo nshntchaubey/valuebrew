@@ -1,0 +1,10 @@
+beer_key: "red_rhino_wheat_ale"
+canonical_product_ids:
+  - "CP0000555"
+name: "Red Rhino Wheat Ale"
+brewery: "Red Rhino Craft Brewery"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

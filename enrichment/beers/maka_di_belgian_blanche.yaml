@@ -1,0 +1,11 @@
+beer_key: "maka_di_belgian_blanche"
+canonical_product_ids:
+  - "CP0000805"
+  - "CP0000810"
+name: "Maka Di Belgian Blanche Beer"
+brewery: "Latambarcem Brewers"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

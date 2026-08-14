@@ -1,0 +1,11 @@
+beer_key: "kingfisher_super_strong_premium"
+canonical_product_ids:
+  - "CP0000106"
+  - "CP0000108"
+name: "Kingfisher Super Strong Premium Beer"
+brewery: "United Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

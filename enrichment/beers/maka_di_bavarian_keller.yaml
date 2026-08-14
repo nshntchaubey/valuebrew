@@ -1,0 +1,10 @@
+beer_key: "maka_di_bavarian_keller"
+canonical_product_ids:
+  - "CP0000804"
+name: "Maka Di Bavarian Keller Beer"
+brewery: "Latambarcem Brewers"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

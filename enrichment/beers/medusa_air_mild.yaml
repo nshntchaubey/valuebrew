@@ -1,0 +1,14 @@
+beer_key: "medusa_air_mild"
+canonical_product_ids:
+  - "CP0000528"
+  - "CP0000529"
+  - "CP0000530"
+  - "CP0000537"
+  - "CP0000540"
+name: "Medusa Air Mild Beer"
+brewery: "Medusa Beverages"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

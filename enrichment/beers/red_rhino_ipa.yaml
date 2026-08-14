@@ -1,0 +1,10 @@
+beer_key: "red_rhino_ipa"
+canonical_product_ids:
+  - "CP0000556"
+name: "Red Rhino IPA"
+brewery: "Red Rhino Craft Brewery"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

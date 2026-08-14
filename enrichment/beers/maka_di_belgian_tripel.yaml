@@ -1,0 +1,11 @@
+beer_key: "maka_di_belgian_tripel"
+canonical_product_ids:
+  - "CP0000807"
+  - "CP0000812"
+name: "Maka Di Belgian Tripel Beer"
+brewery: "Latambarcem Brewers"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

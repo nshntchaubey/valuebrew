@@ -1,0 +1,14 @@
+beer_key: "bira91_rise_rice_strong_lager"
+canonical_product_ids:
+  - "CP0000345"
+  - "CP0000346"
+  - "CP0000347"
+  - "CP0000348"
+  - "CP0000349"
+name: "Bira 91 Rise Rice Strong Lager Beer"
+brewery: "B9 Beverages Private Limited"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

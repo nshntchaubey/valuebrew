@@ -1,0 +1,17 @@
+beer_key: "fosters_strong_premium"
+canonical_product_ids:
+  - "CP0000136"
+  - "CP0000141"
+  - "CP0000142"
+  - "CP0000225"
+  - "CP0000226"
+  - "CP0000227"
+  - "CP0000674"
+  - "CP0000675"
+name: "Foster's Strong Premium Beer"
+brewery: "AB InBev India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

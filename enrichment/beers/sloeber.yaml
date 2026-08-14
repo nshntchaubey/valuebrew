@@ -1,0 +1,10 @@
+beer_key: "sloeber"
+canonical_product_ids:
+  - "CP0001114"
+name: "Sloeber Beer"
+brewery: "Brouwerij De Brabandere"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

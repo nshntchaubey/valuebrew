@@ -1,0 +1,12 @@
+beer_key: "asahi_japan_no1"
+canonical_product_ids:
+  - "CP0000934"
+  - "CP0001052"
+  - "CP0001054"
+name: "Asahi Japan No.1 Beer"
+brewery: "Asahi Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

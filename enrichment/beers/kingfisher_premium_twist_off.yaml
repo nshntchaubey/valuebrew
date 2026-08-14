@@ -1,0 +1,10 @@
+beer_key: "kingfisher_premium_twist_off"
+canonical_product_ids:
+  - "CP0000105"
+name: "Kingfisher Premium Twist Off"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -6,6 +6,8 @@ canonical_product_ids:
   - "CP0000090"
   - "CP0000091"
   - "CP0000171"
+  - "CP0000766"
+  - "CP0000767"
 name: "UB Export Strong Premium"
 brewery: "United Breweries"
 style: "strong_lager"

@@ -1,0 +1,12 @@
+beer_key: "white_owl_boss_strong_premium_lager"
+canonical_product_ids:
+  - "CP0000320"
+  - "CP0000321"
+  - "CP0000322"
+name: "White Owl Boss Strong Premium Lager Beer"
+brewery: "White Owl Brewery"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

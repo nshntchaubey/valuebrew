@@ -1,0 +1,12 @@
+beer_key: "mahou_cinco_estrellas_premium"
+canonical_product_ids:
+  - "CP0000605"
+  - "CP0000606"
+  - "CP0000607"
+name: "Mahou Cinco Estrellas Premium Beer"
+brewery: "Mahou San Miguel"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

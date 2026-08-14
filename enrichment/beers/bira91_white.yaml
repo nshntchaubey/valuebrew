@@ -1,0 +1,19 @@
+beer_key: "bira91_white"
+canonical_product_ids:
+  - "CP0000397"
+  - "CP0000398"
+  - "CP0000399"
+  - "CP0000404"
+  - "CP0000405"
+  - "CP0000435"
+  - "CP0000436"
+  - "CP0000592"
+  - "CP0000636"
+  - "CP0001043"
+name: "Original Bira 91 White Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

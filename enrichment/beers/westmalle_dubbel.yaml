@@ -1,0 +1,10 @@
+beer_key: "westmalle_dubbel"
+canonical_product_ids:
+  - "CP0001113"
+name: "Westmalle Dubbel Beer"
+brewery: "Brouwerij der Trappisten van Westmalle"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

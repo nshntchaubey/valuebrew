@@ -1,0 +1,15 @@
+beer_key: "stok_wheat_fine"
+canonical_product_ids:
+  - "CP0000515"
+  - "CP0000517"
+  - "CP0000519"
+  - "CP0000523"
+  - "CP0001085"
+  - "CP0001089"
+name: "Stok Wheat Fine Beer"
+brewery: "Mount Everest Breweries"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

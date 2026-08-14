@@ -5,6 +5,8 @@ canonical_product_ids:
   - "CP0000164"
   - "CP0000165"
   - "CP0000715"
+  - "CP0000711"
+  - "CP0000712"
 name: "Kingfisher Ultra Lager Beer"
 brewery: "United Breweries"
 style: "lager"

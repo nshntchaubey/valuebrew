@@ -1,0 +1,10 @@
+beer_key: "ub_export_stubby_lager"
+canonical_product_ids:
+  - "CP0000111"
+name: "UB Export Stubby Lager Beer"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

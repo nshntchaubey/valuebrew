@@ -1,0 +1,10 @@
+beer_key: "high_voltage_super_strong"
+canonical_product_ids:
+  - "CP0000649"
+name: "High Voltage Super Strong Beer"
+brewery: "SNJ Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

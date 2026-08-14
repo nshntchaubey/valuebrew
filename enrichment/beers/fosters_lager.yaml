@@ -1,0 +1,19 @@
+beer_key: "fosters_lager"
+canonical_product_ids:
+  - "CP0000137"
+  - "CP0000138"
+  - "CP0000139"
+  - "CP0000140"
+  - "CP0000210"
+  - "CP0000211"
+  - "CP0000220"
+  - "CP0000221"
+  - "CP0000582"
+  - "CP0000589"
+name: "Foster's Lager Beer"
+brewery: "AB InBev India"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

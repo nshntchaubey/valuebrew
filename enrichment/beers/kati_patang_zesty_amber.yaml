@@ -1,0 +1,11 @@
+beer_key: "kati_patang_zesty_amber"
+canonical_product_ids:
+  - "CP0000809"
+  - "CP0001103"
+name: "Kati Patang Zesty Amber Beer"
+brewery: "Ser Bhum Brewery"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

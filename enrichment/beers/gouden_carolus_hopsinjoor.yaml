@@ -1,0 +1,10 @@
+beer_key: "gouden_carolus_hopsinjoor"
+canonical_product_ids:
+  - "CP0001116"
+name: "Gouden Carolus Hopsinjoor Beer"
+brewery: "Het Anker"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

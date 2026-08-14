@@ -1,0 +1,13 @@
+beer_key: "power_cool_strong"
+canonical_product_ids:
+  - "CP0000278"
+  - "CP0000279"
+  - "CP0000280"
+  - "CP0000281"
+name: "Power Cool Strong Beer"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

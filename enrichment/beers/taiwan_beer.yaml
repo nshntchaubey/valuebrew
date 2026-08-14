@@ -1,0 +1,10 @@
+beer_key: "taiwan_beer"
+canonical_product_ids:
+  - "CP0001068"
+name: "Taiwan Beer"
+brewery: "Taiwan Tobacco and Liquor Corporation"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

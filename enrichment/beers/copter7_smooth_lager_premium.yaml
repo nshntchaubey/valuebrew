@@ -1,0 +1,12 @@
+beer_key: "copter7_smooth_lager_premium"
+canonical_product_ids:
+  - "CP0000325"
+  - "CP0000326"
+  - "CP0000328"
+name: "Copter 7 Smooth Lager Premium"
+brewery: "Som Distilleries and Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

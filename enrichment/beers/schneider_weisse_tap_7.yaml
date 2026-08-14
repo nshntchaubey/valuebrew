@@ -1,0 +1,10 @@
+beer_key: "schneider_weisse_tap_7"
+canonical_product_ids:
+  - "CP0001023"
+name: "Schneider Weisse Tap 7 Beer"
+brewery: "Private Weissbierbrauerei G. Schneider und Sohn"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

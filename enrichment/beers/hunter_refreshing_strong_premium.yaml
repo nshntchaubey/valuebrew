@@ -1,0 +1,15 @@
+beer_key: "hunter_refreshing_strong_premium"
+canonical_product_ids:
+  - "CP0000306"
+  - "CP0000307"
+  - "CP0000318"
+  - "CP0000330"
+  - "CP0000702"
+  - "CP0000703"
+name: "Hunter Refreshing Strong Premium Beer"
+brewery: "Som Distilleries and Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

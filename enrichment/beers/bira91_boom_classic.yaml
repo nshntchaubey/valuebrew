@@ -1,0 +1,16 @@
+beer_key: "bira91_boom_classic"
+canonical_product_ids:
+  - "CP0000440"
+  - "CP0000445"
+  - "CP0000449"
+  - "CP0000450"
+  - "CP0000453"
+  - "CP0000640"
+  - "CP0000641"
+name: "Original Bira 91 Boom Classic Beer"
+brewery: "B9 Beverages Private Limited"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

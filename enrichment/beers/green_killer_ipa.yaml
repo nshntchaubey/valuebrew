@@ -1,0 +1,10 @@
+beer_key: "green_killer_ipa"
+canonical_product_ids:
+  - "CP0001118"
+name: "Green Killer Beer"
+brewery: "Brasserie de Silly"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

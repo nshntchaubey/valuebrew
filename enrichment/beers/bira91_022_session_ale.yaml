@@ -1,0 +1,11 @@
+beer_key: "bira91_022_session_ale"
+canonical_product_ids:
+  - "CP0000393"
+  - "CP0000395"
+name: "Bira 91 022 Session Ale Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

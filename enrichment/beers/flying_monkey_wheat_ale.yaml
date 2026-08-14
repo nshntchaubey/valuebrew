@@ -1,0 +1,12 @@
+beer_key: "flying_monkey_wheat_ale"
+canonical_product_ids:
+  - "CP0000561"
+  - "CP0000562"
+  - "CP0000563"
+name: "Flying Monkey Wheat Ale"
+brewery: "American Brew Crafts"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

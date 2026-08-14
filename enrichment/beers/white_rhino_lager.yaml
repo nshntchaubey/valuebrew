@@ -1,0 +1,10 @@
+beer_key: "white_rhino_lager"
+canonical_product_ids:
+  - "CP0000786"
+name: "White Rhino Brewing Co. Lager Beer"
+brewery: "White Rhino Brewing Co."
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

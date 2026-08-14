@@ -1,0 +1,10 @@
+beer_key: "bhutanese_red_rice_lager"
+canonical_product_ids:
+  - "CP0001150"
+name: "Bhutanese Red Rice Lager Beer"
+brewery: "Namgay Artisanal Brewery"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

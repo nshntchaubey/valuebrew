@@ -1,0 +1,14 @@
+beer_key: "bira91_strong"
+canonical_product_ids:
+  - "CP0000446"
+  - "CP0000447"
+  - "CP0000451"
+  - "CP0000600"
+  - "CP0000637"
+name: "Original Bira 91 Strong Beer"
+brewery: "B9 Beverages Private Limited"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

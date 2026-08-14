@@ -1,0 +1,11 @@
+beer_key: "buho_witbier"
+canonical_product_ids:
+  - "CP0000830"
+  - "CP0000846"
+name: "Buho Witbier"
+brewery: "Brouwerij Vanhonsebrouck"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

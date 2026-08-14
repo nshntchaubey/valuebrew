@@ -1,0 +1,17 @@
+beer_key: "bira91_malabar_stout"
+canonical_product_ids:
+  - "CP0000338"
+  - "CP0000339"
+  - "CP0000387"
+  - "CP0000388"
+  - "CP0000443"
+  - "CP0000455"
+  - "CP0000486"
+  - "CP0000596"
+name: "Bira 91 Malabar Stout Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

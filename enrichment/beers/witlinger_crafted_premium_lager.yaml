@@ -1,6 +1,7 @@
 beer_key: "witlinger_crafted_premium_lager"
 canonical_product_ids:
   - "CP0000080"
+  - "CP0000081"
 name: "Witlinger Crafted Premium Lager"
 brewery: "Witlinger"
 style: "lager"

@@ -1,0 +1,10 @@
+beer_key: "apple_bocq"
+canonical_product_ids:
+  - "CP0000898"
+name: "Apple Bocq Beer"
+brewery: "Brasserie du Bocq"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

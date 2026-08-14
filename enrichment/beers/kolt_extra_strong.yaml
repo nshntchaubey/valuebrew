@@ -1,0 +1,12 @@
+beer_key: "kolt_extra_strong"
+canonical_product_ids:
+  - "CP0000030"
+  - "CP0000033"
+  - "CP0000815"
+name: "Kolt Extra Strong Beer"
+brewery: "Kals Breweries"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

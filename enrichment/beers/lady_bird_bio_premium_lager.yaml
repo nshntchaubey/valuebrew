@@ -1,0 +1,11 @@
+beer_key: "lady_bird_bio_premium_lager"
+canonical_product_ids:
+  - "CP0000050"
+  - "CP0000051"
+name: "Lady Bird Bio Beer Premium Lager"
+brewery: "Khoday Brewing and Distilling Industries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

@@ -1,0 +1,10 @@
+beer_key: "singha"
+canonical_product_ids:
+  - "CP0001129"
+name: "Singha Beer"
+brewery: "Boon Rawd Brewery"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

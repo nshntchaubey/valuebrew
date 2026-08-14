@@ -1,0 +1,10 @@
+beer_key: "sol"
+canonical_product_ids:
+  - "CP0001013"
+name: "Sol Beer"
+brewery: "Cerveceria Cuauhtemoc Moctezuma"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

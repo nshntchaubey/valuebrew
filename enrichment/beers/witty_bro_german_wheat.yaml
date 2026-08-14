@@ -1,0 +1,10 @@
+beer_key: "witty_bro_german_wheat"
+canonical_product_ids:
+  - "CP0001105"
+name: "Witty Bro German Wheat Beer"
+brewery: "Denninghoffs"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

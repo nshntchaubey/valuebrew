@@ -1,0 +1,14 @@
+beer_key: "ub_export_lager"
+canonical_product_ids:
+  - "CP0000020"
+  - "CP0000021"
+  - "CP0000101"
+  - "CP0000132"
+  - "CP0000133"
+name: "UB Export Lager Beer"
+brewery: "United Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

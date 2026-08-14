@@ -1,0 +1,10 @@
+beer_key: "estrella_1906_reserva_especial"
+canonical_product_ids:
+  - "CP0001029"
+name: "1906 Reserva Especial Beer"
+brewery: "Hijos de Rivera"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

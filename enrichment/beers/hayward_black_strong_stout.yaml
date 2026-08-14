@@ -1,0 +1,11 @@
+beer_key: "hayward_black_strong_stout"
+canonical_product_ids:
+  - "CP0000154"
+  - "CP0000155"
+name: "Hayward Black Strong Stout Beer"
+brewery: "AB InBev India"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

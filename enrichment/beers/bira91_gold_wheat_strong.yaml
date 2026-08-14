@@ -1,0 +1,14 @@
+beer_key: "bira91_gold_wheat_strong"
+canonical_product_ids:
+  - "CP0000342"
+  - "CP0000343"
+  - "CP0000344"
+  - "CP0000391"
+  - "CP0000392"
+name: "Bira 91 Gold Wheat Strong Beer"
+brewery: "B9 Beverages Private Limited"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

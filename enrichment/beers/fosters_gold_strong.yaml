@@ -1,0 +1,21 @@
+beer_key: "fosters_gold_strong"
+canonical_product_ids:
+  - "CP0000214"
+  - "CP0000215"
+  - "CP0000216"
+  - "CP0000217"
+  - "CP0000253"
+  - "CP0000255"
+  - "CP0000256"
+  - "CP0000258"
+  - "CP0000586"
+  - "CP0000587"
+  - "CP0000588"
+  - "CP0000813"
+name: "Foster's Gold Strong Beer"
+brewery: "AB InBev India"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

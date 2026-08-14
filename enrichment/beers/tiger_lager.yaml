@@ -1,0 +1,19 @@
+beer_key: "tiger_lager"
+canonical_product_ids:
+  - "CP0000707"
+  - "CP0000708"
+  - "CP0000784"
+  - "CP0000785"
+  - "CP0000872"
+  - "CP0000873"
+  - "CP0000874"
+  - "CP0000875"
+  - "CP0000881"
+  - "CP0000882"
+name: "Tiger Lager Beer"
+brewery: "Heineken Asia Pacific Breweries"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

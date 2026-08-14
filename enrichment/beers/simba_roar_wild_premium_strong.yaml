@@ -1,0 +1,13 @@
+beer_key: "simba_roar_wild_premium_strong"
+canonical_product_ids:
+  - "CP0000623"
+  - "CP0000624"
+  - "CP0000629"
+  - "CP0000632"
+name: "Simba Roar Series Wild Premium Strong Beer"
+brewery: "Simba Brewery"
+style: "strong_lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

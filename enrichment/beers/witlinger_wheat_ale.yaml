@@ -1,0 +1,11 @@
+beer_key: "witlinger_wheat_ale"
+canonical_product_ids:
+  - "CP0000635"
+  - "CP0001011"
+name: "Witlinger Wheat Ale"
+brewery: "Witlinger"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

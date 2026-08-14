@@ -1,0 +1,12 @@
+beer_key: "mahou_clasica_premium"
+canonical_product_ids:
+  - "CP0000602"
+  - "CP0000603"
+  - "CP0000604"
+name: "Mahou Clasica Premium Beer"
+brewery: "Mahou San Miguel"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

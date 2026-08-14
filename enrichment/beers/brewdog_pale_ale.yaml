@@ -1,0 +1,10 @@
+beer_key: "brewdog_pale_ale"
+canonical_product_ids:
+  - "CP0000838"
+name: "Brewdog Pale Ale"
+brewery: "BrewDog"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

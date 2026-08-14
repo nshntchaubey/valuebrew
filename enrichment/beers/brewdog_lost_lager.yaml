@@ -1,0 +1,12 @@
+beer_key: "brewdog_lost_lager"
+canonical_product_ids:
+  - "CP0000836"
+  - "CP0000840"
+  - "CP0000847"
+name: "Brewdog Lost Lager"
+brewery: "BrewDog"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []

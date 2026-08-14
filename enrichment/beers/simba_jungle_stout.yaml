@@ -1,0 +1,12 @@
+beer_key: "simba_jungle_stout"
+canonical_product_ids:
+  - "CP0000615"
+  - "CP0000619"
+  - "CP0000626"
+name: "Simba Jungle Stout Beer"
+brewery: "Simba Brewery"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

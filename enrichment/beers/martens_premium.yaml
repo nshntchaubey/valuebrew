@@ -1,0 +1,11 @@
+beer_key: "martens_premium"
+canonical_product_ids:
+  - "CP0001097"
+  - "CP0001098"
+name: "Martens Premium Beer"
+brewery: "Martens Brouwerij"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

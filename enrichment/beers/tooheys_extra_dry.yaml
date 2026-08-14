@@ -1,0 +1,10 @@
+beer_key: "tooheys_extra_dry"
+canonical_product_ids:
+  - "CP0000975"
+name: "Tooheys Extra Dry Australian Beer"
+brewery: "Lion"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

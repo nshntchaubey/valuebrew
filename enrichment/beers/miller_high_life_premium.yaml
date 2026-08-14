@@ -1,0 +1,12 @@
+beer_key: "miller_high_life_premium"
+canonical_product_ids:
+  - "CP0000793"
+  - "CP0000794"
+  - "CP0000798"
+name: "Miller High Life Premium Beer"
+brewery: "Molson Coors"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

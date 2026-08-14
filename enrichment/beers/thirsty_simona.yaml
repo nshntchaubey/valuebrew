@@ -1,0 +1,10 @@
+beer_key: "thirsty_simona"
+canonical_product_ids:
+  - "CP0001017"
+name: "Thirsty Simona Beer"
+brewery: "Thirsty Beers"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

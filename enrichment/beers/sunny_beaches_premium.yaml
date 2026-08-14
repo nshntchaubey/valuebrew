@@ -1,0 +1,13 @@
+beer_key: "sunny_beaches_premium"
+canonical_product_ids:
+  - "CP0000286"
+  - "CP0000287"
+  - "CP0000288"
+  - "CP0000302"
+name: "Sunny Beaches Premium Beer"
+brewery: "Som Distilleries and Breweries"
+style: unknown
+abv: unknown
+calories_per_100ml: unknown
+is_craft: false
+images: []

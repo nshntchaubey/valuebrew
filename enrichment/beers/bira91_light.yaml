@@ -1,0 +1,20 @@
+beer_key: "bira91_light"
+canonical_product_ids:
+  - "CP0000333"
+  - "CP0000334"
+  - "CP0000383"
+  - "CP0000384"
+  - "CP0000442"
+  - "CP0000454"
+  - "CP0000504"
+  - "CP0000593"
+  - "CP0000638"
+  - "CP0000642"
+  - "CP0000643"
+name: "Original Bira 91 Light Beer"
+brewery: "B9 Beverages Private Limited"
+style: "lager"
+abv: unknown
+calories_per_100ml: unknown
+is_craft: true
+images: []
