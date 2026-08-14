@@ -1,5 +1,7 @@
 # ValueBrew — Catalog Implementation Backlog
 
+**[HISTORICAL — superseded by RC1, 2026-08-14.** This backlog's Part 5 task list (38 tasks) is complete: `tool/catalog_builder/` and `enrichment/` are both built, tested, and shipped; `catalog/catalog.json` is real, generated production output. Kept as the historical record of the plan that was executed, not as a current-state document — see `docs/PROJECT-BRAIN.md` §16 for current status. The rest of this document is left unedited below.]**
+
 *An implementation audit, not architecture. Every decision this document depends on has already been made, across Decision Engine 2.0, Beer Knowledge Model 2.0, Domain Model 1.0, Beer Entity Specification 1.0, Catalog Specification 1.0, Catalog Contract 1.0, Catalog Builder Architecture, Catalog Implementation Architecture, Catalog Builder Implementation Design, the Catalog Enrichment Playbook, the Beer Knowledge Base Architecture, the Recommendation Engine Implementation, and the four Experience Specifications — all read in full again for this audit, cross-checked directly against the actual repository state. This document adds no new decision anywhere. It answers one question only: what code, in what order, gets the repository from where it stands today to a real, populated `catalog.json` running inside the app.*
 
 ---

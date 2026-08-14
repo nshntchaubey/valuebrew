@@ -8,8 +8,10 @@ found against `docs/architecture/current/` for any shipped capability.
 **Repository status:** Internally consistent. `flutter analyze` clean;
 no stale documentation, dead code, or unresolved inconsistency remains
 as of this version.
-**Testing status:** 562 tests passing, unit and widget, covering every
-domain function and every screen independently.
+**Testing status:** 585 Flutter tests passing (unit and widget, covering
+every domain function and every screen independently), plus 320 Python
+tests for the Catalog Builder (`tool/catalog_builder/`) — 905 total as
+of the RC1 checkpoint (2026-08-14).
 **Documentation status:** Complete for what's implemented —
 `docs/engineering/Version-1-Architecture-Reference.md` is the permanent,
 as-built engineering reference; `README.md`, `RELEASE_NOTES.md`,

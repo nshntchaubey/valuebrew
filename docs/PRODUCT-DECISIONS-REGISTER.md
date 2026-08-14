@@ -213,7 +213,7 @@ Every decision below carries an ID (D1–D21) used consistently across all eight
 | D16 | Nothing currently — all three are explicitly deferred, unroadmapped future work |
 | D17 | Any future KSBCL migration that narrows the identity key (directly named as a consequence of D13's own eventual resolution) |
 | D18 | **Blocks actual app store submission outright** — both major stores require these declarations before an app carrying alcohol-related content can be listed at all |
-| D19 | **Blocks Milestone 6 onward** in the Implementation Bootstrap Plan (Recommendation, Beer Detail, Price Verification, Comparison all depend on real catalog data); indirectly blocks D1 and D20 from ever being validated against real data rather than the current 1-SKU placeholder catalog |
+| D19 | **Blocks Milestone 6 onward** in the Implementation Bootstrap Plan (Recommendation, Beer Detail, Price Verification, Comparison all depend on real catalog data); indirectly blocks D1 and D20 from ever being validated against real data rather than the current 1-SKU placeholder catalog. **[RC1 status note, 2026-08-14]: a real catalog now exists (57 SKUs, 8 beers) — D1/D20 can now be checked against real data. This does not itself constitute a formal resolution of D19, which remains open as a decision.** |
 | D20 | Any real catalog Beer arriving without an assigned Style — blocks correct behavior of Style Standing display and Recommendation's style-refinement step for such Beers, structurally identical in shape to D1 |
 | D21 | Nothing currently — Recommendation and Price Verification's real code already satisfy this property mechanically (confirmed directly in `generate_recommendation.dart` and `verify_price.dart`); this only blocks formal ratification, not behavior |
 
@@ -305,7 +305,7 @@ Every decision below carries an ID (D1–D21) used consistently across all eight
 
 # Part 7 — Decision Interactions
 
-**D19 is the root dependency for the largest cluster in this register.** Until the Beer Knowledge Base's real data source is decided, D1 and D20 cannot be validated against anything but a 1-SKU placeholder catalog — both are currently theoretical-but-certain problems that become concretely, visibly urgent the moment real data loads. Resolving D19 doesn't resolve D1 or D20 itself, but it is the precondition for either one mattering in practice.
+**D19 is the root dependency for the largest cluster in this register.** Until the Beer Knowledge Base's real data source is decided, D1 and D20 cannot be validated against anything but a 1-SKU placeholder catalog — both are currently theoretical-but-certain problems that become concretely, visibly urgent the moment real data loads. Resolving D19 doesn't resolve D1 or D20 itself, but it is the precondition for either one mattering in practice. **[RC1 status note, 2026-08-14]: real data now loads (57 SKUs, 8 beers) — D1/D20 are checkable in practice, not merely theoretical, though D19 itself remains formally open.**
 
 **D13 must be resolved before D17 can be meaningfully attempted.** D17 (consolidating two already-live canonical products) is explicitly named, in its own source document, as a scenario that becomes necessary specifically *if* D13 is resolved in a way that narrows the identity key — D17 has no independent content until D13 closes.
 

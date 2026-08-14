@@ -138,6 +138,7 @@ Playing the founder trying to kill this project:
 ## 6. Revised Roadmap
 
 ### Milestone 1 — Hand-Built Launch Catalog (replaces old M1 + M2)
+- **[RC1 status note, 2026-08-14]: superseded by a different approach.** Rather than a hand-built catalog bypassing the KSBCL pipeline, an automated Catalog Builder (`tool/catalog_builder/`) was built to join the pipeline's real pricing data against a curated `enrichment/` knowledge base — see `docs/PROJECT-BRAIN.md` §16. Current real output: 57 publication-ready SKUs across 8 beers, below this milestone's 100-SKU target (253 more are enriched but blocked on missing ABV). Left below as the original, not-taken plan.
 - **Goal:** Get 100–150 real, ABV-complete, Karnataka-priced SKUs into `catalog.json`, without touching the KSBCL pipeline.
 - **Deliverables:** A short, prioritized shelf-walk list (Madhuloka's top sellers + confirmed KSBCL brands); label photos for ABV/style; prices from the shelf walk or Madhuloka's site; hand-entered `catalog.json`.
 - **Success criteria:** ≥100 SKUs, every one with real ABV, real style, real size, real price.
@@ -154,6 +155,7 @@ Playing the founder trying to kill this project:
 - **Why here:** Should never have been buried inside a later "compliance" milestone — it's a go/no-go question, not a checklist item.
 
 ### Milestone 3 — Real-Catalog App Validation
+- **[RC1 status note, 2026-08-14]: substantially complete.** The real catalog (57 SKUs) loads and Recommendation → Beer Detail was verified end-to-end with zero errors; not yet walked through on a physical Android device specifically.
 - **Goal:** Confirm the existing 4-screen app works end-to-end against real, messy, hand-collected data.
 - **Deliverables:** `catalog.json` swapped in; manual walkthrough of all four screens; new tests for real-data edge cases the placeholder never exercised.
 - **Success criteria:** A complete recommendation → detail → verification flow works on a real device with no crashes.

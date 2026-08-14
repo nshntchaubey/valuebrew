@@ -16,19 +16,21 @@
 - **Price Verification screen** (`lib/features/price_verification/presentation/`) — real, reachable, already verified (Price Verification Experience Specification) — the most precisely-matched implementation found in this whole review; no changes proposed.
 - **Home screen** (`lib/features/discovery/presentation/`) — real, reachable, minimal, correctly scoped to its own doc comment's admission that Search/Browse and Price Verification entry points "arrive incrementally."
 
-**Partially complete:**
-- **`catalog/catalog.json`** — exists, loads, parses correctly, but is still the original 1-SKU hand-authored placeholder (confirmed again by direct inspection: `catalog_version: 1`, one SKU). Not a real, Catalog-Builder-produced artifact.
-- **The whiskey-contamination fix** — confirmed, by direct inspection of the current working tree, to already exist: `tool/ksbcl_pricing_pipeline/beer_classification.yaml` and `tests/test_classify.py` are both modified (uncommitted), adding `whiskey` to the exclusion vocabulary. **But it has not been applied to real data** — `pricing_data/beer_master.csv` still contains both confirmed contaminated rows (`CP0000001`, `CP0000955`), because Stages 4–5 were deliberately not re-run after the fix landed (Project Brain §11, item 4). The fix is real; the data it should have cleaned is not yet clean.
+**[RC1 status note, 2026-08-14]: the two subsections below ("Partially complete" / catalog.json line, and "Specified but unbuilt") describe the pre-RC1 state and are now out of date. `tool/catalog_builder/` and `enrichment/` are both built, tested, and in production; `catalog/catalog.json` is real, generated output (`catalog_version: 2`, 8 beers, 57 SKUs), not the 1-SKU placeholder. Full current status: `docs/PROJECT-BRAIN.md` §16. Left otherwise unedited below as the original pre-RC1 planning record.**
 
-**Specified but unbuilt:**
+**Partially complete:**
+- **`catalog/catalog.json`** — at the time of writing: exists, loads, parses correctly, but is still the original 1-SKU hand-authored placeholder (confirmed again by direct inspection: `catalog_version: 1`, one SKU). Not a real, Catalog-Builder-produced artifact.
+- **The whiskey-contamination fix** — confirmed, by direct inspection of the current working tree, to already exist: `tool/ksbcl_pricing_pipeline/beer_classification.yaml` and `tests/test_classify.py` are both modified (uncommitted), adding `whiskey` to the exclusion vocabulary. **But it has not been applied to real data** — `pricing_data/beer_master.csv` still contains both confirmed contaminated rows (`CP0000001`, `CP0000955`), because Stages 4–5 were deliberately not re-run after the fix landed (Project Brain §11, item 4). The fix is real; the data it should have cleaned is not yet clean. (The fix is now committed — `07982a2` — per Project Brain's RC1-checkpoint correction; whether it has been applied to a fresh Stages 2–5 rerun is a separate, unconfirmed question.)
+
+**Specified but unbuilt (at the time of writing):**
 - **`tool/catalog_builder/`** — the entire package (19 modules, 6 CLIs) is fully specified in Catalog Builder Implementation Design; zero lines of it exist (confirmed by direct search immediately before writing this document).
 - **`enrichment/`** — the Beer Knowledge Base directory, fully specified in Beer Knowledge Base Architecture; does not exist anywhere in the repository.
-- **Comparison screen** — fully specified (Comparison Experience Specification); the real, canonical implementation has zero lines of code. `lib/features/compare/` exists but is confirmed, again, unreachable from `app.dart` — dead Generation 1 code, not a partial implementation of the real thing.
+- **Comparison screen** — fully specified (Comparison Experience Specification); the real, canonical implementation has zero lines of code. `lib/features/compare/` exists but is confirmed, again, unreachable from `app.dart` — dead Generation 1 code, not a partial implementation of the real thing. **(Still true post-RC1 — Comparison was out of scope for the catalog-builder arc.)**
 
-**Completely absent:**
-- Search/Browse Results — not merely unbuilt, has no Screen Contract anywhere in canon (Product Decisions Register D2). Genuinely a step further back than "specified but unbuilt."
-- Any validation tooling for `enrichment/` or `catalog.json` (`schema_validate.py`, `cross_reference_validate.py`, etc.) — none exists.
-- Any build manifest, versioning tooling, or CLI of any kind for the catalog side.
+**Completely absent (at the time of writing):**
+- Search/Browse Results — not merely unbuilt, has no Screen Contract anywhere in canon (Product Decisions Register D2). Genuinely a step further back than "specified but unbuilt." **(Still true post-RC1.)**
+- Any validation tooling for `enrichment/` or `catalog.json` (`schema_validate.py`, `cross_reference_validate.py`, etc.) — none exists. **(No longer true — `schema_validate.py`, `cross_reference_validate.py`, `business_rules.py`, and `validation_report.py` all exist and are tested.)**
+- Any build manifest, versioning tooling, or CLI of any kind for the catalog side. **(No longer true — `build_manifest.py`, `version.py`, and the full CLI surface exist.)**
 
 ---
 

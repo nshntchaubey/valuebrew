@@ -8,9 +8,9 @@
 
 | Dimension | State Today | Biggest Bottleneck |
 |---|---|---|
-| **Product** | 4 of 6 canonical screens shipped (Home, Recommendation, Beer Detail, Price Verification), fully spec'd and tested against a placeholder catalog. Never run against real data or a real human. | Has never been used by a real person. |
-| **Engineering** | 571 tests, zero architectural pattern breaks across 8 milestones, rigorous governance discipline. | Not currently the constraint — this dimension is ahead of every other one and doesn't need more investment right now. |
-| **Data** | KSBCL pipeline produces real government pricing (Stages 1–3 frozen/tested, 4–5 implemented), but has an active, unpatched `true_prior_map` defect that can corrupt canonical identity on rerun, has no built join to the app's `catalog.json`, and has zero ABV/style coverage — no automated source for either exists. | No real, ABV-complete catalog reaches the app. |
+| **Product** | 4 of 6 canonical screens shipped (Home, Recommendation, Beer Detail, Price Verification), fully spec'd. **[RC1 status note, 2026-08-14]: now run against real data (57 SKUs, 8 beers) and verified end-to-end with zero errors — the "placeholder catalog" and "never run against real data" claims here are from before RC1.** Still never used by a real human. | Has never been used by a real person. |
+| **Engineering** | 571 tests, zero architectural pattern breaks across 8 milestones, rigorous governance discipline. **[RC1 status note: now 905 tests (585 Flutter + 320 Python), `flutter analyze` clean.]** | Not currently the constraint — this dimension is ahead of every other one and doesn't need more investment right now. |
+| **Data** | KSBCL pipeline produces real government pricing (Stages 1–3 frozen/tested, 4–5 implemented), but has an active, unpatched `true_prior_map` defect that can corrupt canonical identity on rerun, has no built join to the app's `catalog.json`, and has zero ABV/style coverage — no automated source for either exists. **[RC1 status note: the join to `catalog.json` now exists and is automated (`tool/catalog_builder/`); ABV/style coverage is still manually sourced (label photography) and remains the binding constraint — 253 enriched SKUs are blocked purely on missing ABV. The `true_prior_map` defect is unchanged.]** | No real, ABV-complete catalog reaches the app. **[Partially superseded: a real catalog now reaches the app — 57 SKUs — though ABV coverage remains the limiting factor for growing it further.]** |
 | **Legal** | Alcohol-advertising/promotion regulatory status of the app as designed has never been checked. Only a narrower, unrelated question (import-data resale) was researched. | Complete unknown, with zero mitigation started. |
 | **Design** | Behavior specified in exhaustive detail (Screen Contracts); zero visual/interaction design work, zero real-device usability evidence. | No idea whether the actual experience works for a real person. |
 | **Business** | No monetization model, pricing, or unit economics anywhere — deliberately deferred, per the fixed strategy, until after validation. | Not a launch blocker, but a known gap to revisit immediately post-validation. |
@@ -48,6 +48,7 @@ Everything else — the pipeline defect fix, full pipeline-to-app automation, Se
 - **Biggest risk:** Real answer is "not as designed" and forces language/UX changes into the canon's own Lexicon (e.g. "Recommend," comparative claims) — better to discover this now than after Phase 2.
 
 ### Phase 1 — Minimal Real Catalog
+- **[RC1 status note, 2026-08-14]: superseded by a different approach** — an automated Catalog Builder was built instead of hand-collecting a shelf-walk catalog; current real output is 57 SKUs / 8 beers, below this phase's 100–150 target. See `docs/PROJECT-BRAIN.md` §16.
 - **Objective:** Get 100–150 real, ABV-complete, Karnataka-priced SKUs into `catalog.json`.
 - **Deliverables:** A prioritized shelf-walk list (top KSBCL-confirmed and Madhuloka-listed brands); label photos for ABV/style; observed real prices; hand-entered catalog data.
 - **Exit criteria:** ≥100 SKUs, every one with non-null ABV, style, size, container type, and a dated real price.
@@ -56,6 +57,7 @@ Everything else — the pipeline defect fix, full pipeline-to-app automation, Se
 - **Biggest risk:** Manual collection takes longer than estimated; coverage gaps for less-common brands testers actually ask about.
 
 ### Phase 2 — Real-Data Integration & QA
+- **[RC1 status note, 2026-08-14]: substantially complete** — real catalog loads, Recommendation → Beer Detail verified end-to-end with zero errors; physical-device QA specifically not yet done.
 - **Objective:** Prove the existing app works end-to-end against real, messy data.
 - **Deliverables:** `catalog.json` swapped in; full manual walkthrough of all 4 screens; new tests for real-data edge cases the placeholder never exercised (missing fields, near-duplicate names).
 - **Exit criteria:** A complete recommendation → detail → verification flow runs with zero crashes on ≥2 physical Android devices; existing test suite passes against the real-catalog build.

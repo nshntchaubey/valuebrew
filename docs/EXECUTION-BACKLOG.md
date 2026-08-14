@@ -21,6 +21,7 @@
 - **Dependencies:** Data collection can start immediately; shipping requires E1 resolved.
 - **Priority:** P0
 - **Effort:** L
+- **[RC1 status note, 2026-08-14]:** the strategy actually taken differs from this section's proposed hand-collected shelf-walk approach — an automated Catalog Builder (`tool/catalog_builder/`) was built instead, joining the KSBCL pipeline's real pricing data against a curated `enrichment/` knowledge base. Current real output: 57 publication-ready SKUs across 8 beers (below the ≥100 target here; 253 more SKUs are enriched but blocked purely on missing ABV — see RC2 roadmap). Not a literal completion of this task as specified, but the same underlying goal via a different, more durable mechanism.
 
 ### E3. Real-Data App Integration & QA
 - **Purpose:** Prove the existing 4-screen app works end-to-end against real, messy data.
@@ -29,6 +30,7 @@
 - **Dependencies:** E2.
 - **Priority:** P0
 - **Effort:** M
+- **[RC1 status note, 2026-08-14]:** substantially complete — the real catalog (57 SKUs) loads and the Recommendation → Beer Detail flow was verified end-to-end with zero errors, full test suite passing (905 tests). Not yet verified on a physical Android device specifically (verification was done in a running web build).
 
 ### E4. Compliance & Store Readiness
 - **Purpose:** Clear every store/regulatory readiness item.
