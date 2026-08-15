@@ -6,7 +6,12 @@ canonical_product_ids:
 name: "Miller High Life Premium Beer"
 brewery: "Molson Coors"
 style: "lager"
-abv: unknown
+abv:
+  value: 4.6
+  source_type: "manufacturer"
+  source_name: "Miller High Life official brand site, https://www.millerhighlife.com, states ABV: 4.6% for the original Miller High Life (distinct from Miller High Life Light at 4.1%). Note: Molson Coors' own molsoncoors.com brand page for Miller High Life carries no ABV data and defers elsewhere; a separate Molson Coors PDF (US Nutritional Information - Lower Alcohol) lists a differently-labeled '3.2%' regulatory variant at 3.7% ABV, confirmed to be a distinct US-only low-alcohol product category, not used here. Checked 2026-08-14"
+  observed_at: 2026-08-14
+  observed_by: "founder"
 calories_per_100ml: unknown
 is_craft: false
 images: []

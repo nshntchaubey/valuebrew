@@ -9,7 +9,12 @@ canonical_product_ids:
 name: "Stok Lager Fine Beer"
 brewery: "Mount Everest Breweries"
 style: "lager"
-abv: unknown
+abv:
+  value: 4.8
+  source_type: "manufacturer"
+  source_name: "Mount Everest Breweries official site, https://mounteverestbreweries.com/products/stok/, STOK Lager format-option spec table states ABV%: 4.8% consistently across all three pack sizes (325ml, 650ml, 500ml can); FAQ answer independently confirms 4.8%, no conflict, checked 2026-08-14"
+  observed_at: 2026-08-14
+  observed_by: "founder"
 calories_per_100ml: unknown
 is_craft: false
 images: []

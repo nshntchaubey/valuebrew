@@ -5,7 +5,12 @@ canonical_product_ids:
 name: "Lemount Premium Super Strong Beer"
 brewery: "Mount Everest Breweries"
 style: "strong_lager"
-abv: unknown
+abv:
+  value: 7.0
+  source_type: "manufacturer"
+  source_name: "Mount Everest Breweries official site, https://mounteverestbreweries.com/products/lemount/, Lemount Super Strong format-option spec table states ABV%: 7.0% consistently across both pack sizes (500ml can, 650ml bottle); page title itself also states 7% ABV, checked 2026-08-14"
+  observed_at: 2026-08-14
+  observed_by: "founder"
 calories_per_100ml: unknown
 is_craft: false
 images: []

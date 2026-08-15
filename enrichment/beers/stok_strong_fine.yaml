@@ -9,7 +9,12 @@ canonical_product_ids:
 name: "Stok Strong Fine Beer"
 brewery: "Mount Everest Breweries"
 style: "strong_lager"
-abv: unknown
+abv:
+  value: 7.0
+  source_type: "manufacturer"
+  source_name: "Mount Everest Breweries official site, https://mounteverestbreweries.com/products/stok/, STOK Strong format-option spec table states ABV%: 7% consistently across all three pack sizes (325ml, 650ml, 500ml can). CONFLICT NOTED: the same page's FAQ section states 8% ABV in two separate answers. Resolved in favor of the structured, per-pack-size spec table (RC3.1 Manufacturer Evidence Hierarchy Tier 1) over the FAQ prose (Tier 4) — the table's identical repetition across three independent pack-size entries is more consistent with a maintained product-database figure than the FAQ's likely-reused marketing figure. Checked 2026-08-14; a physical label check would resolve this conflict with higher confidence."
+  observed_at: 2026-08-14
+  observed_by: "founder"
 calories_per_100ml: unknown
 is_craft: false
 images: []
