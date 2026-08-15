@@ -286,6 +286,48 @@ def test_abv_calories_and_package_type_match_enriched_values(tmp_path: Path):
     assert sku_by_id["CP0000010"].price == 145.0
 
 
+def test_unknown_calories_still_publishes_end_to_end(tmp_path: Path):
+    # Product Decisions Register D22: a beer with known ABV and style but
+    # unknown calories now publishes with calories=None, not excluded --
+    # a standalone one-beer fixture so this doesn't touch the shared
+    # _ROWS/_STYLES fixture every other test in this file also depends on.
+    beer_master_path = tmp_path / "beer_master.csv"
+    with beer_master_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(EXPECTED_COLUMNS))
+        writer.writeheader()
+        writer.writerow(_ROWS[1])  # CP0000002, kingfisher, 330ml
+
+    enrichment_dir = tmp_path / "enrichment"
+    beers_dir = enrichment_dir / "beers"
+    beers_dir.mkdir(parents=True)
+    (enrichment_dir / "styles.yaml").write_text(yaml.safe_dump([_STYLES[0]]), encoding="utf-8")
+    (beers_dir / "kingfisher_premium.yaml").write_text(
+        yaml.safe_dump(dict(_KINGFISHER_BEER, canonical_product_ids=["CP0000002"], calories_per_100ml="unknown")),
+        encoding="utf-8",
+    )
+
+    accepted, _ = read_beer_master_csv(beer_master_path)
+    admitted_rows, contaminated_rows = filter_contamination(accepted, load_default_exclusion_terms())
+    contaminated_ids = {r.canonical_product_id for r in contaminated_rows}
+    styles = load_styles(enrichment_dir / "styles.yaml")
+    style_keys = {s.style_key for s in styles}
+    beers, rejected_beer_files = load_beers(beers_dir, style_keys)
+    invalid_beer_keys = compute_invalid_beer_keys(beers_dir, enrichment_dir / "styles.yaml")
+
+    join_result = join(admitted_rows, contaminated_row_ids=contaminated_ids, beers=beers)
+    business_result = apply_business_rules(join_result.joined, invalid_beer_keys=invalid_beer_keys)
+    assert business_result.rejected == []
+    assert business_result.admitted[0].warnings == ["missing_calories"]
+
+    cross_ref_result = validate_cross_references(business_result.admitted, style_keys=style_keys)
+    catalog = assemble_catalog(cross_ref_result.valid, styles, catalog_version=1, generated_at=datetime(2026, 8, 13, 12, 0, 0))
+
+    assert len(catalog.skus) == 1
+    assert catalog.skus[0].id == "CP0000002"
+    assert catalog.skus[0].calories is None
+    assert catalog.skus[0].abv == 4.8
+
+
 def test_value_scores_and_verdicts_are_well_formed(tmp_path: Path):
     catalog, _, _, _ = _run_full_build(tmp_path)
     for sku in catalog.skus:

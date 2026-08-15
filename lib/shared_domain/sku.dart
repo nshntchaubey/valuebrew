@@ -90,6 +90,11 @@ enum ValueVerdict {
 /// }
 /// ```
 ///
+/// `calories` may also be `null` in the catalog JSON — Product Decisions
+/// Register D22 downgraded missing calories from a blocking publication
+/// rule to a warning, so a published SKU may legitimately have no known
+/// calorie value.
+///
 /// `price`, `calories`, and `value_score` are parsed via [num] coercion
 /// (`.toDouble()` / `.toInt()`) rather than a strict cast, since the catalog
 /// build script may emit them as either a JSON integer or a JSON decimal.
@@ -114,8 +119,9 @@ class Sku {
   /// Alcohol by volume, as a percentage, e.g. `4.8` for 4.8%.
   final double abv;
 
-  /// Calorie count for this SKU.
-  final int calories;
+  /// Calorie count for this SKU, or `null` if not yet known (Product
+  /// Decisions Register D22 — a warning, not a publication blocker).
+  final int? calories;
 
   /// Price in rupees.
   final double price;
@@ -151,7 +157,7 @@ class Sku {
     required this.sizeMl,
     required this.packageType,
     required this.abv,
-    required this.calories,
+    this.calories,
     required this.price,
     required this.priceLastChecked,
     required this.priceSource,
@@ -169,7 +175,7 @@ class Sku {
       sizeMl: json['size_ml'] as int,
       packageType: PackageType.fromJson(json['package_type'] as String),
       abv: (json['abv'] as num).toDouble(),
-      calories: (json['calories'] as num).toInt(),
+      calories: (json['calories'] as num?)?.toInt(),
       price: (json['price'] as num).toDouble(),
       priceLastChecked: DateTime.parse(json['price_last_checked'] as String),
       priceSource: json['price_source'] as String,
@@ -210,6 +216,11 @@ class Sku {
   }
 
   /// Returns a copy of this [Sku] with the given fields replaced.
+  ///
+  /// Since [calories] is itself nullable, this cannot distinguish "leave
+  /// calories unchanged" from "set calories to null" — no caller has
+  /// needed to clear a known calorie value, so that case isn't supported
+  /// here; pass a non-null value or omit the parameter.
   Sku copyWith({
     String? id,
     String? beerId,
@@ -263,19 +274,19 @@ class Sku {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        beerId,
-        sizeMl,
-        packageType,
-        abv,
-        calories,
-        price,
-        priceLastChecked,
-        priceSource,
-        costPerLitre,
-        costPerMlAlcohol,
-        Object.hash(valueScore, valueVerdict),
-      );
+    id,
+    beerId,
+    sizeMl,
+    packageType,
+    abv,
+    calories,
+    price,
+    priceLastChecked,
+    priceSource,
+    costPerLitre,
+    costPerMlAlcohol,
+    Object.hash(valueScore, valueVerdict),
+  );
 
   @override
   String toString() =>

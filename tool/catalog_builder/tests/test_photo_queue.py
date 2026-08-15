@@ -65,6 +65,23 @@ def test_beer_missing_only_calories_when_abv_already_known():
     assert entries[0].missing_fields == ["calories"]
 
 
+def test_beer_missing_only_calories_is_excluded_since_it_already_publishes():
+    # Product Decisions Register D22: missing_calories is a warning now,
+    # not a business_rules rejection -- so a beer with known ABV and only
+    # unknown calories is already publishable, and business_rules.py
+    # never emits a "missing_calories" rejected_details entry for it.
+    # There is nothing left for a photo to unlock; it correctly drops out
+    # of this queue (whose own docstring scopes it to beers "still
+    # blocked"), unlike before D22 when this same beer would have
+    # appeared with fixable_sku_count == 1.
+    beers = [_beer("a", ["CP1"], abv=_ABV)]
+    report = _report([])  # calories no longer produces a rejected_details entry
+
+    entries = build_photo_queue(beers, report)
+
+    assert entries == []
+
+
 def test_fully_evidenced_beer_is_excluded():
     beers = [_beer("a", ["CP1"], abv=_ABV, calories_per_100ml=_ABV)]
     report = _report([])

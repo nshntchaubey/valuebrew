@@ -90,6 +90,33 @@ def test_publication_ready_beer_reports_ready_and_not_yet_in_catalog(tmp_path: P
     assert result.skus[0].reason is None
 
 
+def test_missing_calories_alone_no_longer_blocks_readiness(tmp_path: Path):
+    # Product Decisions Register D22: calories is warning-only now.
+    beer_master_path, enrichment_dir = _setup(
+        tmp_path,
+        rows=[{"canonical_product_id": "CP0000002"}],
+        beer_files={
+            "kingfisher_premium.yaml": {
+                "beer_key": "kingfisher_premium",
+                "canonical_product_ids": ["CP0000002"],
+                "name": "Kingfisher Premium",
+                "brewery": "United Breweries",
+                "style": "lager",
+                "abv": _ABV_BLOCK,
+                "calories_per_100ml": "unknown",
+            }
+        },
+    )
+    result = check_publication_readiness(
+        "kingfisher_premium",
+        beer_master_path=beer_master_path,
+        enrichment_dir=enrichment_dir,
+        catalog_path=tmp_path / "catalog" / "catalog.json",
+    )
+    assert result.skus[0].publication_ready is True
+    assert result.skus[0].reason is None
+
+
 def test_missing_abv_reports_not_ready_with_reason(tmp_path: Path):
     beer_master_path, enrichment_dir = _setup(
         tmp_path,

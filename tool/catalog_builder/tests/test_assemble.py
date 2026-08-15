@@ -72,8 +72,12 @@ def _beer(beer_key: str, canonical_product_ids, **overrides) -> EnrichmentBeer:
     return EnrichmentBeer(**defaults)
 
 
-def _validated(row: BeerMasterRow, beer: EnrichmentBeer, package_type=PackageType.CAN) -> ValidatedSku:
-    admitted = AdmittedSku(joined=JoinedSku(row, beer), resolved_abv=_ABV, resolved_calories_per_100ml=_CALORIES)
+def _validated(
+    row: BeerMasterRow, beer: EnrichmentBeer, package_type=PackageType.CAN, resolved_calories_per_100ml=_CALORIES
+) -> ValidatedSku:
+    admitted = AdmittedSku(
+        joined=JoinedSku(row, beer), resolved_abv=_ABV, resolved_calories_per_100ml=resolved_calories_per_100ml
+    )
     return ValidatedSku(admitted=admitted, package_type=package_type)
 
 
@@ -141,6 +145,26 @@ def test_calories_scale_with_pack_size_from_one_shared_concentration():
     by_id = {s.id: s for s in catalog.skus}
     assert by_id["CP0000002"].calories == 165  # round(50 * 330 / 100)
     assert by_id["CP0000003"].calories == 325  # round(50 * 650 / 100)
+
+
+def test_unknown_calories_produces_none_not_a_crash():
+    # Product Decisions Register D22: a SKU can be admitted with
+    # resolved_calories_per_100ml=None (calories is warning-only now) --
+    # resolve_calories must pass that through as None, not raise or guess.
+    row = _row("CP0000002", pack_size_ml=330)
+    beer = _beer("kingfisher_premium", ["CP0000002"], calories_per_100ml=None)
+    catalog = assemble_catalog(
+        [_validated(row, beer, resolved_calories_per_100ml=None)],
+        [_LAGER],
+        catalog_version=1,
+        generated_at=_GENERATED_AT,
+    )
+
+    assert catalog.skus[0].calories is None
+    # Everything else about the SKU still assembles normally -- calories
+    # being unknown never touches ABV or Value Score.
+    assert catalog.skus[0].abv == 4.8
+    assert isinstance(catalog.skus[0].value_score, int)
 
 
 def test_multiple_styles_produce_multiple_benchmarks():

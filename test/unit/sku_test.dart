@@ -276,4 +276,80 @@ void main() {
       expect(result, contains('ValueVerdict.greatValue'));
     });
   });
+
+  group('Sku with unknown calories (Product Decisions Register D22)', () {
+    // D22 downgraded missing calories from a blocking publication rule to
+    // a warning, so the catalog JSON may legitimately carry a null
+    // "calories" value for a published SKU -- these guard against the
+    // exact crash risk that motivated this group: `Sku.fromJson`
+    // previously cast `json['calories']` straight to `num`, which throws
+    // a `TypeError` on `null` rather than failing gracefully.
+    final jsonWithNullCalories = {
+      'id': 'kf_premium_650',
+      'beer_id': 'kf_premium',
+      'size_ml': 650,
+      'package_type': 'bottle',
+      'abv': 4.8,
+      'calories': null,
+      'price': 110,
+      'price_last_checked': '2026-07-20',
+      'price_source': 'karnataka_excise_mrp_2026',
+      'cost_per_litre': 169.2,
+      'cost_per_ml_alcohol': 3.52,
+      'value_score': 78,
+      'value_verdict': 'great_value',
+    };
+
+    test('fromJson parses a null calories value without throwing', () {
+      final result = Sku.fromJson(jsonWithNullCalories);
+
+      expect(result.calories, isNull);
+    });
+
+    test('fromJson leaves every other field unaffected by null calories', () {
+      final result = Sku.fromJson(jsonWithNullCalories);
+
+      expect(result.abv, 4.8);
+      expect(result.price, 110.0);
+      expect(result.valueScore, 78);
+    });
+
+    test('toJson serializes a null calories value as null', () {
+      final sku = Sku.fromJson(jsonWithNullCalories);
+
+      expect(sku.toJson()['calories'], isNull);
+    });
+
+    test('fromJson -> toJson round-trips a null calories value', () {
+      expect(Sku.fromJson(jsonWithNullCalories).toJson(), jsonWithNullCalories);
+    });
+
+    test('constructor allows omitting calories, defaulting to null', () {
+      final sku = Sku(
+        id: 'kf_premium_650',
+        beerId: 'kf_premium',
+        sizeMl: 650,
+        packageType: PackageType.bottle,
+        abv: 4.8,
+        price: 110,
+        priceLastChecked: DateTime(2026, 7, 20),
+        priceSource: 'karnataka_excise_mrp_2026',
+        costPerLitre: 169.2,
+        costPerMlAlcohol: 3.52,
+        valueScore: 78,
+        valueVerdict: ValueVerdict.greatValue,
+      );
+
+      expect(sku.calories, isNull);
+    });
+
+    test('a null-calories Sku and a known-calories Sku are not equal', () {
+      final knownCalories = Sku.fromJson(
+        jsonWithNullCalories,
+      ).copyWith(calories: 260);
+      final nullCalories = Sku.fromJson(jsonWithNullCalories);
+
+      expect(nullCalories, isNot(equals(knownCalories)));
+    });
+  });
 }

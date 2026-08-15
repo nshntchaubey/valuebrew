@@ -36,23 +36,27 @@ ranked risk list gives them:**
    assembled into a valid `Beer` record until resolved — same shape as
    the ABV rule, same citation, applied to the one other field with an
    `unknown` escape valve.
-5. **Missing calories** — `Sku.calories` is required and non-nullable
-   in the real schema. `EnrichmentBeer` carries the manually-cited fact
-   as `calories_per_100ml` (a concentration, matching what manufacturer
-   sources actually publish — production enrichment found no source
-   that publishes a per-pack total directly) using the same
-   `AttributionBlock` pattern as ABV; `Sku.calories`, the per-pack total,
-   is computed from it at build time (`assemble.py`'s
-   `resolve_calories`), not entered directly. Same blocking shape as the
-   ABV/style rules — a beer whose `calories_per_100ml` is still
-   `unknown` blocks exactly like a beer whose `abv` is.
 
-**Warning-only, never blocking:** a stale price — `effective_date` more
-than one cycle behind the row's own `last_updated_run_month` (Catalog
-Builder Architecture Part 7's own "more than one documented cycle"
-language; Product Decisions Register D11 remains open on what, if
-anything, this should mean for *display* — this module only flags it in
-the report, never excludes on it).
+**Warning-only, never blocking:**
+
+- A stale price — `effective_date` more than one cycle behind the row's
+  own `last_updated_run_month` (Catalog Builder Architecture Part 7's
+  own "more than one documented cycle" language; Product Decisions
+  Register D11 remains open on what, if anything, this should mean for
+  *display* — this module only flags it in the report, never excludes
+  on it).
+- **Missing calories** — Product Decisions Register D22: downgraded
+  from a blocking rule to a warning. `value_metrics.py`/`value_score.py`
+  never reference calories at all — the app's core ranking metric is
+  computed entirely from ABV — so gating publication on it at the same
+  severity as ABV protected a fact the app's own scoring never uses.
+  `Sku.calories` is now `Optional[int]`; `EnrichmentBeer.calories_per_100ml`
+  still carries the manually-cited concentration exactly as before (no
+  schema change), scaled at build time by `assemble.py`'s
+  `resolve_calories` when known. A beer whose `calories_per_100ml` is
+  still `unknown` now publishes (given ABV and style are known) with a
+  `missing_calories` warning, the same shape `_is_price_stale` already
+  established for pricing — reused here, not reinvented.
 
 **Deliberately not implemented, flagged rather than silently skipped:**
 broken/unlicensed image references (Catalog Builder Architecture Part 7)
@@ -82,7 +86,7 @@ from .models import AttributionBlock
 class AdmittedSku:
     joined: JoinedSku
     resolved_abv: AttributionBlock
-    resolved_calories_per_100ml: AttributionBlock
+    resolved_calories_per_100ml: Optional[AttributionBlock]
     warnings: List[str] = field(default_factory=list)
 
 
@@ -175,20 +179,11 @@ def apply_business_rules(
             )
             continue
 
-        if beer.calories_per_100ml is None:
-            rejected.append(
-                RejectedJoinedSku(
-                    joined=joined_sku,
-                    reason_code="missing_calories",
-                    reason_detail="Sku.calories is required and non-nullable (Catalog Contract 1.0 Part 5); "
-                    "this beer's calories_per_100ml is still 'unknown'",
-                )
-            )
-            continue
-
         warnings: List[str] = []
         if _is_price_stale(row):
             warnings.append("stale_price")
+        if beer.calories_per_100ml is None:
+            warnings.append("missing_calories")
 
         admitted.append(
             AdmittedSku(

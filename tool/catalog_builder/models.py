@@ -272,14 +272,19 @@ class Beer:
 @dataclass(frozen=True)
 class Sku:
     """Matches `lib/shared_domain/sku.dart`'s `Sku` exactly — thirteen
-    fields, all non-nullable, per Catalog Contract 1.0 Part 5."""
+    fields, twelve non-nullable per Catalog Contract 1.0 Part 5.
+    `calories` is the one exception: Product Decisions Register D22
+    downgraded missing calories from a blocking publication rule to a
+    warning (`business_rules.py`'s own `missing_calories` warning code),
+    since `value_metrics.py`/`value_score.py` never use it — so a
+    published Sku may legitimately have no known calorie value."""
 
     id: str
     beer_id: str
     size_ml: int
     package_type: PackageType
     abv: float
-    calories: int
+    calories: Optional[int]
     price: float
     price_last_checked: date
     price_source: str

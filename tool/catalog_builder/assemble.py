@@ -17,17 +17,21 @@ one coherent pass. A more granular expression of the same sequence, per
 that design document's own Part 10 framing, not a different one.
 
 By the time a `ValidatedSku` reaches this module, `business_rules.py`
-has already guaranteed `resolved_abv` and `resolved_calories_per_100ml`
-are real values, and `cross_reference_validate.py` has already
-guaranteed the Beer's `style` resolves to a real `StyleDef` — so every
-lookup below is expected to succeed; a failure would mean an upstream
-invariant broke, and raises loudly rather than guessing.
+has already guaranteed `resolved_abv` is a real value, and
+`cross_reference_validate.py` has already guaranteed the Beer's `style`
+resolves to a real `StyleDef` — so every lookup below is expected to
+succeed; a failure would mean an upstream invariant broke, and raises
+loudly rather than guessing. `resolved_calories_per_100ml` is the one
+deliberate exception, per Product Decisions Register D22: it may
+legitimately be `None` (`business_rules.py` only warns on it now, never
+excludes), so `resolve_calories` below is the one lookup in this module
+written to expect that.
 """
 
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .benchmarks import compute_benchmarks
 from .cross_reference_validate import ValidatedSku
@@ -46,13 +50,19 @@ class AssembleError(Exception):
     of this one is already implemented and tested."""
 
 
-def resolve_calories(resolved_calories_per_100ml_block: AttributionBlock, pack_size_ml: int) -> int:
+def resolve_calories(
+    resolved_calories_per_100ml_block: Optional[AttributionBlock], pack_size_ml: int
+) -> Optional[int]:
     """`AttributionBlock.value` here is a concentration — kcal per
     100ml, exactly as manufacturers publish it (`EnrichmentBeer`'s own
     docstring) — while `Sku.calories` is the per-pack total the app
     actually shows. Scaled by this SKU's own `size_ml` and rounded to
     the nearest whole calorie, once, here, so no founder ever has to do
-    this arithmetic by hand or repeat it inconsistently per pack size."""
+    this arithmetic by hand or repeat it inconsistently per pack size.
+    `None` in, `None` out — a beer published under D22's
+    `missing_calories` warning has nothing to scale."""
+    if resolved_calories_per_100ml_block is None:
+        return None
     return int(round(resolved_calories_per_100ml_block.value * pack_size_ml / 100))
 
 

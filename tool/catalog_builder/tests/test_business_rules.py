@@ -126,11 +126,23 @@ def test_missing_style_is_rejected():
     assert result.rejected[0].reason_code == "missing_style"
 
 
-def test_missing_calories_is_rejected():
+def test_missing_calories_is_a_warning_not_a_rejection():
+    # Product Decisions Register D22: calories is warning-only now that
+    # value_metrics.py/value_score.py never use it -- unlike missing_abv
+    # and missing_style, this no longer excludes the SKU.
     joined = JoinedSku(_row("CP0000002"), _beer("x", ["CP0000002"], calories_per_100ml=None))
     result = apply_business_rules([joined], invalid_beer_keys=set())
-    assert result.admitted == []
-    assert result.rejected[0].reason_code == "missing_calories"
+    assert result.rejected == []
+    assert len(result.admitted) == 1
+    assert result.admitted[0].resolved_calories_per_100ml is None
+    assert result.admitted[0].warnings == ["missing_calories"]
+
+
+def test_missing_calories_and_stale_price_both_warn_together():
+    row = _row("CP0000002", effective_date=date(2026, 1, 1), last_updated_run_month="2026-06")
+    joined = JoinedSku(row, _beer("x", ["CP0000002"], calories_per_100ml=None))
+    result = apply_business_rules([joined], invalid_beer_keys=set())
+    assert result.admitted[0].warnings == ["stale_price", "missing_calories"]
 
 
 def test_stale_price_is_a_warning_not_a_rejection():
