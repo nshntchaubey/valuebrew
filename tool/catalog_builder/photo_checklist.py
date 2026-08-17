@@ -8,6 +8,15 @@ product identity, cite the specific photo) are easy to forget in the
 moment of standing in front of a shelf, so this prints them as
 non-skippable steps, not as a footnote.
 
+**[RC7.3 note]:** the founder has since ruled physical fieldwork out
+entirely for this project (the RC3 restart) — `manual_observation` as
+a source type still exists in the schema and remains valid if a real
+photo is ever taken, but manufacturer-sourced remote research, not
+fieldwork, is the project's actual current evidence path. This
+checklist's own content is left unchanged here — it is still correct
+for the case it describes, and rewriting or removing it would be a
+tooling redesign, out of scope for a documentation-only cleanup.
+
 Reuses `enrichment_schema.validate_beer_entry` to load the target beer
 — the exact same parser `create_beer.py`/`update_beer.py` already use —
 rather than re-reading the YAML shape a second way.

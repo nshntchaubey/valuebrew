@@ -1,16 +1,23 @@
-"""The founder's fieldwork queue — every Beer still blocked on
-`missing_abv`/`missing_calories`, ranked by how many real SKUs a
-physical label photo could unlock. Exists because remote manufacturer
-research (Catalog Enrichment Playbook Part 4, steps 1-5) has now been
-exhausted for the beers that remain: this module doesn't replace that
-research, it picks up exactly where it stopped — the moment the only
-credible next source is a physical can, bottle, or a legible photo of
-one (Playbook Part 4 item 1 / 1a).
+"""The founder's still-missing-evidence queue — every Beer still
+blocked on `missing_abv`, ranked by how many real SKUs resolving it
+would unlock. **[RC7.3 note]:** this module and its sibling tools
+(`photo_checklist.py`, `photo_progress.py`) were originally built
+around manual-observation fieldwork (Catalog Enrichment Playbook Part
+4, item 1a) — the founder has since ruled out physical fieldwork
+entirely for this project (the RC3 restart), and remote manufacturer
+research (Playbook Part 4, steps 1-5) turned out not to be exhausted
+after all, contrary to this module's original framing. The queue
+logic itself is unaffected either way and remains accurate; only this
+docstring's premise was stale. `missing_calories` is no longer part of
+what this queue ranks: Product Decisions Register D22 downgraded it
+from a blocking rule to a warning, so a beer missing only calories is
+already publishable and correctly absent from this list — see the
+comment on `_FIXABLE_REASON_CODES` below.
 
 **Reuses the real pipeline, invents no new rule.** `join.py` ->
 `business_rules.py` -> `cross_reference_validate.py`, run exactly once,
 the same sequence `build_catalog.py` already runs — this module never
-re-decides what counts as `missing_abv` or `missing_calories`; it reads
+re-decides what counts as `missing_abv`; it reads
 `validation_report.py`'s own per-SKU `rejected_details` and groups them
 by `beer_key`. If that pipeline's rules ever change, this queue's counts
 change with it automatically, not by editing this file.
@@ -20,11 +27,11 @@ shown separately, deliberately.** `grouped_sku_count` is simply
 `len(beer.canonical_product_ids)` — every SKU a founder has already
 identified as belonging to this beer. `fixable_sku_count` is narrower
 and more honest: only the SKUs whose *sole* remaining rejection reason
-is `missing_abv` or `missing_calories` — a SKU also blocked by
-`unsupported_package_type` (the real, separate container-type gap) or
-`product_unavailable` (delisted) would not become publishable from a
-photo alone, so it is not counted here. Ranking uses
-`fixable_sku_count`, since that is the number a photo can actually move.
+is `missing_abv` — a SKU also blocked by `unsupported_package_type`
+(the real, separate container-type gap) or `product_unavailable`
+(delisted) would not become publishable from new ABV evidence alone,
+so it is not counted here. Ranking uses `fixable_sku_count`, since
+that is the number resolving ABV can actually move.
 
 **`publication_potential` is a simple, documented tier, not a claim of
 precision.** High (>=10 fixable SKUs), Medium (3-9), Low (1-2) — picked
@@ -51,6 +58,13 @@ from .models import EnrichmentBeer
 from .validate_beer import compute_invalid_beer_keys
 from .validation_report import ValidationReport, build_validation_report
 
+# `missing_calories` is kept in this set intentionally, not by oversight
+# — it is harmless dead weight, not a bug. Since D22, calories is a
+# warning (business_rules.py), never a rejection, so no RejectionDetail
+# ever carries reason_code="missing_calories" anymore; the membership
+# below can never actually match. Left as-is rather than edited, since
+# removing it would touch this queue's own filtering logic, which this
+# repository-cleanup pass deliberately does not do — see RC7.3.
 _FIXABLE_REASON_CODES = {"missing_abv", "missing_calories"}
 
 _HIGH_THRESHOLD = 10
@@ -88,8 +102,8 @@ def build_photo_queue(beers: List[EnrichmentBeer], report: ValidationReport) -> 
     caller (see `_load_photo_queue_inputs` below for the real wiring).
     Only beers with `abv is None` or `calories_per_100ml is None` and at
     least one real fixable SKU appear here — a beer already fully
-    evidenced, or blocked only by something a photo can't fix, doesn't
-    belong on a fieldwork queue.
+    evidenced, or blocked only by something new ABV evidence can't fix,
+    doesn't belong on this queue.
     """
     fixable_counts: dict[str, int] = {}
     for detail in report.rejected_details:
@@ -108,9 +122,10 @@ def build_photo_queue(beers: List[EnrichmentBeer], report: ValidationReport) -> 
 
         fixable = fixable_counts.get(beer.beer_key, 0)
         if fixable == 0:
-            # Every SKU is blocked by something a photo can't fix
-            # (unsupported_package_type, product_unavailable, an
-            # invalid Beer entity) — real work, but not fieldwork.
+            # Every SKU is blocked by something new ABV evidence alone
+            # can't fix (unsupported_package_type, product_unavailable,
+            # an invalid Beer entity) — real remaining work, just not
+            # this queue's concern.
             continue
 
         entries.append(
@@ -156,7 +171,7 @@ def _load_photo_queue_inputs(repo_root: Path) -> tuple[List[EnrichmentBeer], Val
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="The founder's fieldwork queue — beers needing a physical label photo.")
+    parser = argparse.ArgumentParser(description="The founder's still-missing-evidence queue — beers still needing ABV evidence.")
     parser.add_argument("--top", type=int, default=None, help="show only the top N entries")
     parser.add_argument("--brewery", type=str, default=None, help="filter to breweries whose name contains TEXT")
     parser.add_argument("--missing-abv", action="store_true", help="show only beers missing abv")
@@ -182,7 +197,7 @@ def main() -> None:
         entries = entries[: args.top]
 
     total_fixable = sum(e.fixable_sku_count for e in entries)
-    print(f"Photo queue — {len(entries)} beer(s), {total_fixable} SKU(s) fixable with a real label photo")
+    print(f"Evidence queue — {len(entries)} beer(s), {total_fixable} SKU(s) fixable with new ABV evidence")
     print("=" * 78)
     for e in entries:
         fields = "+".join(e.missing_fields)

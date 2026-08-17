@@ -1,5 +1,10 @@
-"""The repository-wide fieldwork dashboard — where every enriched Beer
-currently sits, one bucket each, no beer counted twice. Companion to
+"""The repository-wide evidence-progress dashboard — where every
+enriched Beer currently sits, one bucket each, no beer counted twice.
+**[RC7.3 note]:** this module and its siblings (`photo_queue.py`,
+`photo_checklist.py`) were originally framed around manual-observation
+fieldwork — the founder has since ruled physical fieldwork out
+entirely for this project. The bucket logic below is unaffected and
+remains accurate; only that original framing was stale. Companion to
 `photo_queue.py` (which ranks the *work still to do*) and
 `enrichment_queue.py` (which tracks *candidates not yet grouped into any
 Beer at all*) — this module answers a different question: of the Beers
@@ -99,7 +104,7 @@ def _pct(numerator: int, denominator: int) -> float:
 
 
 def _print_report(p: ProgressReport) -> None:
-    print("Physical Evidence Workflow — Repository Progress")
+    print("Evidence Workflow — Repository Progress")
     print("=" * 78)
     print(f"Beers total:                      {p.total_beers}")
     print(
