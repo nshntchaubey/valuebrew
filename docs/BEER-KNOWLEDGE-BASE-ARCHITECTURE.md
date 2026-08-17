@@ -14,14 +14,15 @@
 
 ## Part 2 — Repository Layout
 
-Exactly the structure Catalog Implementation Architecture Part 1 already established, given its complete, final shape here — no new directory or file type is introduced.
+Exactly the structure Catalog Implementation Architecture Part 1 already established, given its complete, final shape here. **[RC7.7 addition, 2026-08-17]:** one new file type, `rejected_evidence.yaml`, was added — see Part 11. Every other statement below about "no new directory or file type" predates that addition and should be read as applying to everything except it.
 
 ```
 enrichment/
-  README.md          # editing guide — points here, and to the Catalog Enrichment Playbook
-  styles.yaml         # the full style vocabulary — one flat file, not one-per-style
+  README.md               # editing guide — points here, and to the Catalog Enrichment Playbook
+  styles.yaml              # the full style vocabulary — one flat file, not one-per-style
+  rejected_evidence.yaml   # researched evidence found and deliberately not curated (Part 11)
   beers/
-    <beer_key>.yaml    # one file per Beer — every pack size it comes in, together
+    <beer_key>.yaml         # one file per Beer — every pack size it comes in, together
 ```
 
 **Naming.** `<beer_key>` is a stable, human-assigned, lowercase snake_case slug (`kingfisher_premium.yaml`, `tuborg_strong.yaml`) — chosen once, at the moment a beer is first enriched, and never renamed casually afterward, since it is also the literal `Beer.id` a real, already-published `catalog.json` may already reference (Catalog Contract 1.0 Part 4). Renaming a `beer_key` after publication is a real identity change, not a cosmetic edit — treat it with the same seriousness Catalog Builder Architecture already gives to any identity-affecting change.
@@ -147,3 +148,46 @@ enrichment/
 - **Observed/Charged Price, under any framing, ever** — the one permanent, canon-wide prohibition every catalog document in this session has restated without exception; this repository is not an exception either.
 - **Ratings or Scores, of any kind** — the Canonical Interaction Lexicon's forbidden-terminology rule applies to this repository's own field design exactly as it applies to the app's copy.
 - **AI-generated content, for any field, ever** — restated from Catalog Implementation Architecture Part 10 at full strength: every field this repository holds requires a citable `source_type`/`source_name`/`observed_at`/`observed_by`. A model-generated value has no such citation and would corrupt the exact property — a founder or future reviewer being able to trust every fact here because it traces to something real — that this entire repository exists to guarantee.
+
+---
+
+## Part 11 — Rejected-Evidence Record
+
+**[RC7.7 addition, 2026-08-17]** — approved RC7.6, infrastructure built RC7.7 exactly as approved. Everything below is new; nothing in Parts 1–10 is redefined by it.
+
+**What this is, and what it deliberately is not.** A rejected-evidence entry is not a Beer/SKU field the way everything in Part 3 is — it records the *opposite* of a curated fact: a piece of researched evidence that was found during Catalog Enrichment Playbook Part 4's research workflow and specifically **not** used. Without a durable record of that, a rejection is invisible the moment the founder moves on — the next research pass (possibly the same founder, months later, with no memory of the first attempt) has no way to know a source was already checked and found wanting, and re-does the same dead-end search. This record exists purely to make that already-spent effort reusable.
+
+**Location and shape.** `enrichment/rejected_evidence.yaml` — one flat file, the same top-level shape `styles.yaml` uses (a list of mappings, not one file per entry). Every entry:
+
+| Field | Required | Type | Notes |
+|---|---|---|---|
+| `subject_type` | Required | string | `beer` \| `brewery` — closed, mirroring the two kinds of subject this repository already models |
+| `subject_key` | Required | string | A real `beer_key` (if `subject_type` is `beer`) or a `brewery` string already used by at least one `enrichment/beers/*.yaml` file (if `brewery`) — enforced by cross-reference validation, the same discipline Part 7 already applies to `style` references |
+| `field` | Required | string | The Beer/SKU field the evidence was about — `abv`, `calories_per_100ml`, `style`, `brewery`, etc. |
+| `value_found` | Required | string | The value that was found and rejected, exactly as found — not whatever value (if any) was ultimately curated instead |
+| `source_type` | Required | string | `manufacturer` \| `manual_observation` — the same closed vocabulary Part 5's attribution block already uses; not a new vocabulary |
+| `source_name` | Required | string | A specific citation, same discipline as Part 5 |
+| `reason_type` | Required | string | Closed enum — see the taxonomy below |
+| `reason_detail` | Required | string | A free-text explanation of the specific rejection — why this value, from this source, didn't become the curated fact |
+| `observed_at` | Required | date | When this piece of evidence was found and rejected |
+| `observed_by` | Required | string | Who |
+| `recheck_after` | Optional | date | When it's worth looking again, if this rejection reason implies that — omitted when it doesn't |
+
+**Reason taxonomy — approved RC7.6, closed, enforced by `enrichment_schema.py`:**
+
+| `reason_type` | Meaning |
+|---|---|
+| `wrong_variant` | The value was real, but for a different variant, strength, or pack size of the product than the one being enriched. |
+| `wrong_product_line` | The value belonged to a different, confusably-named product entirely — not the beer being enriched at all. |
+| `access_blocked` | A source likely holding the fact exists but couldn't be reached or read (paywall, region lock, a dead page, an illegible label photo) — often worth a `recheck_after`. |
+| `imprecise_value` | A real, on-topic value was found, but not precise enough to cite (e.g. rounded or ranged, where an exact figure is required). |
+| `incompatible_unit` | The value used a unit or basis that doesn't match this schema's field (e.g. ABV proof instead of percent, per-pack calories where per-100ml is required) and couldn't be safely converted. |
+| `conflicting_source_subordinate` | A real value from a real source, but the Catalog Enrichment Playbook's own source-priority order (Part 4 of that document) already provided a different value from a higher-priority source. |
+
+**Citation discipline is identical to Part 5's — deliberately, not by coincidence.** `source_type`/`source_name`/`observed_at`/`observed_by` are the exact same four fields, meaning the exact same thing, enforced the exact same way. A rejected finding is still a real, sourced observation; it earns the same citation rigor an accepted one does; Part 5's "never a plain scalar" rule applies here without exception.
+
+**Append-only.** Entries are never edited or removed by hand — `tool/catalog_builder/record_rejected_evidence.py` is the only supported way to add one, and it only ever appends (Part 3 of the Catalog Builder Implementation Design's own CLI philosophy, reused here rather than reinvented). A genuine correction to an already-recorded rejection (a `reason_detail` typo, say) is a normal, ordinary git edit to the YAML file directly, exactly as Part 6 already describes for Beer files — "append-only" governs how new findings are added, not whether the file is ever touched by a human editor at all.
+
+**Relationship to the Catalog Builder — deliberately none, as of RC7.7.** `rejected_evidence.yaml` is not read by `enrichment_reader.py`, `join.py`, `build_catalog.py`, or any other Catalog Builder module. It has no effect on `catalog.json`, on which SKUs publish, or on any validation a beer file undergoes. This is a research-support record, not an input to the product — the same relationship `enrichment/README.md` and Part 8 already describe for this whole repository generally, just stated explicitly for this one file since it's new.
+
+**Historical backfill is pending, not done.** As of RC7.7, `rejected_evidence.yaml` is empty. The six historical rejected-evidence cases referenced during RC7.6's approval are not reconstructible from anything in this repository and were deliberately not fabricated to fill this file — see `enrichment/rejected_evidence.yaml`'s own header comment. They will be added by a dedicated future migration (RC7.8), sourced only from authoritative material: repository history, accepted research reports, or supplied transcripts — never from memory or reconstruction.

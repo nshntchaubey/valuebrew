@@ -1,0 +1,23 @@
+# enrichment/rejected_evidence.yaml — a durable record of researched
+# evidence that was found but deliberately not curated onto a Beer/SKU
+# field (the Catalog Enrichment Playbook's rejected-evidence workflow,
+# approved RC7.6, infrastructure built RC7.7). One flat list, the same
+# top-level shape styles.yaml uses. Append-only: use
+# tool/catalog_builder/record_rejected_evidence.py to add an entry —
+# never hand-edit an existing one.
+#
+# Empty by design as of RC7.7 — this milestone built the schema, CLI,
+# and validation only. It does NOT contain the six historical
+# rejected-evidence cases referenced during RC7.6's approval: those
+# cases are not reconstructible from anything committed to this
+# repository, and inventing plausible-looking substitutes for them
+# would corrupt this file's own purpose as a factual record. They will
+# be added by a future, dedicated RC7.8 — Historical Rejected-Evidence
+# Backfill migration, sourced only from authoritative material
+# (repository history, accepted research reports, or supplied
+# transcripts) — never from memory or reconstruction.
+#
+# See docs/CATALOG-ENRICHMENT-PLAYBOOK.md's rejected-evidence section
+# for the full recording workflow and reason taxonomy.
+
+[]

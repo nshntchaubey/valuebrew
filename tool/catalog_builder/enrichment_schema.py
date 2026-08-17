@@ -24,7 +24,7 @@ from __future__ import annotations
 from datetime import date
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from .models import AttributionBlock, EnrichmentBeer, StyleDef
+from .models import AttributionBlock, EnrichmentBeer, RejectedEvidenceEntry, StyleDef
 
 _STYLE_REQUIRED_KEYS = {"style_key", "name", "description"}
 _STYLE_ALLOWED_KEYS = _STYLE_REQUIRED_KEYS
@@ -37,6 +37,34 @@ _ATTRIBUTION_REQUIRED_KEYS = {"value", "source_type", "source_name", "observed_a
 _VALID_SOURCE_TYPES = {"manufacturer", "manual_observation"}
 
 _UNKNOWN_MARKER = "unknown"
+
+_REJECTED_EVIDENCE_REQUIRED_KEYS = {
+    "subject_type",
+    "subject_key",
+    "field",
+    "value_found",
+    "source_type",
+    "source_name",
+    "reason_type",
+    "reason_detail",
+    "observed_at",
+    "observed_by",
+}
+_REJECTED_EVIDENCE_OPTIONAL_KEYS = {"recheck_after"}
+_REJECTED_EVIDENCE_ALLOWED_KEYS = _REJECTED_EVIDENCE_REQUIRED_KEYS | _REJECTED_EVIDENCE_OPTIONAL_KEYS
+
+_VALID_SUBJECT_TYPES = {"beer", "brewery"}
+
+# Approved RC7.6 — the closed reason-type vocabulary for why a piece of
+# found evidence was rejected rather than curated.
+_REJECTED_EVIDENCE_REASON_TYPES = {
+    "wrong_variant",
+    "wrong_product_line",
+    "access_blocked",
+    "imprecise_value",
+    "incompatible_unit",
+    "conflicting_source_subordinate",
+}
 
 
 class EnrichmentSchemaError(Exception):
@@ -277,3 +305,188 @@ def _validate_attribution_block(raw: Dict[Any, Any]) -> Tuple[Optional[Attributi
         None,
         None,
     )
+
+
+# ---------------------------------------------------------------------------
+# enrichment/rejected_evidence.yaml
+# ---------------------------------------------------------------------------
+
+
+def _parse_date(value: Any, *, field_name: str) -> date:
+    """Shared date-parsing for `observed_at`/`recheck_after` — same
+    accepted shapes (a real `date`, or an ISO string) `_validate_attribution_block`
+    already uses for `observed_at`, factored out here since this module
+    now needs it in two places instead of one."""
+    if isinstance(value, date):
+        return value
+    if isinstance(value, str):
+        try:
+            return date.fromisoformat(value)
+        except ValueError as exc:
+            raise EnrichmentSchemaError(f"{field_name} is not a valid ISO date: {value!r}") from exc
+    raise EnrichmentSchemaError(f"{field_name} must be a date or an ISO date string, got {type(value).__name__}")
+
+
+def validate_rejected_evidence_entry(
+    raw: Any,
+    *,
+    beer_keys: Set[str],
+    brewery_names: Set[str],
+) -> RejectedEvidenceEntry:
+    """Validates one already-parsed rejected-evidence entry.
+
+    Raises `EnrichmentSchemaError` on any problem — unlike
+    `validate_beer_entry`, this never returns a tri-state "excluded, keep
+    going" result. `rejected_evidence.yaml` is one shared file (like
+    `styles.yaml`), not a directory of independently-loaded per-entity
+    files, and nothing in the Catalog Builder's publish pipeline reads it
+    (RC7.7 deliberately keeps it that way) — so there is no "the rest of
+    the load must survive one bad entry" requirement to protect here. A
+    malformed entry should simply be fixed before whatever wrote it is
+    trusted again.
+
+    `beer_keys`/`brewery_names` are supplied by the caller, never read
+    from disk here — this module owns no file I/O anywhere, per its own
+    module docstring — mirroring exactly how `validate_beer_entry`
+    receives `style_keys` today.
+    """
+    if not isinstance(raw, dict):
+        raise EnrichmentSchemaError(f"rejected-evidence entry must be a mapping, got {type(raw).__name__}")
+
+    extra_keys = set(raw.keys()) - _REJECTED_EVIDENCE_ALLOWED_KEYS
+    if extra_keys:
+        raise EnrichmentSchemaError(f"rejected-evidence entry has unsupported key(s) {sorted(extra_keys)}")
+    missing_keys = _REJECTED_EVIDENCE_REQUIRED_KEYS - set(raw.keys())
+    if missing_keys:
+        raise EnrichmentSchemaError(f"rejected-evidence entry is missing required key(s) {sorted(missing_keys)}")
+
+    subject_type = raw["subject_type"]
+    if subject_type not in _VALID_SUBJECT_TYPES:
+        raise EnrichmentSchemaError(
+            f"rejected-evidence entry: subject_type {subject_type!r} not in {sorted(_VALID_SUBJECT_TYPES)}"
+        )
+
+    subject_key = raw["subject_key"]
+    if not isinstance(subject_key, str) or not subject_key.strip():
+        raise EnrichmentSchemaError("rejected-evidence entry: subject_key must be a non-empty string")
+    if subject_type == "beer" and subject_key not in beer_keys:
+        raise EnrichmentSchemaError(
+            f"rejected-evidence entry: subject_key {subject_key!r} does not resolve to an existing beer_key"
+        )
+    if subject_type == "brewery" and subject_key not in brewery_names:
+        raise EnrichmentSchemaError(
+            f"rejected-evidence entry: subject_key {subject_key!r} does not resolve to an existing brewery"
+        )
+
+    field_name_value = raw["field"]
+    if not isinstance(field_name_value, str) or not field_name_value.strip():
+        raise EnrichmentSchemaError("rejected-evidence entry: field must be a non-empty string")
+
+    value_found = raw["value_found"]
+    if not isinstance(value_found, str) or not value_found.strip():
+        raise EnrichmentSchemaError("rejected-evidence entry: value_found must be a non-empty string")
+
+    source_type = raw["source_type"]
+    if source_type not in _VALID_SOURCE_TYPES:
+        raise EnrichmentSchemaError(
+            f"rejected-evidence entry: source_type {source_type!r} not in {sorted(_VALID_SOURCE_TYPES)}"
+        )
+
+    source_name = raw["source_name"]
+    if not isinstance(source_name, str) or not source_name.strip():
+        raise EnrichmentSchemaError("rejected-evidence entry: source_name must be a non-empty string")
+
+    reason_type = raw["reason_type"]
+    if reason_type not in _REJECTED_EVIDENCE_REASON_TYPES:
+        raise EnrichmentSchemaError(
+            f"rejected-evidence entry: reason_type {reason_type!r} not in {sorted(_REJECTED_EVIDENCE_REASON_TYPES)}"
+        )
+
+    reason_detail = raw["reason_detail"]
+    if not isinstance(reason_detail, str) or not reason_detail.strip():
+        raise EnrichmentSchemaError("rejected-evidence entry: reason_detail must be a non-empty string")
+
+    observed_at = _parse_date(raw["observed_at"], field_name="rejected-evidence entry: observed_at")
+
+    observed_by = raw["observed_by"]
+    if not isinstance(observed_by, str) or not observed_by.strip():
+        raise EnrichmentSchemaError("rejected-evidence entry: observed_by must be a non-empty string")
+
+    recheck_after_raw = raw.get("recheck_after")
+    recheck_after = (
+        _parse_date(recheck_after_raw, field_name="rejected-evidence entry: recheck_after")
+        if recheck_after_raw is not None
+        else None
+    )
+
+    return RejectedEvidenceEntry(
+        subject_type=subject_type,
+        subject_key=subject_key,
+        field=field_name_value,
+        value_found=value_found,
+        source_type=source_type,
+        source_name=source_name,
+        reason_type=reason_type,
+        reason_detail=reason_detail,
+        observed_at=observed_at,
+        observed_by=observed_by,
+        recheck_after=recheck_after,
+    )
+
+
+def _rejected_evidence_identity(entry: RejectedEvidenceEntry) -> Tuple[str, str, str, str, str, str]:
+    """What makes two rejected-evidence entries "the same finding" for
+    duplicate-detection purposes: the same subject, field, source, found
+    value, and rejection reason. Deliberately narrower than "same subject
+    and field" alone — a second, independent source corroborating the
+    same rejected value (or a different value rejected for a different
+    reason) is new information worth its own entry, not a duplicate."""
+    return (
+        entry.subject_type,
+        entry.subject_key,
+        entry.field,
+        entry.source_name,
+        entry.value_found,
+        entry.reason_type,
+    )
+
+
+def validate_rejected_evidence_yaml(
+    raw: Any,
+    *,
+    beer_keys: Set[str],
+    brewery_names: Set[str],
+) -> List[RejectedEvidenceEntry]:
+    """`raw` is the object `yaml.safe_load` produced for the whole
+    `rejected_evidence.yaml` file — a flat list of entries, the same
+    top-level shape `styles.yaml` uses. Raises `EnrichmentSchemaError` on
+    any problem, including a duplicate entry (see `_rejected_evidence_identity`
+    for what "duplicate" means here) — the same shared-file,
+    abort-on-any-problem posture `validate_styles_yaml` uses, and for the
+    same reason: this file is seen and validated all at once, never
+    loaded piecemeal."""
+    if not isinstance(raw, list):
+        raise EnrichmentSchemaError(
+            f"rejected_evidence.yaml must be a flat list of entries, got {type(raw).__name__}"
+        )
+
+    entries: List[RejectedEvidenceEntry] = []
+    seen_identities: Set[Tuple[str, str, str, str, str, str]] = set()
+    for index, raw_entry in enumerate(raw):
+        try:
+            entry = validate_rejected_evidence_entry(raw_entry, beer_keys=beer_keys, brewery_names=brewery_names)
+        except EnrichmentSchemaError as exc:
+            raise EnrichmentSchemaError(f"rejected_evidence.yaml entry #{index}: {exc}") from exc
+
+        identity = _rejected_evidence_identity(entry)
+        if identity in seen_identities:
+            raise EnrichmentSchemaError(
+                f"rejected_evidence.yaml entry #{index} duplicates an existing entry: "
+                f"subject_type={entry.subject_type!r} subject_key={entry.subject_key!r} "
+                f"field={entry.field!r} source_name={entry.source_name!r} "
+                f"value_found={entry.value_found!r} reason_type={entry.reason_type!r}"
+            )
+        seen_identities.add(identity)
+        entries.append(entry)
+
+    return entries

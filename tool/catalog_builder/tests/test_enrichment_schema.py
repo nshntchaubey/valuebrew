@@ -3,6 +3,8 @@ import pytest
 from tool.catalog_builder.enrichment_schema import (
     EnrichmentSchemaError,
     validate_beer_entry,
+    validate_rejected_evidence_entry,
+    validate_rejected_evidence_yaml,
     validate_styles_yaml,
 )
 
@@ -238,3 +240,182 @@ def test_not_a_mapping_is_rejected():
     )
     assert beer is None
     assert reason_code == "not_a_mapping"
+
+
+# ---------------------------------------------------------------------------
+# validate_rejected_evidence_entry / validate_rejected_evidence_yaml
+# ---------------------------------------------------------------------------
+
+_BEER_KEYS = {"kingfisher_premium"}
+_BREWERY_NAMES = {"United Breweries"}
+
+_VALID_REJECTED_EVIDENCE = {
+    "subject_type": "beer",
+    "subject_key": "kingfisher_premium",
+    "field": "abv",
+    "value_found": "5.2",
+    "source_type": "manual_observation",
+    "source_name": "Madhuloka product listing, 21 Aug 2026",
+    "reason_type": "wrong_variant",
+    "reason_detail": "Listing's ABV is for the Strong variant, not this SKU.",
+    "observed_at": "2026-08-17",
+    "observed_by": "founder",
+}
+
+
+def _rejected_evidence(**overrides):
+    return dict(_VALID_REJECTED_EVIDENCE, **overrides)
+
+
+def test_valid_rejected_evidence_entry_parses():
+    entry = validate_rejected_evidence_entry(
+        _VALID_REJECTED_EVIDENCE, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES
+    )
+    assert entry.subject_type == "beer"
+    assert entry.subject_key == "kingfisher_premium"
+    assert entry.field == "abv"
+    assert entry.value_found == "5.2"
+    assert entry.source_type == "manual_observation"
+    assert entry.reason_type == "wrong_variant"
+    assert entry.recheck_after is None
+
+
+def test_recheck_after_is_captured_when_present():
+    raw = _rejected_evidence(recheck_after="2027-01-01")
+    entry = validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+    from datetime import date
+
+    assert entry.recheck_after == date(2027, 1, 1)
+
+
+def test_brewery_subject_resolves_against_brewery_names():
+    raw = _rejected_evidence(subject_type="brewery", subject_key="United Breweries", field="brewery")
+    entry = validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+    assert entry.subject_type == "brewery"
+    assert entry.subject_key == "United Breweries"
+
+
+def test_not_a_mapping_raises():
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(["not", "a", "dict"], beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_missing_required_key_raises():
+    raw = {k: v for k, v in _VALID_REJECTED_EVIDENCE.items() if k != "reason_detail"}
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_unsupported_extra_key_raises():
+    raw = _rejected_evidence(extra_field="not allowed")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_invalid_subject_type_raises():
+    raw = _rejected_evidence(subject_type="sku")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_dangling_beer_subject_key_raises():
+    raw = _rejected_evidence(subject_key="not_a_real_beer_key")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_dangling_brewery_subject_key_raises():
+    raw = _rejected_evidence(subject_type="brewery", subject_key="Not A Real Brewery", field="brewery")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_invalid_source_type_raises():
+    raw = _rejected_evidence(source_type="retailer_listing")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_invalid_reason_type_raises():
+    raw = _rejected_evidence(reason_type="not_a_real_reason")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_every_approved_reason_type_is_accepted():
+    for reason_type in (
+        "wrong_variant",
+        "wrong_product_line",
+        "access_blocked",
+        "imprecise_value",
+        "incompatible_unit",
+        "conflicting_source_subordinate",
+    ):
+        raw = _rejected_evidence(reason_type=reason_type)
+        entry = validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+        assert entry.reason_type == reason_type
+
+
+def test_unparseable_observed_at_raises():
+    raw = _rejected_evidence(observed_at="17 Aug 2026")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_unparseable_recheck_after_raises():
+    raw = _rejected_evidence(recheck_after="not-a-date")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_empty_string_field_raises():
+    raw = _rejected_evidence(reason_detail="")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_empty_rejected_evidence_yaml_list_is_valid():
+    entries = validate_rejected_evidence_yaml([], beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+    assert entries == []
+
+
+def test_rejected_evidence_yaml_must_be_a_list():
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_yaml({"not": "a list"}, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_valid_rejected_evidence_yaml_list_parses():
+    entries = validate_rejected_evidence_yaml(
+        [_VALID_REJECTED_EVIDENCE], beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES
+    )
+    assert len(entries) == 1
+    assert entries[0].subject_key == "kingfisher_premium"
+
+
+def test_duplicate_rejected_evidence_entry_raises():
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_yaml(
+            [_VALID_REJECTED_EVIDENCE, dict(_VALID_REJECTED_EVIDENCE)],
+            beer_keys=_BEER_KEYS,
+            brewery_names=_BREWERY_NAMES,
+        )
+
+
+def test_same_subject_and_field_different_reason_is_not_a_duplicate():
+    # A second, independent source rejected for a different reason is new
+    # information, not a duplicate — see _rejected_evidence_identity's own
+    # docstring for why the identity tuple is this narrow.
+    second = _rejected_evidence(source_name="A different source", reason_type="imprecise_value")
+    entries = validate_rejected_evidence_yaml(
+        [_VALID_REJECTED_EVIDENCE, second], beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES
+    )
+    assert len(entries) == 2
+
+
+def test_a_bad_entry_within_the_list_raises_with_its_index():
+    with pytest.raises(EnrichmentSchemaError, match="entry #1"):
+        validate_rejected_evidence_yaml(
+            [_VALID_REJECTED_EVIDENCE, _rejected_evidence(reason_type="bogus")],
+            beer_keys=_BEER_KEYS,
+            brewery_names=_BREWERY_NAMES,
+        )

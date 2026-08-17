@@ -185,3 +185,33 @@ python3 -m tool.catalog_builder.photo_progress --list
 ```
 
 **The evidence policy does not change for fieldwork — it is the same one Part 4 already states.** A photo satisfies `manual_observation` under exactly the two conditions Part 4 item 1a already set: you personally confirm the photo matches this exact beer and pack size, and you cite the specific photo — not the general site — in `source_name`. `photo_checklist.py` prints both conditions every time, not as a reminder you can skim past, but as the actual gate between a photo and a recorded fact.
+
+---
+
+## Part 12 — Rejected-Evidence Workflow
+
+**[RC7.7 addition, 2026-08-17]** — approved RC7.6, infrastructure built RC7.7. Full schema and field-by-field detail: `docs/BEER-KNOWLEDGE-BASE-ARCHITECTURE.md` Part 11. This Part covers only the operational question — when and how you actually use it, sitting down doing real research.
+
+**When to record one.** Any time Part 4's research turns up a real, on-topic value you decide *not* to use. Not every failed search — a source that simply had nothing is not rejected evidence, it's just a source that didn't help. Record one specifically when you found *something citable* and had a real reason to set it aside: a retailer's ABV that turned out to be for the wrong pack size, a brewery page whose figure looked suspiciously imprecise, a second source that conflicted with one you'd already trust more. If you're not sure whether what you just saw rises to this bar, ask yourself the same question Part 4 already asks about Unknown: could you point to this later and say exactly what you found and why you didn't use it? If yes, it's worth recording.
+
+**Why bother, when you could just move on.** Because you — or someone else — will hit the same dead end again. A rejected retailer figure you don't record gets re-found, re-read, and re-rejected next month, at the exact same cost it took the first time. Recording it once means the next research pass sees it was already checked and can skip straight past it.
+
+**How.**
+
+```
+python3 -m tool.catalog_builder.record_rejected_evidence \
+  --subject-type beer --subject-key kingfisher_premium --field abv \
+  --value-found "5.2" \
+  --source-type manual_observation --source-name "Madhuloka product listing, 21 Aug 2026" \
+  --reason-type wrong_variant \
+  --reason-detail "Listing's ABV is for the Strong variant; this SKU is the standard Premium." \
+  --observed-by founder
+```
+
+`--observed-at` defaults to today; add `--recheck-after YYYY-MM-DD` when the rejection reason (`access_blocked`, most often) implies it's worth looking again later. The command refuses to write anything that fails validation — a `--subject-key` that doesn't resolve to a real `beer_key`/`brewery`, an unrecognized `--reason-type`, or a duplicate of an entry already recorded (same subject, field, source, value, and reason) all fail loudly, before anything is written, the same discipline `create_beer.py`/`update_beer.py` already use.
+
+**Reason taxonomy, quick reference** (`wrong_variant`, `wrong_product_line`, `access_blocked`, `imprecise_value`, `incompatible_unit`, `conflicting_source_subordinate`) — full definitions in the Architecture doc's Part 11; pick the one that actually describes why you rejected it, not just the first one that seems close.
+
+**Append-only, same as everything else this playbook asks you to trust the tooling for.** Never hand-edit `enrichment/rejected_evidence.yaml`. Use the command above for every new entry, the same discipline Part 3's validation-before-commit rhythm already asks of everything else you touch in `enrichment/`.
+
+**This file is currently empty of historical entries, on purpose.** RC7.7 built the recording infrastructure only — it did not, and was explicitly instructed not to, invent or reconstruct the rejected-evidence cases from before it existed. If you're the one who remembers a real historical rejection from before this tooling existed, don't hand-write it into the YAML — that's exactly the "never hand-edit" rule above. Record it through the command like any other entry, or hold it for the dedicated RC7.8 backfill pass if you're gathering several at once.

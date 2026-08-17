@@ -192,6 +192,50 @@ class AttributionBlock:
 
 
 @dataclass(frozen=True)
+class RejectedEvidenceEntry:
+    """One piece of researched evidence that was found but deliberately
+    not curated onto a Beer/SKU field — the Catalog Enrichment
+    Playbook's rejected-evidence record (approved RC7.6, infrastructure
+    built RC7.7). Exists so a future research pass has a durable answer
+    to "has anyone already looked at this?" instead of re-discovering
+    the same dead end: what this records is not "we don't know X," it's
+    "we looked, found a candidate value for X, and specifically decided
+    not to use it, for this reason."
+
+    Reuses `AttributionBlock`'s own citation fields (`source_type`,
+    `source_name`, `observed_at`, `observed_by`) rather than inventing a
+    second citation shape — a rejected finding is still a real, sourced
+    observation, and deserves the same citation discipline as an
+    accepted one. `source_type` therefore shares `AttributionBlock`'s
+    closed vocabulary (`manufacturer`, `manual_observation`), enforced
+    in `enrichment_schema.py`, not here (this module has no validation
+    logic anywhere, per its own module docstring).
+
+    `value_found` is a string, not a float like `AttributionBlock.value`
+    — a rejected finding is not always numeric (a wrong brewery name, a
+    blocked URL, an out-of-range unit are all valid things to have found
+    and rejected), so this field stays general rather than assuming
+    every rejection is a rejected number.
+
+    `recheck_after` is `Optional`: not every rejection reason implies a
+    future recheck is worthwhile (`wrong_product_line` likely never
+    needs one; `access_blocked` often does) — the field lets a founder
+    say when, without forcing every entry to have an opinion."""
+
+    subject_type: str
+    subject_key: str
+    field: str
+    value_found: str
+    source_type: str
+    source_name: str
+    reason_type: str
+    reason_detail: str
+    observed_at: date
+    observed_by: str
+    recheck_after: Optional[date]
+
+
+@dataclass(frozen=True)
 class StyleDef:
     """One entry of `enrichment/styles.yaml` — Beer Knowledge Base
     Architecture Part 4. Deliberately has no `typical_abv_range` field:
