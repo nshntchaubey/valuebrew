@@ -212,10 +212,24 @@ class RejectedEvidenceEntry:
     logic anywhere, per its own module docstring).
 
     `value_found` is a string, not a float like `AttributionBlock.value`
-    — a rejected finding is not always numeric (a wrong brewery name, a
-    blocked URL, an out-of-range unit are all valid things to have found
-    and rejected), so this field stays general rather than assuming
-    every rejection is a rejected number.
+    — a rejected finding is not always numeric (a wrong brewery name, an
+    out-of-range unit are all valid things to have found and rejected),
+    so this field stays general rather than assuming every rejection is
+    a rejected number.
+
+    `value_found` is `Optional` — approved RC7.10, implemented RC7.11 —
+    because one `reason_type`, `access_blocked`, is semantically
+    different from the other five: `wrong_variant`, `wrong_product_line`,
+    `imprecise_value`, `incompatible_unit`, and
+    `conflicting_source_subordinate` all describe rejecting a value that
+    was actually read; `access_blocked` describes access failing before
+    any value was ever read at all. Forcing a `value_found` on that case
+    would mean fabricating one — exactly the "guess dressed as a fact"
+    the Catalog Enrichment Playbook's own Part 1 exists to prevent. Still
+    always explicitly supplied by the caller (`None`, not a default) —
+    `enrichment_schema.py` enforces the actual rule: required and
+    non-empty for every `reason_type` except `access_blocked`, where it
+    is optional but still rejected if given empty.
 
     `recheck_after` is `Optional`: not every rejection reason implies a
     future recheck is worthwhile (`wrong_product_line` likely never
@@ -225,7 +239,7 @@ class RejectedEvidenceEntry:
     subject_type: str
     subject_key: str
     field: str
-    value_found: str
+    value_found: Optional[str]
     source_type: str
     source_name: str
     reason_type: str

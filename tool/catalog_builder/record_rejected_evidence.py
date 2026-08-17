@@ -68,14 +68,21 @@ def _render_entry_lines(entry: RejectedEvidenceEntry) -> List[str]:
         f"- subject_type: {_yaml_string(entry.subject_type)}",
         f"  subject_key: {_yaml_string(entry.subject_key)}",
         f"  field: {_yaml_string(entry.field)}",
-        f"  value_found: {_yaml_string(entry.value_found)}",
-        f"  source_type: {_yaml_string(entry.source_type)}",
-        f"  source_name: {_yaml_string(entry.source_name)}",
-        f"  reason_type: {_yaml_string(entry.reason_type)}",
-        f"  reason_detail: {_yaml_string(entry.reason_detail)}",
-        f"  observed_at: {entry.observed_at.isoformat()}",
-        f"  observed_by: {_yaml_string(entry.observed_by)}",
     ]
+    # Omitted, not written as null, when absent (access_blocked only,
+    # RC7.11) -- matches how recheck_after is already handled below.
+    if entry.value_found is not None:
+        lines.append(f"  value_found: {_yaml_string(entry.value_found)}")
+    lines.extend(
+        [
+            f"  source_type: {_yaml_string(entry.source_type)}",
+            f"  source_name: {_yaml_string(entry.source_name)}",
+            f"  reason_type: {_yaml_string(entry.reason_type)}",
+            f"  reason_detail: {_yaml_string(entry.reason_detail)}",
+            f"  observed_at: {entry.observed_at.isoformat()}",
+            f"  observed_by: {_yaml_string(entry.observed_by)}",
+        ]
+    )
     if entry.recheck_after is not None:
         lines.append(f"  recheck_after: {entry.recheck_after.isoformat()}")
     return lines
@@ -102,7 +109,7 @@ def record_rejected_evidence(
     subject_type: str,
     subject_key: str,
     field: str,
-    value_found: str,
+    value_found: Optional[str],
     source_type: str,
     source_name: str,
     reason_type: str,
@@ -154,7 +161,6 @@ def record_rejected_evidence(
         "subject_type": subject_type,
         "subject_key": subject_key,
         "field": field,
-        "value_found": value_found,
         "source_type": source_type,
         "source_name": source_name,
         "reason_type": reason_type,
@@ -162,6 +168,12 @@ def record_rejected_evidence(
         "observed_at": observed_at,
         "observed_by": observed_by,
     }
+    # Omitted, not passed as None, when not given -- validate_rejected_
+    # evidence_entry treats a missing key and an explicit None the same
+    # way for this field, but omitting it keeps new_entry_raw's shape
+    # identical to what a real YAML file would actually contain.
+    if value_found is not None:
+        new_entry_raw["value_found"] = value_found
     if recheck_after is not None:
         new_entry_raw["recheck_after"] = recheck_after
 
@@ -205,7 +217,11 @@ def main() -> None:
     parser.add_argument("--subject-type", required=True, choices=["beer", "brewery"])
     parser.add_argument("--subject-key", required=True)
     parser.add_argument("--field", required=True, help='the Beer/SKU field the evidence was about, e.g. "abv"')
-    parser.add_argument("--value-found", required=True, help="the value that was found and rejected")
+    parser.add_argument(
+        "--value-found",
+        default=None,
+        help="the value that was found and rejected; required unless --reason-type access_blocked",
+    )
     parser.add_argument("--source-type", required=True, choices=["manufacturer", "manual_observation"])
     parser.add_argument("--source-name", required=True)
     parser.add_argument(

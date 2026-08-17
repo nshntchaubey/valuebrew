@@ -227,3 +227,37 @@ def test_malformed_existing_file_is_rejected_rather_than_silently_overwritten(tm
 
     with pytest.raises(RecordRejectedEvidenceError):
         _record(enrichment_dir, target)
+
+
+# --- access_blocked's optional value_found (RC7.10/RC7.11) ---
+
+
+def test_access_blocked_omission_succeeds(tmp_path: Path):
+    enrichment_dir = _write_enrichment_dir(tmp_path)
+    target = tmp_path / "rejected_evidence.yaml"
+
+    written = _record(enrichment_dir, target, reason_type="access_blocked", value_found=None)
+
+    raw = yaml.safe_load(written.read_text(encoding="utf-8"))
+    assert raw[0]["reason_type"] == "access_blocked"
+    assert "value_found" not in raw[0]
+
+
+@pytest.mark.parametrize(
+    "reason_type",
+    [
+        "wrong_variant",
+        "wrong_product_line",
+        "imprecise_value",
+        "incompatible_unit",
+        "conflicting_source_subordinate",
+    ],
+)
+def test_omission_fails_for_every_other_reason_type(tmp_path: Path, reason_type: str):
+    enrichment_dir = _write_enrichment_dir(tmp_path)
+    target = tmp_path / "rejected_evidence.yaml"
+
+    with pytest.raises(RecordRejectedEvidenceError):
+        _record(enrichment_dir, target, reason_type=reason_type, value_found=None)
+
+    assert not target.exists()

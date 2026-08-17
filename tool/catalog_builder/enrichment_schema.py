@@ -42,7 +42,6 @@ _REJECTED_EVIDENCE_REQUIRED_KEYS = {
     "subject_type",
     "subject_key",
     "field",
-    "value_found",
     "source_type",
     "source_name",
     "reason_type",
@@ -50,8 +49,19 @@ _REJECTED_EVIDENCE_REQUIRED_KEYS = {
     "observed_at",
     "observed_by",
 }
-_REJECTED_EVIDENCE_OPTIONAL_KEYS = {"recheck_after"}
+# value_found is required for every reason_type except access_blocked (RC7.10/
+# RC7.11) -- present in _OPTIONAL_KEYS structurally (it may be absent from the
+# raw mapping at all), with validate_rejected_evidence_entry enforcing the
+# actual reason_type-dependent rule once reason_type itself is known.
+_REJECTED_EVIDENCE_OPTIONAL_KEYS = {"recheck_after", "value_found"}
 _REJECTED_EVIDENCE_ALLOWED_KEYS = _REJECTED_EVIDENCE_REQUIRED_KEYS | _REJECTED_EVIDENCE_OPTIONAL_KEYS
+
+# The one reason_type where value_found has no natural answer -- access
+# failed before any value was ever read, so there is nothing to record
+# (RC7.10's evidence review: docs/PROJECT-BRAIN.md's Bira 91/B9 Beverages
+# case). Every other reason_type describes rejecting a value that was
+# actually found, so value_found stays required for all of them.
+_REASON_TYPE_WITHOUT_VALUE_FOUND = "access_blocked"
 
 _VALID_SUBJECT_TYPES = {"beer", "brewery"}
 
@@ -382,9 +392,28 @@ def validate_rejected_evidence_entry(
     if not isinstance(field_name_value, str) or not field_name_value.strip():
         raise EnrichmentSchemaError("rejected-evidence entry: field must be a non-empty string")
 
-    value_found = raw["value_found"]
-    if not isinstance(value_found, str) or not value_found.strip():
-        raise EnrichmentSchemaError("rejected-evidence entry: value_found must be a non-empty string")
+    # reason_type is validated here, ahead of its usual position below,
+    # because value_found's own requiredness depends on it (RC7.11).
+    reason_type = raw["reason_type"]
+    if reason_type not in _REJECTED_EVIDENCE_REASON_TYPES:
+        raise EnrichmentSchemaError(
+            f"rejected-evidence entry: reason_type {reason_type!r} not in {sorted(_REJECTED_EVIDENCE_REASON_TYPES)}"
+        )
+
+    value_found_raw = raw.get("value_found")
+    if reason_type == _REASON_TYPE_WITHOUT_VALUE_FOUND:
+        # Optional: access failed before any value was ever read, so
+        # there's nothing to require -- but a value_found that *is*
+        # given must still be real, same as every other reason_type.
+        if value_found_raw is not None and (not isinstance(value_found_raw, str) or not value_found_raw.strip()):
+            raise EnrichmentSchemaError(
+                "rejected-evidence entry: value_found, when given, must be a non-empty string"
+            )
+        value_found = value_found_raw if isinstance(value_found_raw, str) else None
+    else:
+        if not isinstance(value_found_raw, str) or not value_found_raw.strip():
+            raise EnrichmentSchemaError("rejected-evidence entry: value_found must be a non-empty string")
+        value_found = value_found_raw
 
     source_type = raw["source_type"]
     if source_type not in _VALID_SOURCE_TYPES:
@@ -395,12 +424,6 @@ def validate_rejected_evidence_entry(
     source_name = raw["source_name"]
     if not isinstance(source_name, str) or not source_name.strip():
         raise EnrichmentSchemaError("rejected-evidence entry: source_name must be a non-empty string")
-
-    reason_type = raw["reason_type"]
-    if reason_type not in _REJECTED_EVIDENCE_REASON_TYPES:
-        raise EnrichmentSchemaError(
-            f"rejected-evidence entry: reason_type {reason_type!r} not in {sorted(_REJECTED_EVIDENCE_REASON_TYPES)}"
-        )
 
     reason_detail = raw["reason_detail"]
     if not isinstance(reason_detail, str) or not reason_detail.strip():

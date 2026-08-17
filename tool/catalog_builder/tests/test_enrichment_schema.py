@@ -356,6 +356,46 @@ def test_every_approved_reason_type_is_accepted():
         assert entry.reason_type == reason_type
 
 
+# --- access_blocked's optional value_found (RC7.10/RC7.11) ---
+
+
+def test_access_blocked_succeeds_without_value_found():
+    raw = {k: v for k, v in _VALID_REJECTED_EVIDENCE.items() if k != "value_found"}
+    raw["reason_type"] = "access_blocked"
+    entry = validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+    assert entry.reason_type == "access_blocked"
+    assert entry.value_found is None
+
+
+def test_access_blocked_rejects_an_explicitly_empty_value_found():
+    raw = _rejected_evidence(reason_type="access_blocked", value_found="")
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
+def test_access_blocked_still_accepts_a_real_value_found():
+    raw = _rejected_evidence(reason_type="access_blocked", value_found="partial figure glimpsed before the page died")
+    entry = validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+    assert entry.value_found == "partial figure glimpsed before the page died"
+
+
+@pytest.mark.parametrize(
+    "reason_type",
+    [
+        "wrong_variant",
+        "wrong_product_line",
+        "imprecise_value",
+        "incompatible_unit",
+        "conflicting_source_subordinate",
+    ],
+)
+def test_every_other_reason_type_still_requires_value_found(reason_type):
+    raw = {k: v for k, v in _VALID_REJECTED_EVIDENCE.items() if k != "value_found"}
+    raw["reason_type"] = reason_type
+    with pytest.raises(EnrichmentSchemaError):
+        validate_rejected_evidence_entry(raw, beer_keys=_BEER_KEYS, brewery_names=_BREWERY_NAMES)
+
+
 def test_unparseable_observed_at_raises():
     raw = _rejected_evidence(observed_at="17 Aug 2026")
     with pytest.raises(EnrichmentSchemaError):
