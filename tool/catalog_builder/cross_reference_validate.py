@@ -29,11 +29,17 @@ from .models import PackageType
 
 # KSBCL's own five-value `container_type` vocabulary vs. the app's
 # closed three-value `PackageType` (Catalog Contract 1.0 Part 5).
-# `pet_bottle`/`tetra_pack`/`unknown` have no equivalent — real 2026-06
-# data shows roughly 27% of admitted rows normalize to one of these.
-# `pint` exists in the app's enum with no KSBCL source, so it can never
-# be produced from this mapping; only a future manual override could
-# ever set it, which no code path in this package does today.
+# `tetra_pack`/`unknown` have no equivalent: `tetra_pack` is a genuinely
+# different container form with no PackageType analog, and `unknown` is
+# KSBCL's own "the source doesn't say" marker -- mapping either would
+# mean inventing a fact the source doesn't state, forbidden project-wide.
+# `pet_bottle` (RC6.1) is different in kind, not degree: the app's own
+# shipped `PackageType.bottle` is documented as "A glass or plastic
+# bottle" (lib/shared_domain/sku.dart) -- a PET bottle already satisfies
+# that definition, so mapping it here applies an existing rule, not a
+# new one. `pint` exists in the app's enum with no KSBCL source, so it
+# can never be produced from this mapping; only a future manual override
+# could ever set it, which no code path in this package does today.
 #
 # Public (not `_`-prefixed): `enrichment_queue.py`'s dashboard reuses
 # this exact mapping to flag structurally-blocked candidates *before*
@@ -42,6 +48,7 @@ from .models import PackageType
 CONTAINER_TYPE_MAP: Dict[str, PackageType] = {
     "bottle": PackageType.BOTTLE,
     "can": PackageType.CAN,
+    "pet_bottle": PackageType.BOTTLE,
 }
 
 

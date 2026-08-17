@@ -86,6 +86,16 @@ def test_bottle_maps_correctly():
     assert result.valid[0].package_type == PackageType.BOTTLE
 
 
+def test_pet_bottle_maps_to_bottle():
+    # RC6.1: PackageType.bottle's own shipped doc comment is "A glass or
+    # plastic bottle" -- a PET bottle already satisfies that, unlike
+    # tetra_pack or unknown, neither of which is a bottle at all.
+    admitted = _admitted(_row("CP0000002", container_type="pet_bottle"), _beer("x", ["CP0000002"]))
+    result = validate_cross_references([admitted], style_keys={"lager"})
+    assert result.valid[0].package_type == PackageType.BOTTLE
+    assert result.rejected == []
+
+
 def test_style_none_is_not_a_dangling_reference():
     admitted = _admitted(_row("CP0000002"), _beer("x", ["CP0000002"], style=None))
     result = validate_cross_references([admitted], style_keys={"lager"})
@@ -108,12 +118,6 @@ def test_unsupported_container_type_is_rejected():
     admitted = _admitted(_row("CP0000002", container_type="unknown"), _beer("x", ["CP0000002"]))
     result = validate_cross_references([admitted], style_keys={"lager"})
     assert result.valid == []
-    assert result.rejected[0].reason_code == "unsupported_package_type"
-
-
-def test_pet_bottle_container_type_is_rejected():
-    admitted = _admitted(_row("CP0000002", container_type="pet_bottle"), _beer("x", ["CP0000002"]))
-    result = validate_cross_references([admitted], style_keys={"lager"})
     assert result.rejected[0].reason_code == "unsupported_package_type"
 
 
