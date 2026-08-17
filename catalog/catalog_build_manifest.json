@@ -1,13 +1,13 @@
 {
-  "build_timestamp": "2026-08-17T11:02:21Z",
+  "build_timestamp": "2026-08-17T13:55:14Z",
   "source_run_month": "2026-06",
-  "enrichment_snapshot_version": "67bc6489a474",
-  "catalog_version": 5,
+  "enrichment_snapshot_version": "6f5cf0feb54c",
+  "catalog_version": 6,
   "record_counts": {
     "styles": 2,
-    "beers": 17,
-    "skus": 97,
+    "beers": 18,
+    "skus": 98,
     "benchmarks": 2
   },
-  "content_hash": "146df2b1b8f7"
+  "content_hash": "7dffb643c650"
 }

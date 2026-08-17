@@ -1,6 +1,6 @@
 {
-  "catalog_version": 5,
-  "generated_at": "2026-08-17T11:02:21Z",
+  "catalog_version": 6,
+  "generated_at": "2026-08-17T13:55:14Z",
   "styles": [
     {
       "id": "lager",
@@ -75,6 +75,13 @@
       "name": "Lemount Premium Super Strong Beer",
       "brewery": "Mount Everest Breweries",
       "style_id": "strong_lager",
+      "is_craft": false
+    },
+    {
+      "id": "miller_genuine_draft",
+      "name": "Miller Genuine Draft Beer",
+      "brewery": "Molson Coors",
+      "style_id": "lager",
       "is_craft": false
     },
     {
@@ -192,7 +199,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 315.38461538461536,
       "cost_per_ml_alcohol": 7.0085470085470085,
-      "value_score": 57,
+      "value_score": 56,
       "value_verdict": "fair_value"
     },
     {
@@ -267,7 +274,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 333.3333333333333,
       "cost_per_ml_alcohol": 7.246376811594203,
-      "value_score": 50,
+      "value_score": 49,
       "value_verdict": "fair_value"
     },
     {
@@ -387,7 +394,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 320.0,
       "cost_per_ml_alcohol": 7.111111111111111,
-      "value_score": 54,
+      "value_score": 53,
       "value_verdict": "fair_value"
     },
     {
@@ -642,7 +649,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 350.0,
       "cost_per_ml_alcohol": 7.0,
-      "value_score": 57,
+      "value_score": 56,
       "value_verdict": "fair_value"
     },
     {
@@ -912,7 +919,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 333.3333333333333,
       "cost_per_ml_alcohol": 6.944444444444445,
-      "value_score": 59,
+      "value_score": 58,
       "value_verdict": "fair_value"
     },
     {
@@ -987,7 +994,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 340.0,
       "cost_per_ml_alcohol": 7.391304347826087,
-      "value_score": 47,
+      "value_score": 46,
       "value_verdict": "fair_value"
     },
     {
@@ -1047,7 +1054,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 360.0,
       "cost_per_ml_alcohol": 7.2,
-      "value_score": 51,
+      "value_score": 50,
       "value_verdict": "fair_value"
     },
     {
@@ -1257,7 +1264,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 350.0,
       "cost_per_ml_alcohol": 7.0,
-      "value_score": 57,
+      "value_score": 56,
       "value_verdict": "fair_value"
     },
     {
@@ -1287,7 +1294,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 360.0,
       "cost_per_ml_alcohol": 8.0,
-      "value_score": 36,
+      "value_score": 35,
       "value_verdict": "fair_value"
     },
     {
@@ -1302,7 +1309,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 320.0,
       "cost_per_ml_alcohol": 7.111111111111111,
-      "value_score": 54,
+      "value_score": 53,
       "value_verdict": "fair_value"
     },
     {
@@ -1332,7 +1339,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 350.0,
       "cost_per_ml_alcohol": 7.0,
-      "value_score": 57,
+      "value_score": 56,
       "value_verdict": "fair_value"
     },
     {
@@ -1437,7 +1444,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 461.78,
       "cost_per_ml_alcohol": 9.2356,
-      "value_score": 12,
+      "value_score": 13,
       "value_verdict": "overpriced"
     },
     {
@@ -1467,7 +1474,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 318.1818181818182,
       "cost_per_ml_alcohol": 6.91699604743083,
-      "value_score": 60,
+      "value_score": 59,
       "value_verdict": "fair_value"
     },
     {
@@ -1483,6 +1490,21 @@
       "cost_per_litre": 260.0,
       "cost_per_ml_alcohol": 5.6521739130434785,
       "value_score": 100,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "CP0000951",
+      "beer_id": "miller_genuine_draft",
+      "size_ml": 330,
+      "package_type": "bottle",
+      "abv": 4.7,
+      "calories": 132,
+      "price": 100.01,
+      "price_last_checked": "2008-06-18",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 303.06060606060606,
+      "cost_per_ml_alcohol": 6.448098001289491,
+      "value_score": 74,
       "value_verdict": "great_value"
     },
     {
@@ -1557,7 +1579,7 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 333.3333333333333,
       "cost_per_ml_alcohol": 6.944444444444445,
-      "value_score": 59,
+      "value_score": 58,
       "value_verdict": "fair_value"
     },
     {
@@ -1587,18 +1609,18 @@
       "price_source": "karnataka_excise_mrp_2026",
       "cost_per_litre": 333.3333333333333,
       "cost_per_ml_alcohol": 6.944444444444445,
-      "value_score": 59,
+      "value_score": 58,
       "value_verdict": "fair_value"
     }
   ],
   "benchmarks": [
     {
       "style_id": "lager",
-      "avg_cost_per_ml_alcohol": 7.754610532037974,
-      "p25": 6.430434782608696,
-      "p50": 7.223188405797101,
+      "avg_cost_per_ml_alcohol": 7.73511034501188,
+      "p25": 6.424049000644746,
+      "p50": 7.2,
       "p75": 8.563899868247695,
-      "sample_size": 66
+      "sample_size": 67
     },
     {
       "style_id": "strong_lager",

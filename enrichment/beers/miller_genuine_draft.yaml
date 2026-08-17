@@ -4,7 +4,17 @@ canonical_product_ids:
 name: "Miller Genuine Draft Beer"
 brewery: "Molson Coors"
 style: "lager"
-abv: unknown
-calories_per_100ml: unknown
+abv:
+  value: 4.7
+  source_type: "manufacturer"
+  source_name: "Molson Coors Beverage Company, 'Nutritional & Ingredient information - UK (including NI)', https://www.molsoncoors.com/sites/molsonco/files/United%20Kingdom%20-%20Nutritional%20Information.pdf, document dated 2026-03-23, lists 'Miller Genuine Draught' (Lager, base product line, no variant qualifiers) at ABV 4.7%. UK-spelling 'Draught' vs. KSBCL's 'Draft' is the standard US/UK spelling variant of the same global brand, not a different product. Market caveat: this is a UK-market document, not India-specific -- no India-market source was found or exists among the sources checked. No alternate regulatory sub-variant (e.g. a 'Lower Alcohol' category, as found for Miller High Life) was found for this brand despite checking; the millergenuinedraft.com dedicated site (age-gated, US-region) carries no product-spec/nutrition content at all (marketing/locator page only), and the Molson Coors brand-hub page for this brand (both 'Rest of world' and 'Asia' regions, Asia listing Israel/Japan/Kazakhstan/Bahrain/Singapore/UAE/South Korea -- not India) carries no ABV data either. Checked 2026-08-17."
+  observed_at: 2026-08-17
+  observed_by: "founder"
+calories_per_100ml:
+  value: 40.0
+  source_type: "manufacturer"
+  source_name: "Same source and document as above -- the document's own header states 'Values are average and based on a standard 100ml measure', so this is already correctly kcal/100ml with no unit conversion needed. 'Miller Genuine Draught' listed at Energy 166 kJ / 40 kcal per 100ml. Same market caveat as the ABV citation above. Checked 2026-08-17."
+  observed_at: 2026-08-17
+  observed_by: "founder"
 is_craft: false
 images: []
