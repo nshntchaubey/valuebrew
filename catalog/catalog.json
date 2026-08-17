@@ -1,6 +1,6 @@
 {
-  "catalog_version": 6,
-  "generated_at": "2026-08-17T13:55:14Z",
+  "catalog_version": 7,
+  "generated_at": "2026-08-17T15:17:51Z",
   "styles": [
     {
       "id": "lager",
@@ -11,6 +11,11 @@
       "id": "strong_lager",
       "name": "Strong Lager",
       "description": "Higher-ABV lager, typically 7-8% — a distinct peer group from standard lager."
+    },
+    {
+      "id": "wheat",
+      "name": "Wheat Beer",
+      "description": "A wheat-forward beer with no further style qualifier — the generic case for a beer whose own labeling doesn't specify Witbier, Weizen, or another named wheat sub-style."
     }
   ],
   "beers": [
@@ -117,6 +122,13 @@
       "name": "Stok Strong Fine Beer",
       "brewery": "Mount Everest Breweries",
       "style_id": "strong_lager",
+      "is_craft": false
+    },
+    {
+      "id": "stok_wheat_fine",
+      "name": "Stok Wheat Fine Beer",
+      "brewery": "Mount Everest Breweries",
+      "style_id": "wheat",
       "is_craft": false
     },
     {
@@ -878,6 +890,21 @@
       "value_verdict": "great_value"
     },
     {
+      "id": "CP0000515",
+      "beer_id": "stok_wheat_fine",
+      "size_ml": 650,
+      "package_type": "bottle",
+      "abv": 4.7,
+      "calories": null,
+      "price": 200.0,
+      "price_last_checked": "2026-05-14",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 307.6923076923077,
+      "cost_per_ml_alcohol": 6.546644844517185,
+      "value_score": 83,
+      "value_verdict": "great_value"
+    },
+    {
       "id": "CP0000516",
       "beer_id": "stok_lager_fine",
       "size_ml": 650,
@@ -890,6 +917,21 @@
       "cost_per_litre": 230.76923076923077,
       "cost_per_ml_alcohol": 4.8076923076923075,
       "value_score": 100,
+      "value_verdict": "great_value"
+    },
+    {
+      "id": "CP0000517",
+      "beer_id": "stok_wheat_fine",
+      "size_ml": 500,
+      "package_type": "can",
+      "abv": 4.7,
+      "calories": null,
+      "price": 150.0,
+      "price_last_checked": "2026-05-14",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 300.0,
+      "cost_per_ml_alcohol": 6.382978723404255,
+      "value_score": 90,
       "value_verdict": "great_value"
     },
     {
@@ -906,6 +948,21 @@
       "cost_per_ml_alcohol": 4.583333333333333,
       "value_score": 100,
       "value_verdict": "great_value"
+    },
+    {
+      "id": "CP0000519",
+      "beer_id": "stok_wheat_fine",
+      "size_ml": 330,
+      "package_type": "bottle",
+      "abv": 4.7,
+      "calories": null,
+      "price": 115.0,
+      "price_last_checked": "2026-05-14",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 348.48484848484844,
+      "cost_per_ml_alcohol": 7.414571244358479,
+      "value_score": 38,
+      "value_verdict": "fair_value"
     },
     {
       "id": "CP0000520",
@@ -951,6 +1008,21 @@
       "cost_per_ml_alcohol": 6.0606060606060606,
       "value_score": 19,
       "value_verdict": "overpriced"
+    },
+    {
+      "id": "CP0000523",
+      "beer_id": "stok_wheat_fine",
+      "size_ml": 330,
+      "package_type": "bottle",
+      "abv": 4.7,
+      "calories": null,
+      "price": 150.0,
+      "price_last_checked": "2025-11-22",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 454.5454545454545,
+      "cost_per_ml_alcohol": 9.671179883945841,
+      "value_score": 38,
+      "value_verdict": "fair_value"
     },
     {
       "id": "CP0000524",
@@ -1553,6 +1625,21 @@
       "value_verdict": "overpriced"
     },
     {
+      "id": "CP0001085",
+      "beer_id": "stok_wheat_fine",
+      "size_ml": 330,
+      "package_type": "bottle",
+      "abv": 4.7,
+      "calories": null,
+      "price": 115.0,
+      "price_last_checked": "2026-05-26",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 348.48484848484844,
+      "cost_per_ml_alcohol": 7.414571244358479,
+      "value_score": 38,
+      "value_verdict": "fair_value"
+    },
+    {
       "id": "CP0001086",
       "beer_id": "stok_strong_fine",
       "size_ml": 330,
@@ -1598,6 +1685,21 @@
       "value_verdict": "overpriced"
     },
     {
+      "id": "CP0001089",
+      "beer_id": "stok_wheat_fine",
+      "size_ml": 330,
+      "package_type": "bottle",
+      "abv": 4.7,
+      "calories": null,
+      "price": 115.0,
+      "price_last_checked": "2026-05-26",
+      "price_source": "karnataka_excise_mrp_2026",
+      "cost_per_litre": 348.48484848484844,
+      "cost_per_ml_alcohol": 7.414571244358479,
+      "value_score": 38,
+      "value_verdict": "fair_value"
+    },
+    {
       "id": "CP0001090",
       "beer_id": "stok_lager_fine",
       "size_ml": 330,
@@ -1629,6 +1731,14 @@
       "p50": 4.918032786885246,
       "p75": 5.844155844155844,
       "sample_size": 31
+    },
+    {
+      "style_id": "wheat",
+      "avg_cost_per_ml_alcohol": 7.474086197490451,
+      "p25": 6.763626444477508,
+      "p50": 7.414571244358479,
+      "p75": 7.414571244358479,
+      "sample_size": 6
     }
   ]
 }
