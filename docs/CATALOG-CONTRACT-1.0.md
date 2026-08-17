@@ -67,7 +67,7 @@ Confirmed directly from `Catalog.fromJson`/`toJson` (`lib/catalog/domain/catalog
 
 ## Part 5 — Sku Schema
 
-Confirmed directly from `lib/shared_domain/sku.dart`, the real, shipped class — thirteen fields, all non-nullable:
+Confirmed directly from `lib/shared_domain/sku.dart`, the real, shipped class — thirteen fields, **twelve** non-nullable. `calories` is the one exception, per Product Decisions Register D22 (Part 9): downgraded from mandatory to warning-only, since `value_metrics.py`/`value_score.py` never reference it — the app's core Value Score is computed entirely from ABV. Everything else in this Part predates and is unaffected by D22.
 
 | Field | Type | Required | Classification |
 |---|---|---|---|
@@ -76,7 +76,7 @@ Confirmed directly from `lib/shared_domain/sku.dart`, the real, shipped class �
 | `size_ml` | integer | yes | **Pipeline-derived** — KSBCL `pack_size_ml` (Stage 3 structured extraction) |
 | `package_type` | enum string: `bottle` \| `can` \| `pint` | yes | **Pipeline-derived**, with a flagged incompatibility — see below |
 | `abv` | number (double) | yes | **Manually enriched** — no automated source exists (Catalog Builder Architecture §0.3, Catalog Specification 1.0's own ABV domain) |
-| `calories` | integer | yes | **Computed** at build time from the enrichment layer's manually-cited `calories_per_100ml` (a concentration, matching what manufacturer sources actually publish) and this Sku's own `size_ml` — same sourcing constraint as ABV one layer up, no KSBCL source exists |
+| `calories` | integer, **nullable** | **no** (D22) | **Computed** at build time, when known, from the enrichment layer's manually-cited `calories_per_100ml` (a concentration, matching what manufacturer sources actually publish) and this Sku's own `size_ml`. Same sourcing constraint as ABV one layer up, no KSBCL source exists — but unlike ABV, a SKU with unknown calories still publishes, carrying a `missing_calories` warning (`business_rules.py`) instead of being excluded. `calories: null` is a legal, expected value in `catalog.json` as of D22. |
 | `price` | number (double) | yes | **Pipeline-derived** — KSBCL `declared_price`/`mrp` via `beer_master.csv` (the Legal Price) |
 | `price_last_checked` | date string | yes | **Pipeline-derived** — KSBCL `effective_date` |
 | `price_source` | string | yes | **Pipeline-derived** — a fixed provenance label (e.g. `"karnataka_excise_mrp_2026"`), set by the Catalog Builder, not per-row from `beer_master.csv` directly |
@@ -120,7 +120,7 @@ Every foreign-key relationship in the schema, stated exhaustively:
 | `Beer.style_id` → `Style.id` | **Yes, always** — `Beer.styleId` is non-nullable, and every real screen that resolves it (`resolveStyle`) treats a `null` result as a display gap ("Unknown style"), never a crash, but a *dangling reference* (an ID that resolves to nothing at all) is a data error, not a legitimate "no style" state | No, the field itself | A `Beer` whose `style_id` doesn't appear in `styles` |
 | `Benchmark.style_id` → `Style.id` | Yes, when the Benchmark entry exists at all | Not applicable — a Style simply has zero Benchmark entries when no Computed distribution exists yet; this is the schema's *only* legitimate "optional relationship," expressed by array absence, never by a null field | A `Benchmark` whose `style_id` doesn't appear in `styles` |
 
-**A structural fact worth stating plainly, since it shapes every rule above: the real schema has zero nullable fields anywhere, on any of the four entities.** Every field on `Style`, `Beer`, `Sku`, and `Benchmark` is declared `required` in its Dart constructor and cast directly (`as String`, `as num`) in its `fromJson`, with no null-coalescing fallback anywhere. **This means every "graceful omission" the canon describes (Style Benchmark's absence, in particular) is implemented at the array level — an entity simply doesn't appear — never at the field level.** There is no `Sku` with a `null` `abv`, no `Beer` with a `null` `style_id` — either the fact is fully known and the entity is included, or it isn't known and the entity is excluded from that build entirely (Catalog Implementation Architecture Part 3, Step 4's `unenriched_skus.csv`). This is a significant, evidence-based clarification of how Product Decisions Register D1 (the incomplete-ABV gap) actually manifests at the schema level: **there is no schema mechanism today for publishing a Sku with an unknown ABV at all** — D1's three named options ("silently exclude it, include with an explicit caveat, or something else") collapse, at the current schema's own structural limits, to exactly two live options: exclude the Sku, or extend the schema to add a nullable/optional ABV field (which would itself be a Version 2 change, not made here).
+**A structural fact worth stating plainly, since it shapes every rule above: the real schema has exactly one nullable field across all four entities — `Sku.calories`, since Product Decisions Register D22 — and zero everywhere else.** [RC6.0 correction, 2026-08-15: this paragraph originally claimed *zero* nullable fields anywhere; D22 (Part 9 of the Register) made that false for `calories` specifically. Everything below was written before D22 and is otherwise unaffected — it was, and remains, entirely accurate for `abv`, `style_id`, and every other field.] Every field on `Style`, `Beer`, `Sku` (other than `calories`), and `Benchmark` is declared `required` in its Dart constructor and cast directly (`as String`, `as num`) in its `fromJson`, with no null-coalescing fallback. **This means every "graceful omission" the canon describes (Style Benchmark's absence, in particular) is implemented at the array level — an entity simply doesn't appear — never at the field level, except for the one field D22 deliberately made an exception of.** There is still no `Sku` with a `null` `abv`, no `Beer` with a `null` `style_id` — either the fact is fully known and the entity is included, or it isn't known and the entity is excluded from that build entirely (Catalog Implementation Architecture Part 3, Step 4's `unenriched_skus.csv`). This remains a significant, evidence-based clarification of how Product Decisions Register D1 (the incomplete-ABV gap, unrelated to D22 — see D1's own cross-reference note) actually manifests at the schema level: **there is still no schema mechanism for publishing a Sku with an unknown ABV at all** — D1's three named options ("silently exclude it, include with an explicit caveat, or something else") still collapse, at the current schema's own structural limits, to exactly two live options: exclude the Sku, or extend the schema to add a nullable/optional ABV field (which would itself be a Version 2 change, not made here). **D22 does not change this analysis for ABV** — it made exactly one field (`calories`) nullable, for reasons specific to that field (it has no role in `value_metrics.py`/`value_score.py`), not as a precedent applied to ABV.
 
 **Forbidden, stated explicitly:** duplicate `id` values within any single array (`styles`, `beers`, or `skus`) — not currently validated anywhere in the real code (`Catalog.fromJson` performs no uniqueness check), and flagged here as a gap for Part 8's validation contract to close, not the app's own parsing layer.
 
@@ -207,6 +207,26 @@ Every foreign-key relationship in the schema, stated exhaustively:
       "sample_size": 14
     }
   ]
+}
+```
+
+**A second, minimal example, added RC6.0, showing the one legal shape this document's original example never illustrated:** a Sku with unknown calories, publishing under a `missing_calories` warning (Product Decisions Register D22) rather than being excluded. Every other field is required exactly as above; only `calories` may take this shape.
+
+```json
+{
+  "id": "stok_strong_500",
+  "beer_id": "stok_strong_fine",
+  "size_ml": 500,
+  "package_type": "can",
+  "abv": 7.0,
+  "calories": null,
+  "price": 120,
+  "price_last_checked": "2026-08-15",
+  "price_source": "karnataka_excise_mrp_2026",
+  "cost_per_litre": 240.0,
+  "cost_per_ml_alcohol": 6.86,
+  "value_score": 42,
+  "value_verdict": "fair_value"
 }
 ```
 

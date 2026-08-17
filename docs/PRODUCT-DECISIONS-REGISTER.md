@@ -8,6 +8,8 @@
 
 Every decision below carries an ID (D1–D21) used consistently across all eight parts. **Evidence** means a document states the gap explicitly. **Inference** is flagged wherever this register connects two documents' evidence into one merged decision rather than quoting either directly — per the deduplication instruction, this happens in a handful of places (D9, D13, D14, D16) and is called out each time.
 
+**Parts 1–8 track only *open* decisions — by design, per this register's own stated purpose above.** Part 9, added later (RC6.0), is a different kind of record: decisions that were opened, founder-decided, and shipped. The first entry there, D22, is deliberately *not* folded into Parts 1–8's numbered sequence or run through their Category/Priority/Blocking machinery — that apparatus assumes an open question, and D22 no longer is one.
+
 ---
 
 # Part 1 — Master Decision Inventory
@@ -18,6 +20,7 @@ Every decision below carries an ID (D1–D21) used consistently across all eight
 **First appeared:** Beer Knowledge Model 2.0.
 **Referenced by:** Decision Engine 2.0 (Part 10, item 1 — "newly surfaced by this document"), Interaction Model 2.0 (Part 5, item 1 of "Every Undefined Interaction Discovered"), Domain Model 1.0 (`Value` entity, point 13), Beer Entity Specification 1.0 (§8, "the same unresolved gap named in every document before this one"), Recommendation Experience Specification (§6, item 1 — "this build cannot correctly handle a real, incomplete launch catalog until this is decided"), Recommendation Widget Specification (cites the exact unhandled code line, `generate_recommendation.dart`'s `.where((sku) => sku.price <= budget)` filter).
 **Wording evolution:** the wording sharpens with each restatement but the substance never changes — every document independently confirms no resolution exists anywhere, and each treats it as the same gap rather than a new one.
+**[RC6.0 cross-reference note, 2026-08-15]:** not to be conflated with **D22** (Part 9) — a structurally similar-looking but genuinely distinct, and now-resolved, decision about the Catalog Builder's *calories* publication severity. D1 is about Recommendation's ranking behavior for ABV-incomplete SKUs; D22 was about whether the Catalog Builder should exclude a SKU for missing calories at all. Different field, different layer. Several RC4-era working documents informally connected the two by their shared "exclude / include-with-caveat" framing — that connection was analytically useful but is not an equivalence, and D22's resolution does not resolve, narrow, or otherwise touch D1, which remains exactly as open as stated above.
 
 ### D2. Search/Browse Results — No Screen Contract
 **Description:** The Information Architecture names six screens; only five ever received a Screen Contract. Search/Browse Results has none, which leaves the Navigation Contract structurally incomplete (Home→Beer Detail and Home→Comparison can't be fully specified) and leaves an entire reasoning model undefined. Bundled within this one root gap, per the ADR's and Decision Engine 2.0's own framing, are several concrete facets: no rule for fuzzy vs. literal matching; no rule for ranking multiple literal matches for display order; no rule for whether a restored candidate list (returning from Beer Detail) should be revalidated or simply redisplayed; and (per the Search/Browse Engineering Specification's own additional finding) no rule for whether a search followed by a separate browse attempt accumulates into one evolving candidate set or requires starting over.
@@ -339,3 +342,31 @@ Three are P0: **D19** (no committed real data-sourcing decision — blocks every
 
 **5. What is the recommended order to close them?**
 Not a resolution — an ordering, based strictly on the dependency structure already traced in Part 7 and the priority tiers in Part 4: **first D19** (unblocks real data, the precondition for validating D1 and D20 at all), **then D1** (cheap, fully-scoped, explicitly blocking, and the most-cited item in the register), **then D18** in parallel with either (fully independent, requires only legal research, and is a hard external gate that doesn't get easier by waiting), **then D2** (unblocks the Home→Beer Detail/Comparison direct paths and, per Part 7, has real downstream relationships to D3), **then D3** (only meaningfully useful once D2 makes anchor-known traffic real), **then D13** (before it compounds further as the real catalog scales, and before D17 can even be attempted), **then D5** (before Comparison itself is built, since retrofitting a 3+-candidate model afterward is more expensive than deciding up front), with **D4 resolved before D7** specifically (per Part 7's own finding that D7's shape depends on D4's answer). Everything else in the register — D6, D7, D8, D9, D10, D11, D12, D14, D15, D16, D17, D20, D21 — can reasonably wait behind this sequence without cost, consistent with their P2/P3 placement in Part 4.
+
+---
+
+# Part 9 — Resolved Decisions
+
+*A different kind of record from Parts 1–8: decisions that were opened, founder-decided, and shipped. Added RC6.0 (2026-08-15), once the register needed to record its first one. Not run through Parts 2–5's Category/Priority/Blocking/Validation machinery — that apparatus is built for open questions, and these no longer are.*
+
+### D22. Calories as a Publication Gate
+
+**Description:** Whether the Catalog Builder should continue excluding a SKU from `catalog.json` when its `calories_per_100ml` is unknown (the same severity as missing ABV), or whether calories should publish with a warning instead, the way stale pricing already does.
+
+**Why it existed:** `Sku.calories` was added to the schema at Milestone 7 and given the same blocking severity as ABV by direct analogy, without an independent argument for why calories deserved that severity on its own merits (`business_rules.py`'s own comment: "same blocking shape as the ABV/style rules"). RC3.1–RC3.9's evidence-expansion work then surfaced a concrete cost: 7 beers / 29 SKUs gained real, cited manufacturer ABV, and zero of them published, because calories — not ABV — was the actual remaining blocker for most of them.
+
+**Resolution:** Approved by the founder (RC4.2) and implemented (RC5.1, commit `e2dd5d5`). `missing_calories` moved from a `business_rules.py` rejection to a warning, reusing the existing `stale_price` warning mechanism rather than inventing new machinery. `Sku.calories` (Python `models.py` and Dart `lib/shared_domain/sku.dart`) became nullable. ABV was not touched and remains mandatory.
+
+**Evidence supporting it:**
+- `value_metrics.py`/`value_score.py` contain zero references to calories — the app's core Value Score is computed entirely from ABV. Gating publication on a field the ranking metric doesn't use protected nothing computationally.
+- A warning-only precedent (stale pricing) already existed in the exact same file, in active production use.
+- No screen in the shipped Flutter app reads `Sku.calories` anywhere — verified by exhaustive search (RC4.1) — so the change had zero UI-facing redesign cost at the time it shipped.
+- Real repository impact, measured directly (RC5.3, post-implementation): 40 published SKUs currently carry unknown calories that would otherwise be excluded.
+
+**Implementation status:** Shipped and merged (`e2dd5d5`, `040904e`). `docs/CATALOG-CONTRACT-1.0.md`, `docs/CATALOG-BUILDER-ARCHITECTURE.md`, and `docs/BEER-KNOWLEDGE-BASE-ARCHITECTURE.md` were synchronized to match in the same RC6.0 pass that added this entry.
+
+**Consequences:** A published Beer Detail record may now show (once any UI is built to display calories at all) an unknown calorie value where none could exist before. No screen currently displays calories, so this consequence is latent, not live. Establishes a reusable precedent — a field with no role in the app's core computations shouldn't be gated at the same severity as one that does — available to future, similarly-shaped decisions, without pre-deciding any of them.
+
+**Superseded assumption:** the implicit assumption, inherited by copying ABV's gate rather than argued for directly, that every Launch-Critical-adjacent field should be blocking by default. D22 establishes that severity should track a field's actual computational role, not its proximity to fields that do have one.
+
+**Not to be confused with D1** — see D1's own entry (Part 1) for the cross-reference.
