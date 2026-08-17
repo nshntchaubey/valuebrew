@@ -1,23 +1,27 @@
-# enrichment/rejected_evidence.yaml — a durable record of researched
-# evidence that was found but deliberately not curated onto a Beer/SKU
-# field (the Catalog Enrichment Playbook's rejected-evidence workflow,
-# approved RC7.6, infrastructure built RC7.7). One flat list, the same
-# top-level shape styles.yaml uses. Append-only: use
+# enrichment/rejected_evidence.yaml — durable record of researched
+# evidence found and deliberately not curated onto a Beer/SKU field.
+# One flat list. Append-only: use
 # tool/catalog_builder/record_rejected_evidence.py to add an entry —
-# never hand-edit an existing one.
-#
-# Empty by design as of RC7.7 — this milestone built the schema, CLI,
-# and validation only. It does NOT contain the six historical
-# rejected-evidence cases referenced during RC7.6's approval: those
-# cases are not reconstructible from anything committed to this
-# repository, and inventing plausible-looking substitutes for them
-# would corrupt this file's own purpose as a factual record. They will
-# be added by a future, dedicated RC7.8 — Historical Rejected-Evidence
-# Backfill migration, sourced only from authoritative material
-# (repository history, accepted research reports, or supplied
-# transcripts) — never from memory or reconstruction.
-#
-# See docs/CATALOG-ENRICHMENT-PLAYBOOK.md's rejected-evidence section
-# for the full recording workflow and reason taxonomy.
+# never hand-edit an existing one. Full workflow and reason taxonomy:
+# docs/CATALOG-ENRICHMENT-PLAYBOOK.md.
 
-[]
+- subject_type: "beer"
+  subject_key: "miller_high_life_premium"
+  field: "abv"
+  value_found: "3.7"
+  source_type: "manufacturer"
+  source_name: "Molson Coors 'US Nutritional Information - Lower Alcohol' PDF, cited within enrichment/beers/miller_high_life_premium.yaml's own ABV attribution"
+  reason_type: "wrong_variant"
+  reason_detail: "Lists a differently-labeled '3.2%' regulatory variant of Miller High Life at 3.7% ABV, confirmed to be a distinct US-only low-alcohol product category, not the standard Miller High Life Premium being enriched. Extracted from the founder's own existing citation in enrichment/beers/miller_high_life_premium.yaml (RC7.8 historical backfill)."
+  observed_at: 2026-08-14
+  observed_by: "founder"
+- subject_type: "beer"
+  subject_key: "stok_strong_fine"
+  field: "abv"
+  value_found: "8"
+  source_type: "manufacturer"
+  source_name: "Mount Everest Breweries official site, https://mounteverestbreweries.com/products/stok/, FAQ section (two separate answers)"
+  reason_type: "conflicting_source_subordinate"
+  reason_detail: "Same page's FAQ section states 8% ABV in two separate answers, conflicting with the structured per-pack-size spec table's 7% figure used for the curated fact. Resolved in favor of the spec table (RC3.1 Manufacturer Evidence Hierarchy Tier 1) over the FAQ prose (Tier 4) -- the table's identical repetition across three independent pack-size entries is more consistent with a maintained product-database figure than the FAQ's likely-reused marketing figure. Extracted from the founder's own existing citation in enrichment/beers/stok_strong_fine.yaml (RC7.8 historical backfill)."
+  observed_at: 2026-08-14
+  observed_by: "founder"
